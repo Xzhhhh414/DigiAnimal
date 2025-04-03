@@ -7,8 +7,10 @@ public class PetManager : MonoBehaviour
     // 当前选中的宠物
     private CharacterController2D selectedPet;
     
-    // 是否有UI交互正在发生
+    // 是否有UI交互正在发生 - 暂未使用
+    #pragma warning disable 0414
     private bool isUIInteraction = false;
+    #pragma warning restore 0414
     
     void Update()
     {

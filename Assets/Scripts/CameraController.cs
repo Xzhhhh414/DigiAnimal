@@ -135,7 +135,7 @@ public class CameraController : MonoBehaviour
             // 调试信息
             if (debugMode && isDragging)
             {
-                Debug.Log("正在拖动: " + isDragging + ", 偏移: " + targetFollowOffset);
+                // Debug.Log("正在拖动: " + isDragging + ", 偏移: " + targetFollowOffset);
             }
         }
     }
@@ -177,7 +177,10 @@ public class CameraController : MonoBehaviour
     {
         if (virtualCamera == null) return;
         
-        if (debugMode) Debug.Log("切换到宠物跟随模式");
+        if (debugMode) 
+        {
+            // Debug.Log("切换到宠物跟随模式");
+        }
         
         // 切换前更新临时目标位置到当前视图中心
         UpdateTempTargetToCameraView();
@@ -201,7 +204,10 @@ public class CameraController : MonoBehaviour
     {
         if (virtualCamera == null) return;
         
-        if (debugMode) Debug.Log("切换到自由浏览模式");
+        if (debugMode) 
+        {
+            // Debug.Log("切换到自由浏览模式");
+        }
         
         // 切换前更新临时目标位置到当前视图中心
         UpdateTempTargetToCameraView();
@@ -241,7 +247,10 @@ public class CameraController : MonoBehaviour
             {
                 dragStartPosition = touch.position;
                 isDragging = true;
-                if (debugMode) Debug.Log("开始触摸拖动");
+                if (debugMode) 
+                {
+                    // Debug.Log("开始触摸拖动");
+                }
             }
             // 拖动中
             else if (touch.phase == TouchPhase.Moved && isDragging)
@@ -249,13 +258,19 @@ public class CameraController : MonoBehaviour
                 Vector2 dragDelta = (Vector2)touch.position - dragStartPosition;
                 PanCamera(-dragDelta);
                 dragStartPosition = touch.position;
-                if (debugMode) Debug.Log("触摸拖动中: " + dragDelta);
+                if (debugMode) 
+                {
+                    // Debug.Log("触摸拖动中: " + dragDelta);
+                }
             }
             // 结束拖动
             else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
             {
                 isDragging = false;
-                if (debugMode) Debug.Log("结束触摸拖动");
+                if (debugMode) 
+                {
+                    // Debug.Log("结束触摸拖动");
+                }
             }
         }
         
@@ -264,19 +279,28 @@ public class CameraController : MonoBehaviour
         {
             dragStartPosition = Input.mousePosition;
             isDragging = true;
-            if (debugMode) Debug.Log("开始鼠标拖动");
+            if (debugMode) 
+            {
+                // Debug.Log("开始鼠标拖动");
+            }
         }
         else if (Input.GetMouseButton(0) && isDragging)
         {
             Vector2 dragDelta = (Vector2)Input.mousePosition - dragStartPosition;
             PanCamera(-dragDelta);
             dragStartPosition = Input.mousePosition;
-            if (debugMode) Debug.Log("鼠标拖动中: " + dragDelta);
+            if (debugMode) 
+            {
+                // Debug.Log("鼠标拖动中: " + dragDelta);
+            }
         }
         else if (Input.GetMouseButtonUp(0))
         {
             isDragging = false;
-            if (debugMode) Debug.Log("结束鼠标拖动");
+            if (debugMode) 
+            {
+                // Debug.Log("结束鼠标拖动");
+            }
         }
     }
     
@@ -294,7 +318,10 @@ public class CameraController : MonoBehaviour
             
             tempTarget.transform.position += right * dragDelta.x + up * dragDelta.y;
             
-            if (debugMode) Debug.Log("移动临时目标: " + dragDelta);
+            if (debugMode) 
+            {
+                // Debug.Log("移动临时目标: " + dragDelta);
+            }
         }
         else
         {

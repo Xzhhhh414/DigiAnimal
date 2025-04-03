@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 8672180493069518956}
   - component: {fileID: 8883347001294338108}
   - component: {fileID: 79143899726710932}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cat_Brown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -163,9 +163,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e856fc47697dfda43869eee447cd358f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineColor: {r: 1, g: 0, b: 0, a: 1}
+  outlineColor: {r: 0.2830189, g: 0.2830189, b: 0.2830189, a: 1}
   outlineSize: 1
-  alphaCutoff: 0.1
+  alphaCutoff: 0.8
   pixelOutlineShader: {fileID: 4800000, guid: a0a484dc243dc624c874ea4b743ecfa9, type: 3}
   outlineOnAwake: 0
 --- !u!61 &79143899726710932

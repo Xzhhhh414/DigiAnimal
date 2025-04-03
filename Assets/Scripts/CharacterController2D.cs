@@ -37,39 +37,7 @@ public class CharacterController2D : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 只有选中的宠物才响应移动指令
-        if (isSelected)
-        {
-            // 检测触摸输入
-            if (Input.touchCount > 0)
-            {
-                Touch touch = Input.GetTouch(0); // 获取第一个触摸点
-                
-                if (touch.phase == TouchPhase.Began)
-                {
-                    // 检查是否点击到了UI或其他宠物
-                    if (!IsTouchingPet(touch.position))
-                    {
-                        // 将触摸点从屏幕坐标转换为世界坐标
-                        Vector3 touchPosition = Camera.main.ScreenToWorldPoint(touch.position);
-                        targetPosition = new Vector2(touchPosition.x, touchPosition.y);
-                        animator.SetBool("isMoving", true);
-                    }
-                }
-            }
-            
-            // 同时支持鼠标点击（在编辑器中测试用）
-            if (Input.GetMouseButtonDown(0))
-            {
-                // 检查是否点击到了UI或其他宠物
-                if (!IsTouchingPet(Input.mousePosition))
-                {
-                    Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    targetPosition = new Vector2(mousePosition.x, mousePosition.y);
-                    animator.SetBool("isMoving", true);
-                }
-            }
-        }
+        // 移除点击控制移动的逻辑，保留动画更新
         
         // 计算移动方向用于动画
         if (animator.GetBool("isMoving"))
@@ -111,15 +79,7 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
-    // 判断是否点击到了宠物
-    bool IsTouchingPet(Vector2 screenPosition)
-    {
-        Ray ray = Camera.main.ScreenPointToRay(screenPosition);
-        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
-        
-        // 如果点击到了宠物，返回true
-        return hit.collider != null && hit.collider.GetComponent<CharacterController2D>() != null;
-    }
+    // 移除IsTouchingPet方法，不再需要
     
     // 当宠物被选中/取消选中时调用此方法
     public void SetSelected(bool selected)
@@ -131,5 +91,12 @@ public class CharacterController2D : MonoBehaviour
         {
             pixelOutlineManager.SetOutlineActive(selected);
         }
+    }
+    
+    // 添加供AI系统使用的方法，控制宠物移动到指定位置
+    public void MoveTo(Vector2 position)
+    {
+        targetPosition = position;
+        animator.SetBool("isMoving", true);
     }
 }

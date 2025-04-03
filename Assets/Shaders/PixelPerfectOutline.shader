@@ -21,7 +21,7 @@ Shader "Custom/PixelPerfectOutline"
         Cull Off
         Lighting Off
         ZWrite Off
-        Blend One OneMinusSrcAlpha
+        Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
         {
@@ -68,32 +68,31 @@ Shader "Custom/PixelPerfectOutline"
                 // 如果未选中，直接返回原始颜色
                 if (_IsSelected < 0.5) return col;
                 
-                // 如果是完全透明的像素，提前返回
-                if (col.a < _AlphaCutoff) return fixed4(0, 0, 0, 0);
+                // 如果当前像素是不透明的（属于精灵内部），保持原始颜色不变
+                if (col.a >= _AlphaCutoff)
+                {
+                    return col;
+                }
 
-                // 检查周围是否有透明像素 - 只在边缘添加描边
-                bool isOutlinePixel = false;
-                
-                // 精确的一像素偏移，保持像素风格
+                // 检查周围是否有不透明像素（是否靠近精灵边缘）
                 float2 pixelSize = _MainTex_TexelSize.xy * _OutlineSize;
                 
-                // 采样上、右、下、左四个方向
-                float alpha = 0;
-                alpha += tex2D(_MainTex, i.uv + float2(0, pixelSize.y)).a;
-                alpha += tex2D(_MainTex, i.uv + float2(pixelSize.x, 0)).a;
-                alpha += tex2D(_MainTex, i.uv + float2(0, -pixelSize.y)).a;
-                alpha += tex2D(_MainTex, i.uv + float2(-pixelSize.x, 0)).a;
+                // 采样周围像素的alpha值（上、右、下、左四个方向）
+                float neighborAlpha = 0;
+                neighborAlpha += tex2D(_MainTex, i.uv + float2(0, pixelSize.y)).a;
+                neighborAlpha += tex2D(_MainTex, i.uv + float2(pixelSize.x, 0)).a;
+                neighborAlpha += tex2D(_MainTex, i.uv + float2(0, -pixelSize.y)).a;
+                neighborAlpha += tex2D(_MainTex, i.uv + float2(-pixelSize.x, 0)).a;
                 
-                // 更强的像素风格，仅使用四个基本方向
-                isOutlinePixel = (col.a > _AlphaCutoff) && (alpha < 4.0 * _AlphaCutoff);
-                
-                // 如果是边缘像素，使用描边颜色
-                if (isOutlinePixel)
+                // 如果周围有不透明像素，但当前像素是透明的，则显示描边
+                if (neighborAlpha > _AlphaCutoff)
                 {
-                    return _OutlineColor;
+                    // 返回描边颜色，确保Alpha值为1
+                    return fixed4(_OutlineColor.rgb, 1.0);
                 }
                 
-                return col;
+                // 完全透明（不渲染任何东西）
+                return fixed4(0, 0, 0, 0);
             }
             ENDCG
         }
