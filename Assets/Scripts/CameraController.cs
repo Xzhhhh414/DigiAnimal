@@ -20,7 +20,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float panSpeed = 15f;
     
     // 宠物跟随速度
-    [SerializeField] private float followSpeed = 2f;
+    [SerializeField] [Tooltip("控制相机初始选中宠物时的过渡时间，值越大过渡越快")] private float followSpeed = 2f;
     
     // 引用PetManager
     [SerializeField] private PetManager petManager;
@@ -69,6 +69,11 @@ public class CameraController : MonoBehaviour
     
     // 临时目标对象（用于平滑过渡）- 如果在Inspector中没有配置则自动创建
     private GameObject tempTarget;
+    
+    // 添加新变量，标记是否是初次选中宠物
+    private bool isInitialSelection = false;
+    // 添加计时器，用于平滑过渡
+    private float selectionTransitionTimer = 0f;
     
     void Start()
     {
@@ -191,15 +196,38 @@ public class CameraController : MonoBehaviour
     {
         if (selectedPet != null && currentState == CameraState.FollowingPet)
         {
-            // 无论宠物是否移动都跟随它
             Vector3 targetPos = selectedPet.transform.position;
             targetPos.z = cameraTarget.position.z; // 保持z轴不变
             
-            // 平滑移动目标
-            cameraTarget.position = Vector3.Lerp(
-                cameraTarget.position, 
-                targetPos, 
-                Time.deltaTime * followSpeed);
+            if (isInitialSelection)
+            {
+                // 使用followSpeed来计算过渡时间：值越大，过渡越快
+                float transitionDuration = 1.0f / followSpeed;
+                
+                // 初次选中时使用平滑移动
+                selectionTransitionTimer += Time.deltaTime;
+                float t = Mathf.Clamp01(selectionTransitionTimer / transitionDuration);
+                
+                // 使用平滑过渡函数
+                float smoothT = Mathf.SmoothStep(0, 1, t);
+                
+                // 平滑移动目标
+                cameraTarget.position = Vector3.Lerp(
+                    cameraTarget.position, 
+                    targetPos, 
+                    smoothT);
+                
+                // 过渡完成后，切换到紧跟模式
+                if (selectionTransitionTimer >= transitionDuration)
+                {
+                    isInitialSelection = false;
+                }
+            }
+            else
+            {
+                // 宠物移动时，相机紧跟宠物位置
+                cameraTarget.position = targetPos;
+            }
             
             // 应用边界限制，确保相机不超过边界
             if (cameraBounds != null)
@@ -229,6 +257,10 @@ public class CameraController : MonoBehaviour
             // Debug.Log("切换到宠物跟随模式");
         }
         
+        // 设置为初次选中状态，并重置计时器
+        isInitialSelection = true;
+        selectionTransitionTimer = 0f;
+        
         // 切换前更新目标位置到当前视图中心
         UpdateCameraTargetToCameraView();
         
@@ -256,21 +288,45 @@ public class CameraController : MonoBehaviour
             // Debug.Log("切换到自由浏览模式");
         }
         
-        // 切换前更新目标位置到当前视图中心
-        UpdateCameraTargetToCameraView();
-        
-        // 设置相机跟随目标
-        virtualCamera.Follow = cameraTarget;
-        virtualCamera.LookAt = cameraTarget;
+        // 重要：保存当前相机位置和角度，避免切换时的瞬移
+        Vector3 currentCameraPosition = virtualCamera.transform.position;
         
         // 记录当前状态
         currentState = CameraState.Free;
         
-        // 确保我们有FramingTransposer组件
-        if (framingTransposer != null)
+        // 如果之前有选中的宠物，保持相机在完全相同的位置
+        if (previousSelectedPet != null)
         {
-            // 保持当前偏移
-            targetFollowOffset = framingTransposer.m_TrackedObjectOffset;
+            // 简单地使用当前相机目标位置，不做任何改变
+            // 这样可以确保相机不会移动
+        }
+        else
+        {
+            // 如果没有之前选中的宠物，使用当前视图中心
+            UpdateCameraTargetToCameraView();
+        }
+        
+        // 在状态切换后，确保相机位置不变
+        // 注意：我们不重新分配Follow和LookAt，因为这可能导致Cinemachine重新计算相机位置
+        
+        // 在下一帧强制更新相机位置到当前位置
+        StartCoroutine(ForcePositionNextFrame(currentCameraPosition));
+    }
+    
+    // 在下一帧强制设置相机位置，确保不会有瞬移
+    private IEnumerator ForcePositionNextFrame(Vector3 position)
+    {
+        yield return null; // 等待一帧
+        
+        // 如果仍然在自由模式，确保相机位置保持不变
+        if (currentState == CameraState.Free && virtualCamera != null)
+        {
+            // 直接设置相机位置而不是通过Cinemachine
+            virtualCamera.transform.position = position;
+            
+            // 同步更新目标位置
+            Vector3 cameraForward = virtualCamera.transform.forward;
+            cameraTarget.position = virtualCamera.transform.position + cameraForward * 10f;
         }
     }
     

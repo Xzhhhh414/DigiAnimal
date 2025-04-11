@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(NavMeshAgent))]
 public class CharacterController2D : MonoBehaviour
 {
     Rigidbody2D rb;
@@ -18,6 +20,8 @@ public class CharacterController2D : MonoBehaviour
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
     
+    private NavMeshAgent agent;
+    
     // Start is called before the first frame update
     void Awake()
     {
@@ -26,56 +30,62 @@ public class CharacterController2D : MonoBehaviour
         
         // 获取描边管理器
         pixelOutlineManager = GetComponent<PixelOutlineManager>();
+        
+        agent = GetComponent<NavMeshAgent>();
+        
+        // 配置为2D模式
+        agent.updateRotation = false;
+        agent.updateUpAxis = false;
     }
     
     void Start()
     {
         currentPosition = rb.position;
         targetPosition = currentPosition;
+        
+        // 设置NavMeshAgent速度与moveSpeed匹配
+        agent.speed = moveSpeed;
+        
+        // 确保Rigidbody2D与NavMeshAgent不冲突
+        rb.isKinematic = true;
+        
+        // 初始化时禁用动画移动状态
+        animator.SetBool("isMoving", false);
     }
 
     // Update is called once per frame
     void Update()
     {
-        // 计算移动方向用于动画
-        if (animator.GetBool("isMoving"))
+        // 根据NavMeshAgent的速度更新动画
+        if (agent.velocity.magnitude > 0.1f)
         {
-            Vector2 direction = (targetPosition - rb.position).normalized;
-            animator.SetFloat("horizontal", direction.x);
-            animator.SetFloat("vertical", direction.y);
+            animator.SetBool("isMoving", true);
+            // 使用NavMeshAgent的速度方向更新动画参数
+            animator.SetFloat("horizontal", agent.velocity.normalized.x);
+            animator.SetFloat("vertical", agent.velocity.normalized.y);
         }
         else
         {
+            // 当NavMeshAgent停止时
+            animator.SetBool("isMoving", false);
             animator.SetFloat("horizontal", 0);
             animator.SetFloat("vertical", 0);
         }
+        
+        // 更新目标位置以便与其他系统兼容
+        targetPosition = agent.destination;
     }
 
     void FixedUpdate()
     {
-        if (animator.GetBool("isMoving"))
-        {
-            Move();
-        }
+        // NavMeshAgent现在处理移动，不需要额外调用Move()
     }
 
+    // 保留Move方法用于向后兼容或非导航移动
     void Move()
     {
-        // 计算当前位置到目标位置的方向和距离
-        Vector2 direction = targetPosition - rb.position;
-        float distance = direction.magnitude;
-        
-        if (distance > 0.1f) // 如果距离大于阈值，继续移动
-        {
-            // 设置速度而不是直接位置，这样会尊重碰撞体
-            rb.velocity = direction.normalized * moveSpeed;
-        }
-        else
-        {
-            // 已到达目标位置或无法继续前进，停止移动
-            rb.velocity = Vector2.zero;
-            animator.SetBool("isMoving", false);
-        }
+        // 此方法保留但不再被FixedUpdate调用
+        // NavMeshAgent现在控制移动
     }
     
     // 移除IsTouchingPet方法，不再需要
@@ -92,10 +102,14 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
-    // 添加供AI系统使用的方法，控制宠物移动到指定位置
+    // 修改MoveTo方法兼容NavMeshAgent
     public void MoveTo(Vector2 position)
     {
         targetPosition = position;
-        animator.SetBool("isMoving", true);
+        agent.SetDestination(new Vector3(position.x, position.y, transform.position.z));
+        
+        // 确保NavMeshAgent被激活
+        if (!agent.enabled)
+            agent.enabled = true;
     }
 }
