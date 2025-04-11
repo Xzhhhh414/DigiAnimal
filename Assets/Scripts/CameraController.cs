@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 
+// 直接在此定义CameraBounds接口，确保引用正确
+public interface ICameraBounds
+{
+    void EnforceBounds(Transform target);
+    bool IsOrthoSizeValid(float orthoSize, Transform target);
+    float GetMaxOrthoSize(Transform target);
+}
+
 public class CameraController : MonoBehaviour
 {
     // 引用Cinemachine虚拟相机
@@ -16,6 +24,20 @@ public class CameraController : MonoBehaviour
     
     // 引用PetManager
     [SerializeField] private PetManager petManager;
+    
+    // 相机目标 - 可以在Inspector中配置而不是自动创建
+    [SerializeField] private Transform cameraTarget;
+    
+    // 边界系统 - 使用组件引用而不是类型引用
+    [SerializeField] private MonoBehaviour boundaryController;
+    private ICameraBounds cameraBounds;
+    
+    // 缩放相关参数
+    [Header("缩放设置")]
+    [SerializeField] private float zoomSpeed = 1f;
+    [SerializeField] private float minOrthoSize = 3f;
+    [SerializeField] private float maxOrthoSize = 9f;
+    [SerializeField] private float defaultOrthoSize = 6f;
     
     // 是否正在拖动
     private bool isDragging = false;
@@ -45,7 +67,7 @@ public class CameraController : MonoBehaviour
     // 相机目标位置
     private Vector3 lastCameraPosition;
     
-    // 临时目标对象（用于平滑过渡）
+    // 临时目标对象（用于平滑过渡）- 如果在Inspector中没有配置则自动创建
     private GameObject tempTarget;
     
     void Start()
@@ -62,13 +84,42 @@ public class CameraController : MonoBehaviour
         // 保存默认跟随目标
         defaultTarget = virtualCamera.Follow;
         
-        // 创建临时目标对象
-        CreateTempTarget();
+        // 处理相机目标
+        SetupCameraTarget();
         
         // 确保初始状态为自由移动
         currentState = CameraState.Free;
-        virtualCamera.Follow = tempTarget.transform;
-        virtualCamera.LookAt = null;
+        virtualCamera.Follow = cameraTarget;
+        virtualCamera.LookAt = cameraTarget;
+        
+        // 初始化边界控制器
+        if (boundaryController != null)
+        {
+            cameraBounds = boundaryController as ICameraBounds;
+        }
+        else
+        {
+            // 尝试获取CameraBounds组件
+            cameraBounds = GetComponent<ICameraBounds>();
+        }
+        
+        // 初始化缩放
+        if (virtualCamera != null)
+        {
+            virtualCamera.m_Lens.OrthographicSize = defaultOrthoSize;
+        }
+    }
+    
+    private void SetupCameraTarget()
+    {
+        // 如果在Inspector中没有设置相机目标，则创建一个
+        if (cameraTarget == null) 
+        {
+            // 创建一个临时目标对象
+            tempTarget = new GameObject("CameraTarget");
+            tempTarget.transform.position = virtualCamera.transform.position + virtualCamera.transform.forward * 10f;
+            cameraTarget = tempTarget.transform;
+        }
     }
     
     private void InitializeCamera()
@@ -90,13 +141,6 @@ public class CameraController : MonoBehaviour
             // 初始化目标位置
             targetFollowOffset = framingTransposer.m_TrackedObjectOffset;
         }
-    }
-    
-    private void CreateTempTarget()
-    {
-        // 创建一个临时目标对象，用于平滑过渡
-        tempTarget = new GameObject("TempCameraTarget");
-        tempTarget.transform.position = virtualCamera.transform.position + virtualCamera.transform.forward * 10f;
     }
     
     void Update()
@@ -124,8 +168,8 @@ public class CameraController : MonoBehaviour
             previousSelectedPet = selectedPet;
         }
         
-        // 更新临时目标位置
-        UpdateTempTargetPosition(selectedPet);
+        // 更新目标位置
+        UpdateCameraTargetPosition(selectedPet);
         
         // 只有在自由模式下才能拖动场景
         if (currentState == CameraState.Free)
@@ -138,26 +182,29 @@ public class CameraController : MonoBehaviour
                 // Debug.Log("正在拖动: " + isDragging + ", 偏移: " + targetFollowOffset);
             }
         }
+        
+        // 处理缩放
+        HandleZoom();
     }
     
-    private void UpdateTempTargetPosition(CharacterController2D selectedPet)
+    private void UpdateCameraTargetPosition(CharacterController2D selectedPet)
     {
         if (selectedPet != null && currentState == CameraState.FollowingPet)
         {
-            // 只有当宠物在移动时才跟随
-            bool isPetMoving = IsPetMoving(selectedPet.gameObject);
+            // 无论宠物是否移动都跟随它
+            Vector3 targetPos = selectedPet.transform.position;
+            targetPos.z = cameraTarget.position.z; // 保持z轴不变
             
-            if (isPetMoving)
+            // 平滑移动目标
+            cameraTarget.position = Vector3.Lerp(
+                cameraTarget.position, 
+                targetPos, 
+                Time.deltaTime * followSpeed);
+            
+            // 应用边界限制，确保相机不超过边界
+            if (cameraBounds != null)
             {
-                // 在宠物移动时，临时目标逐渐移向选中的宠物
-                Vector3 targetPos = selectedPet.transform.position;
-                targetPos.z = tempTarget.transform.position.z; // 保持z轴不变
-                
-                // 平滑移动临时目标
-                tempTarget.transform.position = Vector3.Lerp(
-                    tempTarget.transform.position, 
-                    targetPos, 
-                    Time.deltaTime * followSpeed); 
+                cameraBounds.EnforceBounds(cameraTarget);
             }
         }
     }
@@ -182,12 +229,12 @@ public class CameraController : MonoBehaviour
             // Debug.Log("切换到宠物跟随模式");
         }
         
-        // 切换前更新临时目标位置到当前视图中心
-        UpdateTempTargetToCameraView();
+        // 切换前更新目标位置到当前视图中心
+        UpdateCameraTargetToCameraView();
         
-        // 设置相机跟随临时目标而不是直接跟随宠物
-        virtualCamera.Follow = tempTarget.transform;
-        virtualCamera.LookAt = null;
+        // 设置相机跟随目标而不是直接跟随宠物
+        virtualCamera.Follow = cameraTarget;
+        virtualCamera.LookAt = cameraTarget;
         
         // 记录当前状态
         currentState = CameraState.FollowingPet;
@@ -209,12 +256,12 @@ public class CameraController : MonoBehaviour
             // Debug.Log("切换到自由浏览模式");
         }
         
-        // 切换前更新临时目标位置到当前视图中心
-        UpdateTempTargetToCameraView();
+        // 切换前更新目标位置到当前视图中心
+        UpdateCameraTargetToCameraView();
         
-        // 设置相机跟随临时目标
-        virtualCamera.Follow = tempTarget.transform;
-        virtualCamera.LookAt = null;
+        // 设置相机跟随目标
+        virtualCamera.Follow = cameraTarget;
+        virtualCamera.LookAt = cameraTarget;
         
         // 记录当前状态
         currentState = CameraState.Free;
@@ -227,12 +274,12 @@ public class CameraController : MonoBehaviour
         }
     }
     
-    private void UpdateTempTargetToCameraView()
+    private void UpdateCameraTargetToCameraView()
     {
-        // 将临时目标移动到当前相机视图中心点
+        // 将目标移动到当前相机视图中心点
         Vector3 cameraForward = virtualCamera.transform.forward;
         Vector3 position = virtualCamera.transform.position + cameraForward * 10f;
-        tempTarget.transform.position = position;
+        cameraTarget.position = position;
     }
     
     void HandleDragging()
@@ -256,7 +303,7 @@ public class CameraController : MonoBehaviour
             else if (touch.phase == TouchPhase.Moved && isDragging)
             {
                 Vector2 dragDelta = (Vector2)touch.position - dragStartPosition;
-                PanCamera(-dragDelta);
+                PanCamera(dragDelta);
                 dragStartPosition = touch.position;
                 if (debugMode) 
                 {
@@ -287,7 +334,7 @@ public class CameraController : MonoBehaviour
         else if (Input.GetMouseButton(0) && isDragging)
         {
             Vector2 dragDelta = (Vector2)Input.mousePosition - dragStartPosition;
-            PanCamera(-dragDelta);
+            PanCamera(dragDelta);
             dragStartPosition = Input.mousePosition;
             if (debugMode) 
             {
@@ -312,15 +359,21 @@ public class CameraController : MonoBehaviour
             float scale = Time.deltaTime * panSpeed * 0.1f;
             dragDelta *= scale;
             
-            // 移动临时目标而不是修改偏移
+            // 移动目标而不是修改偏移
             Vector3 right = virtualCamera.transform.right;
             Vector3 up = virtualCamera.transform.up;
             
-            tempTarget.transform.position += right * dragDelta.x + up * dragDelta.y;
+            cameraTarget.position += right * dragDelta.x + up * dragDelta.y;
+            
+            // 拖动后确保在边界内
+            if (cameraBounds != null)
+            {
+                cameraBounds.EnforceBounds(cameraTarget);
+            }
             
             if (debugMode) 
             {
-                // Debug.Log("移动临时目标: " + dragDelta);
+                // Debug.Log("移动目标: " + dragDelta);
             }
         }
         else
@@ -329,12 +382,84 @@ public class CameraController : MonoBehaviour
         }
     }
     
+    void HandleZoom()
+    {
+        // PC模式下的鼠标滚轮缩放
+        float mouseScrollDelta = Input.GetAxis("Mouse ScrollWheel");
+        if (Mathf.Abs(mouseScrollDelta) > 0.01f)
+        {
+            ZoomCamera(mouseScrollDelta * zoomSpeed * 10f);
+        }
+        
+        // 移动端的双指缩放
+        if (Input.touchCount == 2)
+        {
+            Touch touch0 = Input.GetTouch(0);
+            Touch touch1 = Input.GetTouch(1);
+            
+            // 获取两个触摸点的当前位置和之前位置
+            Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
+            Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
+            
+            // 计算之前和当前的距离
+            float prevTouchDeltaMag = (touch0PrevPos - touch1PrevPos).magnitude;
+            float touchDeltaMag = (touch0.position - touch1.position).magnitude;
+            
+            // 计算距离差异
+            float deltaMagnitudeDiff = touchDeltaMag - prevTouchDeltaMag;
+            
+            // 应用缩放
+            ZoomCamera(deltaMagnitudeDiff * 0.01f);
+        }
+    }
+    
+    void ZoomCamera(float zoomAmount)
+    {
+        if (virtualCamera != null)
+        {
+            // 获取当前正交大小
+            float currentSize = virtualCamera.m_Lens.OrthographicSize;
+            
+            // 计算初步的新正交大小（考虑用户设置的范围限制）
+            float newSize = Mathf.Clamp(currentSize - zoomAmount, minOrthoSize, maxOrthoSize);
+            
+            // 检查边界限制
+            if (cameraBounds != null)
+            {
+                // 如果是放大（orthoSize减小），直接允许
+                if (newSize < currentSize)
+                {
+                    virtualCamera.m_Lens.OrthographicSize = newSize;
+                }
+                else // 如果是缩小（orthoSize增大），检查是否会超出边界
+                {
+                    // 获取边界允许的最大orthoSize
+                    float maxAllowedSize = cameraBounds.GetMaxOrthoSize(cameraTarget);
+                    
+                    // 确保不超过边界允许的最大值
+                    newSize = Mathf.Min(newSize, maxAllowedSize);
+                    
+                    // 应用最终的正交大小
+                    virtualCamera.m_Lens.OrthographicSize = newSize;
+                }
+                
+                // 缩放后确保相机目标在边界内
+                cameraBounds.EnforceBounds(cameraTarget);
+            }
+            else
+            {
+                // 没有边界限制，直接应用缩放
+                virtualCamera.m_Lens.OrthographicSize = newSize;
+            }
+        }
+    }
+    
     void OnDestroy()
     {
-        // 清理临时对象
+        // 清理自动创建的临时对象
         if (tempTarget != null)
         {
             Destroy(tempTarget);
         }
     }
-} 
+}

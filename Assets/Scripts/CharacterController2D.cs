@@ -37,8 +37,6 @@ public class CharacterController2D : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 移除点击控制移动的逻辑，保留动画更新
-        
         // 计算移动方向用于动画
         if (animator.GetBool("isMoving"))
         {
@@ -69,12 +67,13 @@ public class CharacterController2D : MonoBehaviour
         
         if (distance > 0.1f) // 如果距离大于阈值，继续移动
         {
-            Vector2 newPosition = rb.position + direction.normalized * moveSpeed * Time.fixedDeltaTime;
-            rb.MovePosition(newPosition);
+            // 设置速度而不是直接位置，这样会尊重碰撞体
+            rb.velocity = direction.normalized * moveSpeed;
         }
         else
         {
-            // 已到达目标位置
+            // 已到达目标位置或无法继续前进，停止移动
+            rb.velocity = Vector2.zero;
             animator.SetBool("isMoving", false);
         }
     }

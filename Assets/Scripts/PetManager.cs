@@ -47,8 +47,16 @@ public class PetManager : MonoBehaviour
             }
         }
         
-        // 如果没有点击到宠物，并且有宠物被选中，则保持选中状态
-        // 移动逻辑已经在CharacterController2D中处理
+        // 如果点击到了地面，且有宠物被选中，让宠物移动到点击位置
+        if (selectedPet != null)
+        {
+            // 将触摸/点击位置转换为世界坐标
+            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(screenPosition);
+            worldPosition.z = 0; // 确保z坐标为0
+            
+            // 让选中的宠物移动到点击位置
+            selectedPet.MoveTo(worldPosition);
+        }
     }
     
     void SelectPet(CharacterController2D pet)
