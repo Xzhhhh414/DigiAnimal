@@ -6,7 +6,7 @@ namespace NodeCanvas.Tasks.Conditions
 {
     [Category("Pet AI")]
     [Description("判断宠物是否处于自由活动状态")]
-    public class IsPetFreeRoaming : ConditionTask<CharacterController2D>
+    public class IsPetFree : ConditionTask<CharacterController2D>
     {
         protected override string info
         {
@@ -19,7 +19,7 @@ namespace NodeCanvas.Tasks.Conditions
                 return false;
                 
             // 直接返回宠物的自由活动状态
-            return agent.GetIsFreeRoaming();
+            return agent.IsFree;
         }
     }
 } 

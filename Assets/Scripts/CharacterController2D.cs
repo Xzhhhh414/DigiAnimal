@@ -17,10 +17,58 @@ public class CharacterController2D : MonoBehaviour
     [SerializeField]
     public bool isSelected = false;
     
-    // 是否处于自由活动状态（由AI控制）
+    // 动画状态字段
+    [SerializeField]
+    private bool _IsMoving = false;
+    private float _Horizontal = 0f;
+    private float _Vertical = 0f;
+    
+    [SerializeField]    
+    private bool _IsFree = true; // 自由活动状态
+    
+    // 动画状态属性
+    public bool IsMoving
+    {
+        get { return _IsMoving; }
+        private set
+        {
+            _IsMoving = value;
+            animator.SetBool(AnimationStrings.isMoving, value);
+        }
+    }
+    
+    public float Horizontal
+    {
+        get { return _Horizontal; }
+        private set
+        {
+            _Horizontal = value;
+            animator.SetFloat(AnimationStrings.horizontal, value);
+        }
+    }
+    
+    public float Vertical
+    {
+        get { return _Vertical; }
+        private set
+        {
+            _Vertical = value;
+            animator.SetFloat(AnimationStrings.vertical, value);
+        }
+    }
+    
+    // 自由活动状态属性
     [SerializeField]
     [Tooltip("宠物是否处于自由活动状态，处于此状态时会由AI控制行为")]
-    public bool isFreeRoaming = true;
+    public bool IsFree
+    {
+        get { return _IsFree; }
+        set
+        {
+            _IsFree = value;
+            animator.SetBool(AnimationStrings.isFree, value);
+        }
+    }
     
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
@@ -55,10 +103,10 @@ public class CharacterController2D : MonoBehaviour
         rb.isKinematic = true;
         
         // 初始化时禁用动画移动状态
-        animator.SetBool("isMoving", false);
+        IsMoving = false;
         
         // 默认为自由活动状态
-        isFreeRoaming = true;
+        IsFree = true;
     }
 
     // Update is called once per frame
@@ -67,23 +115,17 @@ public class CharacterController2D : MonoBehaviour
         // 根据NavMeshAgent的速度更新动画
         if (agent.velocity.magnitude > 0.1f)
         {
-            animator.SetBool("isMoving", true);
+            IsMoving = true;
             // 使用NavMeshAgent的速度方向更新动画参数
-            animator.SetFloat("horizontal", agent.velocity.normalized.x);
-            animator.SetFloat("vertical", agent.velocity.normalized.y);
+            Horizontal = agent.velocity.normalized.x;
+            Vertical = agent.velocity.normalized.y;
         }
         else
         {
             // 当NavMeshAgent停止时
-            animator.SetBool("isMoving", false);
-            animator.SetFloat("horizontal", 0);
-            animator.SetFloat("vertical", 0);
-            
-            // 如果宠物停止移动且之前是由玩家指定移动的（非自由活动状态），恢复自由活动状态
-            if (!isFreeRoaming && !agent.pathPending && agent.remainingDistance < 0.1f)
-            {
-                isFreeRoaming = true;
-            }
+            IsMoving = false;
+            Horizontal = 0;
+            Vertical = 0;
         }
         
         // 更新目标位置以便与其他系统兼容
@@ -92,18 +134,9 @@ public class CharacterController2D : MonoBehaviour
 
     void FixedUpdate()
     {
-        // NavMeshAgent现在处理移动，不需要额外调用Move()
+
     }
 
-    // 保留Move方法用于向后兼容或非导航移动
-    void Move()
-    {
-        // 此方法保留但不再被FixedUpdate调用
-        // NavMeshAgent现在控制移动
-    }
-    
-    // 移除IsTouchingPet方法，不再需要
-    
     // 当宠物被选中/取消选中时调用此方法
     public void SetSelected(bool selected)
     {
@@ -114,19 +147,13 @@ public class CharacterController2D : MonoBehaviour
         {
             pixelOutlineManager.SetOutlineActive(selected);
         }
-        
-        // 如果取消选中，且宠物不在移动，恢复自由活动状态
-        if (!selected && !animator.GetBool("isMoving"))
-        {
-            isFreeRoaming = true;
-        }
     }
     
     // 修改MoveTo方法兼容NavMeshAgent
     public void MoveTo(Vector2 position)
     {
         // 设置为非自由活动状态
-        isFreeRoaming = false;
+        IsFree = false;
         
         targetPosition = position;
         agent.SetDestination(new Vector3(position.x, position.y, transform.position.z));
@@ -140,21 +167,9 @@ public class CharacterController2D : MonoBehaviour
     public void AIMoveTo(Vector2 position)
     {
         // 仅当处于自由活动状态时，AI才能控制移动
-        if (isFreeRoaming)
+        if (IsFree)
         {
             agent.SetDestination(new Vector3(position.x, position.y, transform.position.z));
         }
-    }
-    
-    // 获取宠物是否处于自由活动状态
-    public bool GetIsFreeRoaming()
-    {
-        return isFreeRoaming;
-    }
-    
-    // 手动设置自由活动状态（用于外部控制）
-    public void SetFreeRoaming(bool state)
-    {
-        isFreeRoaming = state;
     }
 }
