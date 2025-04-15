@@ -9,7 +9,7 @@ using UnityEngine.AI;
 public class CharacterController2D : MonoBehaviour
 {
     Rigidbody2D rb;
-    [SerializeField] float moveSpeed;
+    //[SerializeField] float moveSpeed;
     Vector2 targetPosition;
     Vector2 currentPosition;
     Animator animator;
@@ -24,12 +24,17 @@ public class CharacterController2D : MonoBehaviour
     private float _Vertical = 0f;
     
     [SerializeField]    
-    private bool _IsFree = true; // 自由活动状态
+    private bool _InFreeMode = true; // 自由活动状态
     
     // 动画状态属性
     public bool IsMoving
     {
-        get { return _IsMoving; }
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _IsMoving = animator.GetBool(AnimationStrings.isMoving);
+            return _IsMoving; 
+        }
         private set
         {
             _IsMoving = value;
@@ -39,7 +44,12 @@ public class CharacterController2D : MonoBehaviour
     
     public float Horizontal
     {
-        get { return _Horizontal; }
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _Horizontal = animator.GetFloat(AnimationStrings.horizontal);
+            return _Horizontal; 
+        }
         private set
         {
             _Horizontal = value;
@@ -49,7 +59,12 @@ public class CharacterController2D : MonoBehaviour
     
     public float Vertical
     {
-        get { return _Vertical; }
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _Vertical = animator.GetFloat(AnimationStrings.vertical);
+            return _Vertical; 
+        }
         private set
         {
             _Vertical = value;
@@ -60,16 +75,41 @@ public class CharacterController2D : MonoBehaviour
     // 自由活动状态属性
     [SerializeField]
     [Tooltip("宠物是否处于自由活动状态，处于此状态时会由AI控制行为")]
-    public bool IsFree
+    public bool InFreeMode
     {
-        get { return _IsFree; }
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _InFreeMode = animator.GetBool(AnimationStrings.InFreeMode);
+            return _InFreeMode; 
+        }
         set
         {
-            _IsFree = value;
-            animator.SetBool(AnimationStrings.isFree, value);
+            _InFreeMode = value;
+            animator.SetBool(AnimationStrings.InFreeMode, value);
         }
     }
     
+
+    // 睡眠状态属性
+    [SerializeField]
+    [Tooltip("宠物是否处于睡眠状态")]
+    public bool IsSleeping
+    {
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _IsSleeping = animator.GetBool(AnimationStrings.isSleeping);
+            return _IsSleeping; 
+        }
+        set
+        {
+            _IsSleeping = value;
+            animator.SetBool(AnimationStrings.isSleeping, value);
+        }
+    }
+    
+    private bool _IsSleeping;
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
     
@@ -97,7 +137,7 @@ public class CharacterController2D : MonoBehaviour
         targetPosition = currentPosition;
         
         // 设置NavMeshAgent速度与moveSpeed匹配
-        agent.speed = moveSpeed;
+        //agent.speed = moveSpeed;
         
         // 确保Rigidbody2D与NavMeshAgent不冲突
         rb.isKinematic = true;
@@ -106,12 +146,33 @@ public class CharacterController2D : MonoBehaviour
         IsMoving = false;
         
         // 默认为自由活动状态
-        IsFree = true;
+        InFreeMode = true;
     }
 
     // Update is called once per frame
     void Update()
     {
+        // 同步Animator中的参数到脚本中的字段
+        if (_InFreeMode != animator.GetBool(AnimationStrings.InFreeMode))
+        {
+            _InFreeMode = animator.GetBool(AnimationStrings.InFreeMode);
+        }
+        
+        if (_IsMoving != animator.GetBool(AnimationStrings.isMoving))
+        {
+            _IsMoving = animator.GetBool(AnimationStrings.isMoving);
+        }
+        
+        if (_Horizontal != animator.GetFloat(AnimationStrings.horizontal))
+        {
+            _Horizontal = animator.GetFloat(AnimationStrings.horizontal);
+        }
+        
+        if (_Vertical != animator.GetFloat(AnimationStrings.vertical))
+        {
+            _Vertical = animator.GetFloat(AnimationStrings.vertical);
+        }
+        
         // 根据NavMeshAgent的速度更新动画
         if (agent.velocity.magnitude > 0.1f)
         {
@@ -153,7 +214,7 @@ public class CharacterController2D : MonoBehaviour
     public void MoveTo(Vector2 position)
     {
         // 设置为非自由活动状态
-        IsFree = false;
+        InFreeMode = false;
         
         targetPosition = position;
         agent.SetDestination(new Vector3(position.x, position.y, transform.position.z));
@@ -167,9 +228,31 @@ public class CharacterController2D : MonoBehaviour
     public void AIMoveTo(Vector2 position)
     {
         // 仅当处于自由活动状态时，AI才能控制移动
-        if (IsFree)
+        if (InFreeMode)
         {
             agent.SetDestination(new Vector3(position.x, position.y, transform.position.z));
         }
+    }
+    
+    /// <summary>
+    /// 触发宠物睡眠动画
+    /// </summary>
+    public void Sleep()
+    {
+        // 直接触发睡眠动画
+        animator.SetTrigger(AnimationStrings.sleepTrigger);
+        IsSleeping = true;       
+        Debug.Log($"{gameObject.name} 触发睡眠动画");
+    }
+    
+    /// <summary>
+    /// 触发宠物起床动画
+    /// </summary>
+    public void GetUp()
+    {
+        // 直接触发起床动画
+        animator.SetTrigger(AnimationStrings.getUpTrigger);
+        IsSleeping = false;  
+        Debug.Log($"{gameObject.name} 触发起床动画");
     }
 }
