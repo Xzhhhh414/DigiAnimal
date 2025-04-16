@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace NodeCanvas.Tasks.Conditions
 {
-    [Category("Poki")]
+    [Category("Pet AI")]
     [Description("判断宠物是否处于自由活动状态")]
     public class IsPetFree : ConditionTask<CharacterController2D>
     {

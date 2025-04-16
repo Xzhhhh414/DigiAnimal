@@ -224,15 +224,6 @@ public class CharacterController2D : MonoBehaviour
             agent.enabled = true;
     }
     
-    // 提供方法让AI可以控制宠物移动
-    public void AIMoveTo(Vector2 position)
-    {
-        // 仅当处于自由活动状态时，AI才能控制移动
-        if (InFreeMode)
-        {
-            agent.SetDestination(new Vector3(position.x, position.y, transform.position.z));
-        }
-    }
     
     /// <summary>
     /// 触发宠物睡眠动画
