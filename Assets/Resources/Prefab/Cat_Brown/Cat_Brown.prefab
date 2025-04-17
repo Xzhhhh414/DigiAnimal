@@ -155,8 +155,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isSelected: 0
   _IsMoving: 0
-  _Fatigue: 0
-  fatigueIncreaseRate: 15
+  _Energy: 100
+  energyDecreaseInterval: 1
+  energyDecreaseValue: 1
+  energyRecoveryValue: 5
 --- !u!114 &8883347001294338108
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -23,14 +23,20 @@ public class CharacterController2D : MonoBehaviour
     private float _Horizontal = 0f;
     private float _Vertical = 0f;
     
-    // 疲劳值字段 (0-100)
+    // 精力值字段 (0-100)
     [SerializeField]
     [Range(0, 100)]
-    private int _Fatigue = 0;
+    private int _Energy = 100;
     
-    // 疲劳值增加的速度 (每秒)
+    // 精力值减少的频率 (每N秒)
     [SerializeField]
-    private int fatigueIncreaseRate = 1;
+    private int energyDecreaseInterval = 1;
+    // 每个频率下精力值减少的数值 
+    [SerializeField]
+    private int energyDecreaseValue = 1; 
+    // 精力值恢复的速度 (每秒)
+    [SerializeField]
+    private int energyRecoveryValue = 2;
     
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
@@ -81,15 +87,15 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
-    // 疲劳值属性 (0-100)
-    [Tooltip("宠物的疲劳值 (0-100)，达到最大值时宠物会想要睡觉")]
-    public int Fatigue
+    // 精力值属性 (0-100)
+    [Tooltip("宠物的精力值 (0-100)，低于一定值时宠物会想要睡觉")]
+    public int Energy
     {
-        get { return _Fatigue; }
+        get { return _Energy; }
         set 
         { 
-            // 限制疲劳值在0-100范围内
-            _Fatigue = Mathf.Clamp(value, 0, 100);
+            // 限制精力值在0-100范围内
+            _Energy = Mathf.Clamp(value, 0, 100);
         }
     }
     
@@ -117,8 +123,8 @@ public class CharacterController2D : MonoBehaviour
     
     private NavMeshAgent agent;
     
-    // 计时器，用于控制疲劳值增加频率
-    private float fatigueTimer = 0f;
+    // 计时器，用于控制精力值变化频率
+    private float energyTimer = 0f;
     
     // Start is called before the first frame update
     void Awake()
@@ -197,27 +203,38 @@ public class CharacterController2D : MonoBehaviour
         // 更新目标位置以便与其他系统兼容
         targetPosition = agent.destination;
         
-        // 处理疲劳值增加逻辑
-        UpdateFatigue();
+        // 处理精力值变化逻辑
+        UpdateEnergy();
     }
     
-    // 更新疲劳值
-    private void UpdateFatigue()
+    // 更新精力值
+    private void UpdateEnergy()
     {
-        // 只有在非睡眠状态下才增加疲劳值
-        if (!IsSleeping)
+        // 累计时间
+        energyTimer += Time.deltaTime;
+        
+        if (IsSleeping)
         {
-            // 累计时间
-            fatigueTimer += Time.deltaTime;
-            
-            // 每秒增加疲劳值
-            if (fatigueTimer >= 1.0f)
+            // 睡眠状态下，每秒恢复精力值
+            if (energyTimer >= 1.0f)
             {
-                // 增加疲劳值
-                Fatigue += fatigueIncreaseRate;
+                // 增加精力值
+                Energy += energyRecoveryValue;
                 
                 // 重置计时器，减去整数部分，保留小数部分
-                fatigueTimer -= Mathf.Floor(fatigueTimer);
+                energyTimer -= Mathf.Floor(energyTimer);
+            }
+        }
+        else
+        {
+            // 非睡眠状态下，每N秒减少精力值
+            if (energyTimer >= energyDecreaseInterval)
+            {
+                // 减少精力值
+                Energy -= energyDecreaseValue;
+                
+                // 重置计时器，减去整数部分，保留小数部分
+                energyTimer -= Mathf.Floor(energyTimer);
             }
         }
     }
@@ -247,9 +264,7 @@ public class CharacterController2D : MonoBehaviour
         // 直接触发睡眠动画
         animator.SetTrigger(AnimationStrings.sleepTrigger);
         IsSleeping = true;
-        // 重置疲劳值
-        Fatigue = 0;
-        Debug.Log($"{gameObject.name} 触发睡眠动画，疲劳值重置为0");
+        Debug.Log($"{gameObject.name} 触发睡眠动画，开始恢复精力");
     }
     
     /// <summary>
