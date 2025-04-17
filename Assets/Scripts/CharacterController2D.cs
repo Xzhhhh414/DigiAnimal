@@ -23,8 +23,17 @@ public class CharacterController2D : MonoBehaviour
     private float _Horizontal = 0f;
     private float _Vertical = 0f;
     
-    [SerializeField]    
-    private bool _InFreeMode = true; // 自由活动状态
+    // 疲劳值字段 (0-100)
+    [SerializeField]
+    [Range(0, 100)]
+    private int _Fatigue = 0;
+    
+    // 疲劳值增加的速度 (每秒)
+    [SerializeField]
+    private int fatigueIncreaseRate = 1;
+    
+    // [SerializeField]    
+    // private bool _InFreeMode = true; // 自由活动状态
     
     // 动画状态属性
     public bool IsMoving
@@ -72,25 +81,18 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
-    // 自由活动状态属性
-    [SerializeField]
-    [Tooltip("宠物是否处于自由活动状态，处于此状态时会由AI控制行为")]
-    public bool InFreeMode
+    // 疲劳值属性 (0-100)
+    [Tooltip("宠物的疲劳值 (0-100)，达到最大值时宠物会想要睡觉")]
+    public int Fatigue
     {
-        get 
+        get { return _Fatigue; }
+        set 
         { 
-            // 从Animator获取最新值，确保同步
-            _InFreeMode = animator.GetBool(AnimationStrings.InFreeMode);
-            return _InFreeMode; 
-        }
-        set
-        {
-            _InFreeMode = value;
-            animator.SetBool(AnimationStrings.InFreeMode, value);
+            // 限制疲劳值在0-100范围内
+            _Fatigue = Mathf.Clamp(value, 0, 100);
         }
     }
     
-
     // 睡眠状态属性
     [SerializeField]
     [Tooltip("宠物是否处于睡眠状态")]
@@ -114,6 +116,9 @@ public class CharacterController2D : MonoBehaviour
     private PixelOutlineManager pixelOutlineManager;
     
     private NavMeshAgent agent;
+    
+    // 计时器，用于控制疲劳值增加频率
+    private float fatigueTimer = 0f;
     
     // Start is called before the first frame update
     void Awake()
@@ -145,18 +150,18 @@ public class CharacterController2D : MonoBehaviour
         // 初始化时禁用动画移动状态
         IsMoving = false;
         
-        // 默认为自由活动状态
-        InFreeMode = true;
+        // // 默认为自由活动状态
+        // InFreeMode = true;
     }
 
     // Update is called once per frame
     void Update()
     {
         // 同步Animator中的参数到脚本中的字段
-        if (_InFreeMode != animator.GetBool(AnimationStrings.InFreeMode))
-        {
-            _InFreeMode = animator.GetBool(AnimationStrings.InFreeMode);
-        }
+        // if (_InFreeMode != animator.GetBool(AnimationStrings.InFreeMode))
+        // {
+        //     _InFreeMode = animator.GetBool(AnimationStrings.InFreeMode);
+        // }
         
         if (_IsMoving != animator.GetBool(AnimationStrings.isMoving))
         {
@@ -191,6 +196,30 @@ public class CharacterController2D : MonoBehaviour
         
         // 更新目标位置以便与其他系统兼容
         targetPosition = agent.destination;
+        
+        // 处理疲劳值增加逻辑
+        UpdateFatigue();
+    }
+    
+    // 更新疲劳值
+    private void UpdateFatigue()
+    {
+        // 只有在非睡眠状态下才增加疲劳值
+        if (!IsSleeping)
+        {
+            // 累计时间
+            fatigueTimer += Time.deltaTime;
+            
+            // 每秒增加疲劳值
+            if (fatigueTimer >= 1.0f)
+            {
+                // 增加疲劳值
+                Fatigue += fatigueIncreaseRate;
+                
+                // 重置计时器，减去整数部分，保留小数部分
+                fatigueTimer -= Mathf.Floor(fatigueTimer);
+            }
+        }
     }
 
     void FixedUpdate()
@@ -210,21 +239,6 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
-    // 修改MoveTo方法兼容NavMeshAgent
-    public void MoveTo(Vector2 position)
-    {
-        // 设置为非自由活动状态
-        InFreeMode = false;
-        
-        targetPosition = position;
-        agent.SetDestination(new Vector3(position.x, position.y, transform.position.z));
-        
-        // 确保NavMeshAgent被激活
-        if (!agent.enabled)
-            agent.enabled = true;
-    }
-    
-    
     /// <summary>
     /// 触发宠物睡眠动画
     /// </summary>
@@ -232,8 +246,10 @@ public class CharacterController2D : MonoBehaviour
     {
         // 直接触发睡眠动画
         animator.SetTrigger(AnimationStrings.sleepTrigger);
-        IsSleeping = true;       
-        Debug.Log($"{gameObject.name} 触发睡眠动画");
+        IsSleeping = true;
+        // 重置疲劳值
+        Fatigue = 0;
+        Debug.Log($"{gameObject.name} 触发睡眠动画，疲劳值重置为0");
     }
     
     /// <summary>

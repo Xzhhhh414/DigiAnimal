@@ -21,7 +21,7 @@ GameObject:
   - component: {fileID: 8668713142048465174}
   m_Layer: 7
   m_Name: Cat_Brown
-  m_TagString: Untagged
+  m_TagString: Pet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -153,10 +153,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcfd4836507924040898384c63d47feb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3
   isSelected: 0
   _IsMoving: 0
-  _IsFree: 1
+  _Fatigue: 0
+  fatigueIncreaseRate: 15
 --- !u!114 &8883347001294338108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,7 +172,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2830189, g: 0.2830189, b: 0.2830189, a: 1}
   outlineSize: 1
   alphaCutoff: 0.8
-  pixelOutlineShader: {fileID: 4800000, guid: a0a484dc243dc624c874ea4b743ecfa9, type: 3}
+  pixelOutlineShader: {fileID: 0}
   outlineOnAwake: 0
 --- !u!61 &79143899726710932
 BoxCollider2D:
@@ -274,7 +274,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.25
-  m_Speed: 5
+  m_Speed: 3
   m_Acceleration: 40
   avoidancePriority: 99
   m_AngularSpeed: 180

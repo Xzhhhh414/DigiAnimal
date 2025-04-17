@@ -88,9 +88,7 @@ public class CameraController : MonoBehaviour
         
         // 保存默认跟随目标
         defaultTarget = virtualCamera.Follow;
-        
-        // 处理相机目标
-        SetupCameraTarget();
+
         
         // 确保初始状态为自由移动
         currentState = CameraState.Free;
@@ -115,17 +113,6 @@ public class CameraController : MonoBehaviour
         }
     }
     
-    private void SetupCameraTarget()
-    {
-        // 如果在Inspector中没有设置相机目标，则创建一个
-        if (cameraTarget == null) 
-        {
-            // 创建一个临时目标对象
-            tempTarget = new GameObject("CameraTarget");
-            tempTarget.transform.position = virtualCamera.transform.position + virtualCamera.transform.forward * 10f;
-            cameraTarget = tempTarget.transform;
-        }
-    }
     
     private void InitializeCamera()
     {

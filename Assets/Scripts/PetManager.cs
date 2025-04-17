@@ -12,9 +12,48 @@ public class PetManager : MonoBehaviour
     private bool isUIInteraction = false;
     #pragma warning restore 0414
     
+    // 在Awake中自动选择一个初始宠物
+    void Awake()
+    {
+        // 在下一帧选择初始宠物，确保所有宠物已经被初始化
+        StartCoroutine(SelectRandomPetAtStart());
+    }
+    
+    // 协程在游戏开始时选择随机宠物
+    private IEnumerator SelectRandomPetAtStart()
+    {
+        // 等待一帧，确保所有宠物都已经初始化
+        yield return null;
+        
+        // 查找所有标签为"Pet"的游戏对象
+        GameObject[] pets = GameObject.FindGameObjectsWithTag("Pet");
+        
+        // 如果找到了宠物
+        if (pets != null && pets.Length > 0)
+        {
+            // 随机选择一个宠物
+            int randomIndex = Random.Range(0, pets.Length);
+            GameObject randomPet = pets[randomIndex];
+            
+            // 获取宠物的CharacterController2D组件
+            CharacterController2D petController = randomPet.GetComponent<CharacterController2D>();
+            
+            // 如果有CharacterController2D组件，选择它
+            if (petController != null)
+            {
+                Debug.Log($"游戏开始时随机选择了宠物: {randomPet.name}");
+                SelectPet(petController);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("未找到任何标记为'Pet'的宠物！");
+        }
+    }
+    
     void Update()
     {
-        // 检测点击/触摸
+        // 检测点击/触摸 - 仅用于选择宠物，不再用于移动
         if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
         {
             Vector2 touchPosition = Input.touchCount > 0 ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
@@ -47,16 +86,8 @@ public class PetManager : MonoBehaviour
             }
         }
         
-        // 如果点击到了地面，且有宠物被选中，让宠物移动到点击位置
-        if (selectedPet != null)
-        {
-            // 将触摸/点击位置转换为世界坐标
-            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(screenPosition);
-            worldPosition.z = 0; // 确保z坐标为0
-            
-            // 让选中的宠物移动到点击位置
-            selectedPet.MoveTo(worldPosition);
-        }
+        // 移除点击地面移动宠物的逻辑
+        // 以后宠物移动将由AI行为树控制
     }
     
     void SelectPet(CharacterController2D pet)
