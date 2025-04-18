@@ -18,7 +18,7 @@ namespace NodeCanvas.Tasks.Actions
             if (agent == null)
             {
                 Debug.LogWarning("宠物不存在，无法触发睡眠动画");
-                EndAction(false);
+                EndAction();
                 return;
             }
             
@@ -26,7 +26,7 @@ namespace NodeCanvas.Tasks.Actions
             agent.Sleep();
             
             // 任务完成
-            EndAction(true);
+            EndAction();
         }
     }
 } 
