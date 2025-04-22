@@ -76,7 +76,7 @@ namespace NodeCanvas.Tasks.Actions
                 if (NavMesh.SamplePosition(wanderPos, out hit, agent.height * 2, NavMesh.AllAreas)) {
                     // 设置导航目标
                     if (agent.SetDestination(hit.position)) {
-                        Debug.Log($"宠物找到了新的散步点 距离: {Vector3.Distance(agent.transform.position, hit.position)}");
+                        //Debug.Log($"宠物找到了新的散步点 距离: {Vector3.Distance(agent.transform.position, hit.position)}");
                         return true;
                     }
                 }

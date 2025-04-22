@@ -86,8 +86,11 @@ public class PetManager : MonoBehaviour
             }
         }
         
-        // 移除点击地面移动宠物的逻辑
-        // 以后宠物移动将由AI行为树控制
+        // 新增：点击空白处取消选中当前宠物
+        if (selectedPet != null)
+        {
+            UnselectCurrentPet();
+        }
     }
     
     void SelectPet(CharacterController2D pet)
