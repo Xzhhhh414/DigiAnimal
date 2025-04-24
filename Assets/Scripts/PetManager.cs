@@ -12,43 +12,9 @@ public class PetManager : MonoBehaviour
     private bool isUIInteraction = false;
     #pragma warning restore 0414
     
-    // 在Awake中自动选择一个初始宠物
     void Awake()
     {
-        // 在下一帧选择初始宠物，确保所有宠物已经被初始化
-        StartCoroutine(SelectRandomPetAtStart());
-    }
-    
-    // 协程在游戏开始时选择随机宠物
-    private IEnumerator SelectRandomPetAtStart()
-    {
-        // 等待一帧，确保所有宠物都已经初始化
-        yield return null;
-        
-        // 查找所有标签为"Pet"的游戏对象
-        GameObject[] pets = GameObject.FindGameObjectsWithTag("Pet");
-        
-        // 如果找到了宠物
-        if (pets != null && pets.Length > 0)
-        {
-            // 随机选择一个宠物
-            int randomIndex = Random.Range(0, pets.Length);
-            GameObject randomPet = pets[randomIndex];
-            
-            // 获取宠物的CharacterController2D组件
-            CharacterController2D petController = randomPet.GetComponent<CharacterController2D>();
-            
-            // 如果有CharacterController2D组件，选择它
-            if (petController != null)
-            {
-                Debug.Log($"游戏开始时随机选择了宠物: {randomPet.name}");
-                SelectPet(petController);
-            }
-        }
-        else
-        {
-            Debug.LogWarning("未找到任何标记为'Pet'的宠物！");
-        }
+        // 初始化，不再自动选择宠物
     }
     
     void Update()
@@ -99,11 +65,15 @@ public class PetManager : MonoBehaviour
         if (selectedPet != null)
         {
             selectedPet.SetSelected(false);
+            // 不在这里触发取消选中事件，避免连续触发两个事件
         }
         
         // 选中新的宠物
         selectedPet = pet;
         selectedPet.SetSelected(true);
+        
+        // 触发宠物选中事件
+        EventManager.Instance.TriggerEvent(CustomEventType.PetSelected, selectedPet);
     }
     
     void UnselectCurrentPet()
@@ -112,6 +82,9 @@ public class PetManager : MonoBehaviour
         {
             selectedPet.SetSelected(false);
             selectedPet = null;
+            
+            // 触发宠物取消选中事件
+            EventManager.Instance.TriggerEvent(CustomEventType.PetUnselected);
         }
     }
     

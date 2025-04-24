@@ -3,7 +3,8 @@ using System;
 
 public enum CustomEventType
 {
-
+    PetSelected,     // 宠物被选中事件
+    PetUnselected    // 宠物取消选中事件
 }
 public class EventManager : Singleton<EventManager>
 {

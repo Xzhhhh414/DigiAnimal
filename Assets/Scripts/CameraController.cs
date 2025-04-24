@@ -88,8 +88,18 @@ public class CameraController : MonoBehaviour
         
         // 保存默认跟随目标
         defaultTarget = virtualCamera.Follow;
-
         
+        // 确保cameraTarget已设置
+        if (cameraTarget == null)
+        {
+            // 创建相机目标
+            GameObject targetObj = new GameObject("CameraTarget");
+            cameraTarget = targetObj.transform;
+            
+            // 初始位置设为相机当前位置前方
+            cameraTarget.position = virtualCamera.transform.position + virtualCamera.transform.forward * 10f;
+        }
+
         // 确保初始状态为自由移动
         currentState = CameraState.Free;
         virtualCamera.Follow = cameraTarget;
@@ -110,6 +120,16 @@ public class CameraController : MonoBehaviour
         if (virtualCamera != null)
         {
             virtualCamera.m_Lens.OrthographicSize = defaultOrthoSize;
+        }
+        
+        // 设置初始相机位置 - 使用场景中心或预设位置
+        Vector3 initialPosition = new Vector3(0, 0, cameraTarget.position.z);
+        cameraTarget.position = initialPosition;
+        
+        // 如果有边界限制，确保初始位置在边界内
+        if (cameraBounds != null)
+        {
+            cameraBounds.EnforceBounds(cameraTarget);
         }
     }
     

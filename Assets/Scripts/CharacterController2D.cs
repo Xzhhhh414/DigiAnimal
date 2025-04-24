@@ -14,6 +14,11 @@ public class CharacterController2D : MonoBehaviour
     Vector2 currentPosition;
     Animator animator;
     
+    [Header("宠物基本信息")]
+    [SerializeField] private string petDisplayName;     // 宠物显示名称
+    [SerializeField] private Sprite petProfileImage;    // 宠物头像图片
+    [SerializeField] private string preference;         // 宠物偏好
+    
     [SerializeField]
     public bool isSelected = false;
     
@@ -28,6 +33,9 @@ public class CharacterController2D : MonoBehaviour
     [Range(0, 100)]
     private int _Energy = 100;
     
+    // 饱腹度字段 (0-100)
+
+    
     // 精力值减少的频率 (每N秒)
     [SerializeField]
     private int energyDecreaseInterval = 1;
@@ -37,9 +45,71 @@ public class CharacterController2D : MonoBehaviour
     // 精力值恢复的速度 (每秒)
     [SerializeField]
     private int energyRecoveryValue = 2;
+
+
+    [SerializeField]
+    [Range(0, 100)]
+    private int _Satiety = 100;
+    
+    // 饱腹度减少的频率 (每N秒)
+    [SerializeField]
+    private int satietyDecreaseInterval = 2;
+    // 每个频率下饱腹度减少的数值
+    [SerializeField]
+    private int satietyDecreaseValue = 1;
+    // 饱腹度恢复的速度 (每次喂食)
+    [SerializeField]
+    private int satietyRecoveryValue = 20;
     
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
+    
+    // 宠物名称属性
+    public string PetDisplayName
+    {
+        get 
+        { 
+            // 如果没有设置显示名称，则使用游戏对象名称
+            if (string.IsNullOrEmpty(petDisplayName))
+            {
+                string objName = gameObject.name;
+                // 去除Clone后缀（如果是实例化的预制体）
+                if (objName.EndsWith("(Clone)"))
+                {
+                    objName = objName.Substring(0, objName.Length - 7);
+                }
+                return objName;
+            }
+            return petDisplayName; 
+        }
+        set { petDisplayName = value; }
+    }
+    
+    // 宠物头像属性
+    public Sprite PetProfileImage
+    {
+        get 
+        {
+            // 如果没有设置头像，则使用SpriteRenderer中的精灵
+            if (petProfileImage == null)
+            {
+                SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null)
+                {
+                    return spriteRenderer.sprite;
+                }
+            }
+            return petProfileImage; 
+        }
+        set { petProfileImage = value; }
+    }
+    
+    // 宠物偏好属性
+    public string Preference
+    {
+        get { return preference; }
+        set { preference = value; }
+    }
     
     // 动画状态属性
     public bool IsMoving
@@ -99,6 +169,18 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
+    // 饱腹度属性 (0-100)
+    [Tooltip("宠物的饱腹度 (0-100)，低于一定值时宠物会想要吃东西")]
+    public int Satiety
+    {
+        get { return _Satiety; }
+        set
+        {
+            // 限制饱腹度在0-100范围内
+            _Satiety = Mathf.Clamp(value, 0, 100);
+        }
+    }
+    
     // 睡眠状态属性
     [SerializeField]
     [Tooltip("宠物是否处于睡眠状态")]
@@ -125,6 +207,8 @@ public class CharacterController2D : MonoBehaviour
     
     // 计时器，用于控制精力值变化频率
     private float energyTimer = 0f;
+    // 计时器，用于控制饱腹度变化频率
+    private float satietyTimer = 0f;
     
     // Start is called before the first frame update
     void Awake()
@@ -203,8 +287,9 @@ public class CharacterController2D : MonoBehaviour
         // 更新目标位置以便与其他系统兼容
         targetPosition = agent.destination;
         
-        // 处理精力值变化逻辑
+        // 处理精力值和饱腹度变化逻辑
         UpdateEnergy();
+        UpdateSatiety();
     }
     
     // 更新精力值
@@ -237,6 +322,33 @@ public class CharacterController2D : MonoBehaviour
                 energyTimer -= Mathf.Floor(energyTimer);
             }
         }
+    }
+    
+    // 更新饱腹度
+    private void UpdateSatiety()
+    {
+        // 累计时间
+        satietyTimer += Time.deltaTime;
+        
+        // 随着时间流逝，饱腹度逐渐降低
+        if (satietyTimer >= satietyDecreaseInterval)
+        {
+            // 减少饱腹度
+            Satiety -= satietyDecreaseValue;
+            
+            // 重置计时器，减去整数部分，保留小数部分
+            satietyTimer -= Mathf.Floor(satietyTimer);
+        }
+    }
+    
+    // 喂食宠物
+    public void Feed()
+    {
+        // 增加饱腹度
+        Satiety += satietyRecoveryValue;
+        
+        // 可以在这里添加喂食动画或效果
+        Debug.Log($"{gameObject.name} 被喂食，饱腹度增加到 {Satiety}");
     }
 
     void FixedUpdate()
