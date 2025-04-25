@@ -31,18 +31,30 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
+            // 尝试获取BedController组件
             BedController bedController = targetObject.value.GetComponent<BedController>();
-            if (bedController == null)
+            if (bedController != null)
             {
-                Debug.LogWarning("目标对象没有BedController组件，无法设置使用状态");
+                // 设置床的使用状态
+                bedController.IsUsing = setIsUsing.value;
+                //Debug.Log($"设置床 {targetObject.value.name} 的使用状态为 {setIsUsing.value}");
                 EndAction(finishStatus == CompactStatus.Success);
                 return;
             }
             
-            // 设置使用状态
-            bedController.IsUsing = setIsUsing.value;
+            // 尝试获取FoodController组件
+            FoodController foodController = targetObject.value.GetComponent<FoodController>();
+            if (foodController != null)
+            {
+                // 设置食物的使用状态
+                foodController.IsUsing = setIsUsing.value;
+                //Debug.Log($"设置食物 {targetObject.value.name} 的使用状态为 {setIsUsing.value}");
+                EndAction(finishStatus == CompactStatus.Success);
+                return;
+            }
             
-            // 根据用户设置的finishStatus决定返回成功或失败
+            // 如果既不是床也不是食物，则报错
+            Debug.LogWarning($"目标对象 {targetObject.value.name} 既没有BedController也没有FoodController组件，无法设置使用状态");
             EndAction(finishStatus == CompactStatus.Success);
         }
     }

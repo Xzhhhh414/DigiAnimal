@@ -57,9 +57,13 @@ public class CharacterController2D : MonoBehaviour
     // 每个频率下饱腹度减少的数值
     [SerializeField]
     private int satietyDecreaseValue = 1;
-    // 饱腹度恢复的速度 (每次喂食)
+    
+    // 是否正在吃食物
     [SerializeField]
-    private int satietyRecoveryValue = 20;
+    private bool _IsEating = false;
+    
+    // 临时存储当前食物恢复的饱腹度值
+    private int currentFoodRecoveryAmount = 0;
     
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
@@ -196,6 +200,23 @@ public class CharacterController2D : MonoBehaviour
         {
             _IsSleeping = value;
             animator.SetBool(AnimationStrings.isSleeping, value);
+        }
+    }
+    
+    // 吃食物状态属性
+    [Tooltip("宠物是否正在吃食物")]
+    public bool IsEating
+    {
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _IsEating = animator.GetBool(AnimationStrings.isEating);
+            return _IsEating; 
+        }
+        set
+        {
+            _IsEating = value;
+            animator.SetBool(AnimationStrings.isEating, value);
         }
     }
     
@@ -341,16 +362,54 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
-    // 喂食宠物
-    public void Feed()
+    // 开始吃食物
+    public void Eating(GameObject foodObj)
     {
-        // 增加饱腹度
-        Satiety += satietyRecoveryValue;
+        if (foodObj == null)
+        {
+            Debug.LogWarning("食物对象为空，无法开始吃食物");
+            return;
+        }
         
-        // 可以在这里添加喂食动画或效果
-        Debug.Log($"{gameObject.name} 被喂食，饱腹度增加到 {Satiety}");
-    }
+        FoodController food = foodObj.GetComponent<FoodController>();
+        if (food == null)
+        {
+            Debug.LogWarning("提供的对象不是食物，无法开始吃食物");
+            return;
+        }
 
+        // 触发吃食物动画
+        animator.SetTrigger(AnimationStrings.eatingTrigger);
+        // 设置正在吃食物状态
+        IsEating = true;
+
+        // 计算食物恢复的饱腹度值（包括美味度加成）
+        currentFoodRecoveryAmount = food.SatietyRecoveryValue + (food.Tasty - 1) * 5;
+        
+
+        if (currentFoodRecoveryAmount > 0)
+        {
+            Satiety += currentFoodRecoveryAmount;
+            Debug.Log($"{PetDisplayName} 正在吃食物，饱腹度增加了 {currentFoodRecoveryAmount}，当前饱腹度: {Satiety}");
+            
+            // 重置恢复值
+            currentFoodRecoveryAmount = 0;
+        }
+        
+
+    }
+    
+    // 完成吃食物，实际增加饱腹度
+    public void FinishEating()
+    {
+        
+        // 触发结束吃食物动画
+        animator.SetTrigger(AnimationStrings.finishEatingTrigger);
+        // 重置吃食物状态
+        IsEating = false;
+
+    }
+    
     void FixedUpdate()
     {
 

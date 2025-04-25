@@ -45,3 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameCanvas: {fileID: 0}
+  selectedPetInfoPanel: {fileID: 0}
+  selectedFoodInfoPanel: {fileID: 0}

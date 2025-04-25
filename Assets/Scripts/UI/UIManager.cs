@@ -11,6 +11,7 @@ public class UIManager : MonoBehaviour
     
     [Header("UI面板")]
     [SerializeField] private SelectedPetInfo selectedPetInfoPanel;
+    [SerializeField] private SelectedFoodInfo selectedFoodInfoPanel;
     
     // 单例模式
     public static UIManager Instance { get; private set; }
@@ -56,6 +57,17 @@ public class UIManager : MonoBehaviour
                 Debug.LogWarning("UIManager: 未找到SelectedPetInfo面板，某些功能可能无法正常工作。");
             }
         }
+        
+        // 查找SelectedFoodInfo面板（如果没有通过Inspector设置）
+        if (selectedFoodInfoPanel == null)
+        {
+            selectedFoodInfoPanel = FindObjectOfType<SelectedFoodInfo>();
+            
+            if (selectedFoodInfoPanel == null)
+            {
+                Debug.LogWarning("UIManager: 未找到SelectedFoodInfo面板，某些功能可能无法正常工作。");
+            }
+        }
     }
     
     // 显示选中宠物信息面板
@@ -73,6 +85,24 @@ public class UIManager : MonoBehaviour
         if (selectedPetInfoPanel != null)
         {
             selectedPetInfoPanel.gameObject.SetActive(false);
+        }
+    }
+    
+    // 显示选中食物信息面板
+    public void ShowSelectedFoodInfo(FoodController food)
+    {
+        if (selectedFoodInfoPanel != null)
+        {
+            selectedFoodInfoPanel.gameObject.SetActive(true);
+        }
+    }
+    
+    // 隐藏选中食物信息面板
+    public void HideSelectedFoodInfo()
+    {
+        if (selectedFoodInfoPanel != null)
+        {
+            selectedFoodInfoPanel.gameObject.SetActive(false);
         }
     }
 }

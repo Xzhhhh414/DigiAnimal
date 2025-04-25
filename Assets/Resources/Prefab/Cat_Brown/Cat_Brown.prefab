@@ -153,12 +153,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcfd4836507924040898384c63d47feb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  petDisplayName: "\u68D5\u8272\u732B\u732B"
+  petProfileImage: {fileID: 21300000, guid: 7f5d026a77a7b3e4b93a3d71d6998878, type: 3}
+  preference: "\u9017\u732B\u68D2\u3001\u62B1\u62B1"
   isSelected: 0
   _IsMoving: 0
-  _Energy: 50
+  _Energy: 39
   energyDecreaseInterval: 3
   energyDecreaseValue: 1
   energyRecoveryValue: 1
+  _Satiety: 52
+  satietyDecreaseInterval: 3
+  satietyDecreaseValue: 1
+  _IsEating: 0
 --- !u!114 &8883347001294338108
 MonoBehaviour:
   m_ObjectHideFlags: 0

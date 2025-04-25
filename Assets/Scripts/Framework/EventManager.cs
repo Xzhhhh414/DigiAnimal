@@ -4,7 +4,10 @@ using System;
 public enum CustomEventType
 {
     PetSelected,     // 宠物被选中事件
-    PetUnselected    // 宠物取消选中事件
+    PetUnselected,   // 宠物取消选中事件
+    FoodSelected,    // 食物被选中事件
+    FoodUnselected,  // 食物取消选中事件
+    FoodStatusChanged // 食物状态改变事件（如空盘状态）
 }
 public class EventManager : Singleton<EventManager>
 {

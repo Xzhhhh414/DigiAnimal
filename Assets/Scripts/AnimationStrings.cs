@@ -6,10 +6,13 @@ public static class AnimationStrings
     public static string isMoving = "isMoving";
     public static string horizontal = "horizontal";
     public static string vertical = "vertical";
-    public static string InFreeMode = "InFreeMode";
+    //public static string InFreeMode = "InFreeMode";
     public static string isSleeping = "isSleeping";
     public static string sleepTrigger = "sleepTrigger";
     public static string getUpTrigger = "getUpTrigger";
+    public static string isEating = "isEating";
+    public static string eatingTrigger = "eatingTrigger";
+    public static string finishEatingTrigger = "finishEatingTrigger";
     // 可以在此处添加更多动画参数名称
 
 }

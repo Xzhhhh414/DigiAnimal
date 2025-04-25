@@ -11,8 +11,11 @@ GameObject:
   - component: {fileID: 6997654433136644337}
   - component: {fileID: 1719602842229394502}
   - component: {fileID: 6854677033304847617}
+  - component: {fileID: 2659069545387971226}
+  - component: {fileID: 5596920372330575728}
+  - component: {fileID: 6276110034230596032}
   m_Layer: 6
-  m_Name: Food
+  m_Name: CatFood
   m_TagString: Food
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -74,12 +77,12 @@ SpriteRenderer:
   m_SortingLayerID: 446817745
   m_SortingLayer: 1
   m_SortingOrder: 4
-  m_Sprite: {fileID: -404269161, guid: 86ec537a18dd4e341bf410d759fbfe8e, type: 3}
+  m_Sprite: {fileID: -2053511491, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.0625, y: 0.875}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -117,16 +120,67 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0064663887, y: 0.032332182}
+  m_Offset: {x: 0.004240513, y: -0.003278017}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
+    oldSize: {x: 1.0625, y: 0.875}
+    newSize: {x: 1.0625, y: 0.875}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.8060074, y: 0.88360405}
+  m_Size: {x: 0.9439964, y: 0.7767739}
   m_EdgeRadius: 0
+--- !u!114 &2659069545387971226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7282321258246438361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9809bf1345abc5648af68b3a82653f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_OverrideArea: 1
+  m_Area: 1
+  m_IgnoreFromBuild: 0
+  m_AffectedAgents: ffffffff
+--- !u!114 &5596920372330575728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7282321258246438361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa72e7ff08611b94bb10e9a2475d3868, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isUsing: 0
+  _isEmpty: 0
+  _tasty: 2
+  satietyRecoveryValue: 25
+  foodIcon: {fileID: -2053511491, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
+  isSelected: 0
+--- !u!114 &6276110034230596032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7282321258246438361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e856fc47697dfda43869eee447cd358f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 0.28235295, g: 0.28235295, b: 0.28235295, a: 1}
+  outlineSize: 1
+  alphaCutoff: 0.1
+  pixelOutlineShader: {fileID: 0}
+  outlineOnAwake: 0

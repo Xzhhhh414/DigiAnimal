@@ -25,6 +25,9 @@ public class CameraController : MonoBehaviour
     // 引用PetManager
     [SerializeField] private PetManager petManager;
     
+    // 引用FoodManager
+    [SerializeField] private FoodManager foodManager;
+    
     // 相机目标 - 可以在Inspector中配置而不是自动创建
     [SerializeField] private Transform cameraTarget;
     
@@ -84,6 +87,12 @@ public class CameraController : MonoBehaviour
         if (petManager == null)
         {
             petManager = FindObjectOfType<PetManager>();
+        }
+        
+        // 如果没有指定FoodManager，尝试在场景中查找
+        if (foodManager == null)
+        {
+            foodManager = FindObjectOfType<FoodManager>();
         }
         
         // 保存默认跟随目标
@@ -163,8 +172,16 @@ public class CameraController : MonoBehaviour
         // 检查是否有选中的宠物
         CharacterController2D selectedPet = petManager?.GetSelectedPet();
         
+        // 检查是否有选中的食物
+        FoodController selectedFood = foodManager?.GetSelectedFood();
+        
+        // 如果有选中的食物，确保相机处于自由模式
+        if (selectedFood != null && currentState != CameraState.Free)
+        {
+            SwitchToFreeMode();
+        }
         // 如果选中的宠物改变，更新摄像机目标
-        if (selectedPet != previousSelectedPet)
+        else if (selectedPet != previousSelectedPet)
         {
             if (selectedPet != null)
             {
