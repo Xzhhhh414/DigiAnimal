@@ -175,12 +175,23 @@ public class CameraController : MonoBehaviour
         // 检查是否有选中的食物
         FoodController selectedFood = foodManager?.GetSelectedFood();
         
+        // 处理相机状态切换
         // 如果有选中的食物，确保相机处于自由模式
-        if (selectedFood != null && currentState != CameraState.Free)
+        if (selectedFood != null)
         {
-            SwitchToFreeMode();
+            // 只有当前不在自由模式时，才执行状态切换
+            if (currentState != CameraState.Free)
+            {
+                SwitchToFreeMode();
+            }
+            
+            // 如果之前有选中的宠物，清除它，避免下方的选中宠物逻辑被执行
+            if (previousSelectedPet != null)
+            {
+                previousSelectedPet = null;
+            }
         }
-        // 如果选中的宠物改变，更新摄像机目标
+        // 如果没有选中的食物，处理宠物选中逻辑
         else if (selectedPet != previousSelectedPet)
         {
             if (selectedPet != null)
@@ -318,20 +329,11 @@ public class CameraController : MonoBehaviour
         // 记录当前状态
         currentState = CameraState.Free;
         
-        // 如果之前有选中的宠物，保持相机在完全相同的位置
-        if (previousSelectedPet != null)
-        {
-            // 简单地使用当前相机目标位置，不做任何改变
-            // 这样可以确保相机不会移动
-        }
-        else
-        {
-            // 如果没有之前选中的宠物，使用当前视图中心
-            UpdateCameraTargetToCameraView();
-        }
+        // 不管是什么情况，都保持相机在当前位置，不进行任何移动
+        // 之前的逻辑有问题，当选中食物时可能导致相机跳动
         
-        // 在状态切换后，确保相机位置不变
-        // 注意：我们不重新分配Follow和LookAt，因为这可能导致Cinemachine重新计算相机位置
+        // 不再根据previousSelectedPet决定是否更新目标位置
+        // 直接保留当前相机位置和目标位置
         
         // 在下一帧强制更新相机位置到当前位置
         StartCoroutine(ForcePositionNextFrame(currentCameraPosition));

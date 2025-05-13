@@ -22,6 +22,12 @@ public class PetManager : MonoBehaviour
         // 检测点击/触摸 - 仅用于选择宠物，不再用于移动
         if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
         {
+            // 检查是否点击在UI上，如果是则不处理宠物选择
+            if (UIManager.Instance != null && UIManager.Instance.IsPointerOverUI())
+            {
+                return; // 如果点击在UI上，则直接返回不处理
+            }
+            
             Vector2 touchPosition = Input.touchCount > 0 ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
             HandlePetSelection(touchPosition);
         }

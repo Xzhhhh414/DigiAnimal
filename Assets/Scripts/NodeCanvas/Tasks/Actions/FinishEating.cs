@@ -45,7 +45,7 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
-            // 如果食物已空盘，不处理
+            // 如果食物已空盘不处理
             if (foodController.IsEmpty)
             {
                 Debug.LogWarning("食物已经被吃光了，无法完成吃食物");
@@ -59,7 +59,7 @@ namespace NodeCanvas.Tasks.Actions
             // 设置食物是否为空盘
             if (setFoodEmpty.value)
             {
-                foodController.IsEmpty = true;
+                foodController.SetEmpty();
             }
             
             // 在这里可以触发结束吃食物的动画（如果有的话）

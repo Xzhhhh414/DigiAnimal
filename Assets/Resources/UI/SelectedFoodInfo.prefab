@@ -1574,8 +1574,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4639264230575574363}
   - component: {fileID: 5923131200885370377}
+  - component: {fileID: 4567029320960651701}
   m_Layer: 5
-  m_Name: 'FoodInfo '
+  m_Name: SelectedFoodInfo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1628,8 +1629,21 @@ MonoBehaviour:
   - {fileID: 7427552198298534690}
   - {fileID: 5228744537068221480}
   foodStatusText: {fileID: 7515404431402257169}
+  refillButton: {fileID: 677815453327713409}
   emptyText: "\u88AB\u5403\u5149\u5566"
-  availableText: "\u53EF\u4F9B\u98DF\u7528"
+  availableText: "\u6EE1\u6EE1\u4E00\u7897"
+--- !u!225 &4567029320960651701
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7630271509376866744}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8818107592769523648
 GameObject:
   m_ObjectHideFlags: 0

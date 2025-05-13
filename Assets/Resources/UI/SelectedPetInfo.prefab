@@ -1214,6 +1214,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6265977849367983483}
   - component: {fileID: 8455369813520808187}
+  - component: {fileID: 4201504911084715850}
   m_Layer: 5
   m_Name: SelectedPetInfo
   m_TagString: Untagged
@@ -1228,7 +1229,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5606512851939347183}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1266,6 +1267,18 @@ MonoBehaviour:
   energySlider: {fileID: 7063435718724377167}
   satietySlider: {fileID: 6940519833634298742}
   preferenceText: {fileID: 5211006444780103027}
+--- !u!225 &4201504911084715850
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5606512851939347183}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6054087906541720192
 GameObject:
   m_ObjectHideFlags: 0

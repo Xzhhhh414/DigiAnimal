@@ -19,9 +19,14 @@ public class FoodController : MonoBehaviour
     [SerializeField]
     private int satietyRecoveryValue = 25;
     
-    // 食物图标
+    // 食物图标 - 满盘状态
+    [Header("食物图标设置")]
     [SerializeField]
-    private Sprite foodIcon;
+    private Sprite fullFoodIcon;
+    
+    // 食物图标 - 空盘状态
+    [SerializeField]
+    private Sprite emptyFoodIcon;
     
     // 食物是否被选中
     [SerializeField]
@@ -29,6 +34,13 @@ public class FoodController : MonoBehaviour
     
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
+    
+    // 添加动画控制器引用
+    private Animator animator;
+    
+    // 动画触发器参数名称
+    private const string EMPTY_TRIGGER = "emptyTrigger";
+    private const string FULL_TRIGGER = "fullTrigger";
     
     // 公开的属性，用于获取和设置食物的使用状态
     public bool IsUsing
@@ -45,14 +57,14 @@ public class FoodController : MonoBehaviour
         { 
             _isEmpty = value;
             // 当空盘状态改变时，触发事件通知UI更新
-            if (_isEmpty && isSelected)
+            if (isSelected)
             {
-                // 如果食物被选中且变为空盘，触发事件让UI更新
+                // 如果食物被选中，触发事件让UI更新
                 EventManager.Instance.TriggerEvent(CustomEventType.FoodStatusChanged, this);
             }
             
-            // 更新食物外观（如果有不同的空盘精灵图）
-            UpdateFoodVisuals();
+            // 更新精灵渲染器的图片
+            UpdateSpriteRendererImage();
         }
     }
     
@@ -66,13 +78,16 @@ public class FoodController : MonoBehaviour
     // 获取饱腹度恢复值
     public int SatietyRecoveryValue => satietyRecoveryValue;
     
-    // 食物图标属性
+    // 食物图标属性 - 根据当前状态返回对应图标
     public Sprite FoodIcon
     {
         get 
         {
-            // 如果没有设置图标，则使用SpriteRenderer中的精灵
-            if (foodIcon == null)
+            // 根据当前状态返回对应的图标
+            Sprite currentIcon = _isEmpty ? emptyFoodIcon : fullFoodIcon;
+            
+            // 如果没有设置对应状态的图标，尝试使用SpriteRenderer中的精灵
+            if (currentIcon == null)
             {
                 SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
                 if (spriteRenderer != null)
@@ -80,15 +95,36 @@ public class FoodController : MonoBehaviour
                     return spriteRenderer.sprite;
                 }
             }
-            return foodIcon; 
+            return currentIcon; 
         }
-        set { foodIcon = value; }
     }
     
     private void Awake()
     {
         // 获取描边管理器
         pixelOutlineManager = GetComponent<PixelOutlineManager>();
+        
+        // 获取动画控制器
+        animator = GetComponent<Animator>();
+        
+        // 初始化时更新精灵渲染器
+        UpdateSpriteRendererImage();
+    }
+    
+    // 更新精灵渲染器中的图像，与当前状态保持一致
+    private void UpdateSpriteRendererImage()
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            Sprite iconToUse = _isEmpty ? emptyFoodIcon : fullFoodIcon;
+            
+            // 只有在图标存在的情况下才更新
+            if (iconToUse != null)
+            {
+                spriteRenderer.sprite = iconToUse;
+            }
+        }
     }
     
     // 设置食物是否被选中
@@ -109,26 +145,27 @@ public class FoodController : MonoBehaviour
         }
     }
     
-    // 更新食物视觉效果
-    private void UpdateFoodVisuals()
+    // 食物被吃完，变成空盘
+    public void SetEmpty()
     {
-        // 获取SpriteRenderer
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        IsEmpty = true;
+        
+        // 触发空盘动画
+        if (animator != null)
         {
-            // 这里可以根据是否空盘切换不同的精灵图
-            // 例如：spriteRenderer.sprite = _isEmpty ? emptyFoodSprite : fullFoodSprite;
-            
-            // 或者调整颜色，淡化已空盘的食物
-            if (_isEmpty)
-            {
-                spriteRenderer.color = new Color(0.7f, 0.7f, 0.7f, 1.0f); // 灰色
-            }
-            else
-            {
-                spriteRenderer.color = Color.white; // 正常颜色
-            }
+            animator.SetTrigger(EMPTY_TRIGGER);
         }
     }
     
+    // 填满食物
+    public void RefillFood()
+    {
+        IsEmpty = false;
+        
+        // 触发填满动画
+        if (animator != null)
+        {
+            animator.SetTrigger(FULL_TRIGGER);
+        }
+    }
 } 

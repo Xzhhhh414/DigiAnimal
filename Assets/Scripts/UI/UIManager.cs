@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
+using UnityEngine.EventSystems;
 
 public class UIManager : MonoBehaviour
 {
@@ -103,6 +104,24 @@ public class UIManager : MonoBehaviour
         if (selectedFoodInfoPanel != null)
         {
             selectedFoodInfoPanel.gameObject.SetActive(false);
+        }
+    }
+    
+    // 检查当前鼠标/触摸点是否在UI元素上
+    public bool IsPointerOverUI()
+    {
+        // 检查是否点击在UI元素上
+        if (EventSystem.current == null)
+            return false;
+            
+        // 使用Unity内置的IsPointerOverGameObject来检测
+        if (Input.touchCount > 0)
+        {
+            return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+        }
+        else
+        {
+            return EventSystem.current.IsPointerOverGameObject();
         }
     }
 }

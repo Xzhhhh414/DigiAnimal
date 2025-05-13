@@ -11,11 +11,12 @@ public class SelectedFoodInfo : MonoBehaviour
     [SerializeField] private Text foodName;             // 食物名称文本
     [SerializeField] private GameObject[] starImages;   // 美味度星星数组，应包含5个星星图像对象
     [SerializeField] private Text foodStatusText;       // 食物状态文本（空盘/可用）
+    [SerializeField] private Button refillButton;       // 添加食物按钮
     
     // 状态显示文本
     [Header("状态文本配置")]
     [SerializeField] private string emptyText = "被吃光啦";   // 空盘状态显示文本
-    [SerializeField] private string availableText = "可供食用"; // 可用状态显示文本
+    [SerializeField] private string availableText = "满满一碗"; // 可用状态显示文本
     
     private FoodController currentFood;                 // 当前显示的食物
     private CanvasGroup canvasGroup;                    // 用于控制面板显示/隐藏
@@ -36,6 +37,12 @@ public class SelectedFoodInfo : MonoBehaviour
         EventManager.Instance.AddListener<FoodController>(CustomEventType.FoodSelected, OnFoodSelected);
         EventManager.Instance.AddListener(CustomEventType.FoodUnselected, OnFoodUnselected);
         EventManager.Instance.AddListener<FoodController>(CustomEventType.FoodStatusChanged, OnFoodStatusChanged);
+        
+        // 添加按钮点击事件
+        if (refillButton != null)
+        {
+            refillButton.onClick.AddListener(OnRefillButtonClicked);
+        }
     }
     
     void OnDestroy()
@@ -44,6 +51,12 @@ public class SelectedFoodInfo : MonoBehaviour
         EventManager.Instance.RemoveListener<FoodController>(CustomEventType.FoodSelected, OnFoodSelected);
         EventManager.Instance.RemoveListener(CustomEventType.FoodUnselected, OnFoodUnselected);
         EventManager.Instance.RemoveListener<FoodController>(CustomEventType.FoodStatusChanged, OnFoodStatusChanged);
+        
+        // 移除按钮点击事件
+        if (refillButton != null)
+        {
+            refillButton.onClick.RemoveListener(OnRefillButtonClicked);
+        }
     }
     
     // 当食物被选中时调用
@@ -69,6 +82,19 @@ public class SelectedFoodInfo : MonoBehaviour
     {
         if (food == currentFood && currentFood != null)
         {
+            UpdateFoodInfo();
+        }
+    }
+    
+    // 添加食物按钮点击事件处理
+    private void OnRefillButtonClicked()
+    {
+        if (currentFood != null && currentFood.IsEmpty)
+        {
+            // 调用食物控制器的填满方法
+            currentFood.RefillFood();
+            
+            // 更新UI显示
             UpdateFoodInfo();
         }
     }
@@ -103,6 +129,9 @@ public class SelectedFoodInfo : MonoBehaviour
         
         // 更新食物状态文本
         UpdateFoodStatus(currentFood.IsEmpty);
+        
+        // 更新添加按钮显示状态
+        UpdateRefillButtonVisibility(currentFood.IsEmpty);
     }
     
     // 更新美味度星星显示
@@ -130,6 +159,16 @@ public class SelectedFoodInfo : MonoBehaviour
         
         // 只更新文本内容，不再区分颜色
         foodStatusText.text = isEmpty ? emptyText : availableText;
+    }
+    
+    // 更新添加按钮显示状态
+    private void UpdateRefillButtonVisibility(bool isEmpty)
+    {
+        if (refillButton != null)
+        {
+            // 只有在食物为空盘状态时显示添加按钮
+            refillButton.gameObject.SetActive(isEmpty);
+        }
     }
     
     // 显示面板

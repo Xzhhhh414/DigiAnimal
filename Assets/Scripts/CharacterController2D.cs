@@ -62,9 +62,6 @@ public class CharacterController2D : MonoBehaviour
     [SerializeField]
     private bool _IsEating = false;
     
-    // 临时存储当前食物恢复的饱腹度值
-    private int currentFoodRecoveryAmount = 0;
-    
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
     
@@ -379,24 +376,12 @@ public class CharacterController2D : MonoBehaviour
         }
 
         // 触发吃食物动画
-        animator.SetTrigger(AnimationStrings.eatingTrigger);
+        animator.SetTrigger(AnimationStrings.startEatingTrigger);
         // 设置正在吃食物状态
         IsEating = true;
-
-        // 计算食物恢复的饱腹度值（包括美味度加成）
-        currentFoodRecoveryAmount = food.SatietyRecoveryValue + (food.Tasty - 1) * 5;
         
-
-        if (currentFoodRecoveryAmount > 0)
-        {
-            Satiety += currentFoodRecoveryAmount;
-            Debug.Log($"{PetDisplayName} 正在吃食物，饱腹度增加了 {currentFoodRecoveryAmount}，当前饱腹度: {Satiety}");
-            
-            // 重置恢复值
-            currentFoodRecoveryAmount = 0;
-        }
-        
-
+        // 注意：饱腹度增加逻辑已移至StartEating.cs的OnUpdate方法中
+        // 每秒逐步增加饱腹度，而不是一次性增加
     }
     
     // 完成吃食物，实际增加饱腹度

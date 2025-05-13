@@ -12,9 +12,19 @@ namespace NodeCanvas.Tasks.Actions
         [RequiredField]
         public BBParameter<GameObject> targetFood;
         
+        [Tooltip("吃食物持续时间(秒)")]
+        public BBParameter<float> eatingDuration = 3f;
+        
+        // 内部变量
+        private float eatingElapsedTime = 0f;  // 改名以避免与基类变量冲突
+        private float lastSatietyUpdateTime = 0f;
+        private int totalSatietyToAdd = 0;
+        private int satietyPerSecond = 0;
+        private FoodController foodController;
+        
         protected override string info
         {
-            get { return "开始吃食物"; }
+            get { return $"吃食物 ({eatingDuration}秒)"; }
         }
 
         protected override void OnExecute()
@@ -34,7 +44,7 @@ namespace NodeCanvas.Tasks.Actions
             }
             
             // 获取食物控制器
-            FoodController foodController = targetFood.value.GetComponent<FoodController>();
+            foodController = targetFood.value.GetComponent<FoodController>();
             if (foodController == null)
             {
                 Debug.LogWarning("目标对象没有FoodController组件，无法吃食物");
@@ -50,13 +60,51 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
-            // 调用宠物的Eating方法开始吃食物
+            // 初始化计时器和状态
+            eatingElapsedTime = 0f;
+            lastSatietyUpdateTime = 0f;
+            
+            // 计算食物总恢复的饱腹度值（包括美味度加成）
+            totalSatietyToAdd = foodController.SatietyRecoveryValue + (foodController.Tasty - 1) * 5;
+            
+            // 计算每秒增加的饱腹度
+            satietyPerSecond = Mathf.CeilToInt(totalSatietyToAdd / eatingDuration.value);
+            
+            // 调用宠物的Eating方法开始吃食物动画
             agent.Eating(targetFood.value);
             
-            Debug.Log($"{agent.PetDisplayName} 开始吃食物 {targetFood.value.name}");
+            Debug.Log($"{agent.PetDisplayName} 开始吃食物 {targetFood.value.name}，持续{eatingDuration.value}秒，总计恢复{totalSatietyToAdd}点饱腹度");
+        }
+        
+        protected override void OnUpdate()
+        {
+            // 累计经过时间
+            eatingElapsedTime += Time.deltaTime;
             
-            // 任务完成
-            EndAction(true);
+            // 每隔1秒增加一次饱腹度
+            if (eatingElapsedTime - lastSatietyUpdateTime >= 1f)
+            {
+                lastSatietyUpdateTime += 1f;
+                
+                // 增加饱腹度
+                agent.Satiety += satietyPerSecond;
+                
+                Debug.Log($"{agent.PetDisplayName} 吃食物中，增加{satietyPerSecond}点饱腹度，当前饱腹度: {agent.Satiety}");
+            }
+            
+            // 检查是否达到持续时间
+            if (eatingElapsedTime >= eatingDuration.value)
+            {
+                // 触发结束吃食物的逻辑
+                agent.FinishEating();
+                
+                Debug.Log($"{agent.PetDisplayName} 已吃完食物 {targetFood.value.name}");
+                
+                // 注意：不在此处设置食物为空盘状态，该逻辑已移至FinishEating.cs中处理
+                
+                // 任务完成
+                EndAction(true);
+            }
         }
     }
 } 
