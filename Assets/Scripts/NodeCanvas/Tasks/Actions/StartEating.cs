@@ -73,7 +73,7 @@ namespace NodeCanvas.Tasks.Actions
             // 调用宠物的Eating方法开始吃食物动画
             agent.Eating(targetFood.value);
             
-            Debug.Log($"{agent.PetDisplayName} 开始吃食物 {targetFood.value.name}，持续{eatingDuration.value}秒，总计恢复{totalSatietyToAdd}点饱腹度");
+            //Debug.Log($"{agent.PetDisplayName} 开始吃食物 {targetFood.value.name}，持续{eatingDuration.value}秒，总计恢复{totalSatietyToAdd}点饱腹度");
         }
         
         protected override void OnUpdate()
@@ -89,7 +89,7 @@ namespace NodeCanvas.Tasks.Actions
                 // 增加饱腹度
                 agent.Satiety += satietyPerSecond;
                 
-                Debug.Log($"{agent.PetDisplayName} 吃食物中，增加{satietyPerSecond}点饱腹度，当前饱腹度: {agent.Satiety}");
+                //Debug.Log($"{agent.PetDisplayName} 吃食物中，增加{satietyPerSecond}点饱腹度，当前饱腹度: {agent.Satiety}");
             }
             
             // 检查是否达到持续时间
@@ -98,7 +98,7 @@ namespace NodeCanvas.Tasks.Actions
                 // 触发结束吃食物的逻辑
                 agent.FinishEating();
                 
-                Debug.Log($"{agent.PetDisplayName} 已吃完食物 {targetFood.value.name}");
+                //Debug.Log($"{agent.PetDisplayName} 已吃完食物 {targetFood.value.name}");
                 
                 // 注意：不在此处设置食物为空盘状态，该逻辑已移至FinishEating.cs中处理
                 

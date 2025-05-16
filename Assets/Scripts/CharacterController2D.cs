@@ -65,6 +65,14 @@ public class CharacterController2D : MonoBehaviour
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
     
+    // 需求气泡相关
+    [Header("需求气泡设置")]
+    [SerializeField] private NeedBubbleController needBubbleController;
+    [SerializeField] [Range(0, 100)] private int hungryThreshold = 25;
+    [SerializeField] [Range(0, 100)] private int tiredThreshold = 30;
+    private bool isShowingHungryBubble = false;
+    private bool isShowingTiredBubble = false;
+    
     // 宠物名称属性
     public string PetDisplayName
     {
@@ -260,6 +268,16 @@ public class CharacterController2D : MonoBehaviour
         
         // // 默认为自由活动状态
         // InFreeMode = true;
+        
+        // 确保需求气泡控制器已分配
+        if (needBubbleController == null)
+        {
+            needBubbleController = GetComponentInChildren<NeedBubbleController>();
+            if (needBubbleController == null)
+            {
+                Debug.LogWarning($"宠物 {gameObject.name} 没有分配NeedBubbleController组件，气泡功能将不可用");
+            }
+        }
     }
 
     // Update is called once per frame
@@ -308,6 +326,9 @@ public class CharacterController2D : MonoBehaviour
         // 处理精力值和饱腹度变化逻辑
         UpdateEnergy();
         UpdateSatiety();
+        
+        // 检查并更新需求气泡
+        UpdateNeedBubbles();
     }
     
     // 更新精力值
@@ -359,6 +380,46 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
+    // 更新需求气泡显示
+    private void UpdateNeedBubbles()
+    {
+        if (needBubbleController == null) return;
+        
+        // 检查饥饿状态
+        if (Satiety <= hungryThreshold && !isShowingHungryBubble && !IsEating)
+        {
+            // 显示饥饿气泡
+            needBubbleController.ShowNeed(PetNeedType.Hungry);
+            isShowingHungryBubble = true;
+        }
+        else if (Satiety > hungryThreshold && isShowingHungryBubble)
+        {
+            // 如果当前显示的是饥饿气泡，则隐藏它
+            if (needBubbleController.GetCurrentNeed() == PetNeedType.Hungry)
+            {
+                needBubbleController.HideNeed(PetNeedType.Hungry);
+            }
+            isShowingHungryBubble = false;
+        }
+        
+        // 检查疲劳状态
+        if (Energy <= tiredThreshold && !isShowingTiredBubble && !IsSleeping)
+        {
+            // 显示疲劳气泡
+            needBubbleController.ShowNeed(PetNeedType.Tired);
+            isShowingTiredBubble = true;
+        }
+        else if (Energy > tiredThreshold && isShowingTiredBubble)
+        {
+            // 如果当前显示的是疲劳气泡，则隐藏它
+            if (needBubbleController.GetCurrentNeed() == PetNeedType.Tired)
+            {
+                needBubbleController.HideNeed(PetNeedType.Tired);
+            }
+            isShowingTiredBubble = false;
+        }
+    }
+    
     // 开始吃食物
     public void Eating(GameObject foodObj)
     {
@@ -376,9 +437,16 @@ public class CharacterController2D : MonoBehaviour
         }
 
         // 触发吃食物动画
-        animator.SetTrigger(AnimationStrings.startEatingTrigger);
+        animator.SetTrigger(AnimationStrings.startEatTrigger);
         // 设置正在吃食物状态
         IsEating = true;
+        
+        // 隐藏饥饿气泡
+        if (needBubbleController != null && isShowingHungryBubble)
+        {
+            needBubbleController.HideNeed(PetNeedType.Hungry);
+            isShowingHungryBubble = false;
+        }
         
         // 注意：饱腹度增加逻辑已移至StartEating.cs的OnUpdate方法中
         // 每秒逐步增加饱腹度，而不是一次性增加
@@ -387,12 +455,10 @@ public class CharacterController2D : MonoBehaviour
     // 完成吃食物，实际增加饱腹度
     public void FinishEating()
     {
-        
         // 触发结束吃食物动画
-        animator.SetTrigger(AnimationStrings.finishEatingTrigger);
+        animator.SetTrigger(AnimationStrings.finishEatTrigger);
         // 重置吃食物状态
         IsEating = false;
-
     }
     
     void FixedUpdate()
@@ -420,7 +486,15 @@ public class CharacterController2D : MonoBehaviour
         // 直接触发睡眠动画
         animator.SetTrigger(AnimationStrings.sleepTrigger);
         IsSleeping = true;
-        Debug.Log($"{gameObject.name} 触发睡眠动画，开始恢复精力");
+
+        // 隐藏疲劳气泡
+        if (needBubbleController != null && isShowingTiredBubble)
+        {
+            needBubbleController.HideNeed(PetNeedType.Tired);
+            isShowingTiredBubble = false;
+        }
+        
+        //Debug.Log($"{gameObject.name} 触发睡眠动画，开始恢复精力");
     }
     
     /// <summary>
@@ -431,6 +505,6 @@ public class CharacterController2D : MonoBehaviour
         // 直接触发起床动画
         animator.SetTrigger(AnimationStrings.getUpTrigger);
         IsSleeping = false;  
-        Debug.Log($"{gameObject.name} 触发起床动画");
+        //Debug.Log($"{gameObject.name} 触发起床动画");
     }
 }
