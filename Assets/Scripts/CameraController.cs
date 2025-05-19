@@ -320,48 +320,95 @@ public class CameraController : MonoBehaviour
         
         if (debugMode) 
         {
-            // Debug.Log("切换到自由浏览模式");
+            //Debug.Log("切换到自由浏览模式");
         }
         
-        // 重要：保存当前相机位置和角度，避免切换时的瞬移
-        Vector3 currentCameraPosition = virtualCamera.transform.position;
+        // 暂时禁用虚拟相机，防止其在切换过程中自动更新位置
+        virtualCamera.enabled = false;
+        
+        // 获取主相机当前世界位置坐标
+        Vector3 currentCameraPosition = Camera.main.transform.position;
+        Quaternion currentCameraRotation = Camera.main.transform.rotation;
         
         // 记录当前状态
         currentState = CameraState.Free;
         
-        // 不管是什么情况，都保持相机在当前位置，不进行任何移动
-        // 之前的逻辑有问题，当选中食物时可能导致相机跳动
+        // 将相机目标直接放置在主相机当前位置前方
+        // 计算相机前方的位置（使用相机的forward方向，但保持z深度）
+        Vector3 forward = currentCameraRotation * Vector3.forward;
+        forward.z = 0; // 确保在2D平面上
         
-        // 不再根据previousSelectedPet决定是否更新目标位置
-        // 直接保留当前相机位置和目标位置
+        // 设置目标位置 - 直接位于相机当前位置的平面投影处
+        cameraTarget.position = new Vector3(
+            currentCameraPosition.x,
+            currentCameraPosition.y,
+            cameraTarget.position.z
+        );
         
-        // 在下一帧强制更新相机位置到当前位置
-        StartCoroutine(ForcePositionNextFrame(currentCameraPosition));
+        // 确保相机跟随目标
+        virtualCamera.Follow = cameraTarget;
+        virtualCamera.LookAt = cameraTarget;
+        
+        // 重置帧转换器的偏移量
+        if (framingTransposer != null)
+        {
+            framingTransposer.m_TrackedObjectOffset = Vector3.zero;
+        }
+        
+        // 重新启用虚拟相机
+        virtualCamera.enabled = true;
+        
+        // 强制更新Brain，确保即时应用更改
+        var brain = FindObjectOfType<CinemachineBrain>();
+        if (brain != null)
+        {
+            brain.m_UpdateMethod = CinemachineBrain.UpdateMethod.FixedUpdate;
+            brain.m_BlendUpdateMethod = CinemachineBrain.BrainUpdateMethod.FixedUpdate;
+        }
+        
+        // 启动协程确保相机位置稳定
+        StartCoroutine(StabilizeCameraPosition(currentCameraPosition));
     }
     
-    // 在下一帧强制设置相机位置，确保不会有瞬移
-    private IEnumerator ForcePositionNextFrame(Vector3 position)
+    private IEnumerator StabilizeCameraPosition(Vector3 targetPosition)
     {
-        yield return null; // 等待一帧
+        // 等待一帧让Cinemachine更新
+        yield return null;
         
-        // 如果仍然在自由模式，确保相机位置保持不变
-        if (currentState == CameraState.Free && virtualCamera != null)
+        // 确保相机目标位置正确
+        Vector3 newTargetPos = new Vector3(
+            targetPosition.x,
+            targetPosition.y,
+            cameraTarget.position.z
+        );
+        cameraTarget.position = newTargetPos;
+        
+        // 如果相机位置偏移较大，强制修正
+        if (Vector3.Distance(new Vector2(Camera.main.transform.position.x, Camera.main.transform.position.y), 
+                             new Vector2(targetPosition.x, targetPosition.y)) > 0.1f)
         {
-            // 直接设置相机位置而不是通过Cinemachine
-            virtualCamera.transform.position = position;
-            
-            // 同步更新目标位置
-            Vector3 cameraForward = virtualCamera.transform.forward;
-            cameraTarget.position = virtualCamera.transform.position + cameraForward * 10f;
+            // 直接设置相机位置
+            Camera.main.transform.position = new Vector3(
+                targetPosition.x,
+                targetPosition.y,
+                Camera.main.transform.position.z
+            );
         }
     }
     
+    // 保留该方法但我们不会在SwitchToFreeMode中使用它
     private void UpdateCameraTargetToCameraView()
     {
-        // 将目标移动到当前相机视图中心点
-        Vector3 cameraForward = virtualCamera.transform.forward;
-        Vector3 position = virtualCamera.transform.position + cameraForward * 10f;
-        cameraTarget.position = position;
+        if (virtualCamera == null) return;
+        
+        // 使用当前相机位置作为参考点
+        Vector3 cameraPosition = virtualCamera.transform.position;
+        
+        // 计算准确的前方位置
+        Vector3 cameraForward = virtualCamera.transform.forward.normalized;
+        
+        // 将目标位置设置在相机前方的特定距离
+        cameraTarget.position = cameraPosition + cameraForward * 10f;
     }
     
     void HandleDragging()

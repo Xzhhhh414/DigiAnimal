@@ -68,8 +68,8 @@ public class CharacterController2D : MonoBehaviour
     // 需求气泡相关
     [Header("需求气泡设置")]
     [SerializeField] private NeedBubbleController needBubbleController;
-    [SerializeField] [Range(0, 100)] private int hungryThreshold = 25;
-    [SerializeField] [Range(0, 100)] private int tiredThreshold = 30;
+    [SerializeField] [Range(0, 100)] private int hungryThreshold = 5;
+    [SerializeField] [Range(0, 100)] private int tiredThreshold = 5;
     private bool isShowingHungryBubble = false;
     private bool isShowingTiredBubble = false;
     
@@ -384,6 +384,19 @@ public class CharacterController2D : MonoBehaviour
     private void UpdateNeedBubbles()
     {
         if (needBubbleController == null) return;
+        
+        // 如果宠物正在吃东西或睡觉，隐藏所有气泡
+        if (IsEating || IsSleeping)
+        {
+            // 如果当前有气泡显示，隐藏它
+            if (isShowingHungryBubble || isShowingTiredBubble)
+            {
+                needBubbleController.HideAllNeeds();
+                isShowingHungryBubble = false;
+                isShowingTiredBubble = false;
+            }
+            return;
+        }
         
         // 检查饥饿状态
         if (Satiety <= hungryThreshold && !isShowingHungryBubble && !IsEating)
