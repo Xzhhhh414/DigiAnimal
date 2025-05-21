@@ -17,6 +17,50 @@ public class UIManager : MonoBehaviour
     // 单例模式
     public static UIManager Instance { get; private set; }
     
+    #region 工具包管理
+    // 当前工具包是否打开
+    public bool IsToolkitOpen { get; private set; } = false;
+    
+    // 工具包状态改变事件委托
+    public delegate void ToolkitStateChangedHandler(bool isOpen);
+    
+    // 工具包状态改变事件
+    public event ToolkitStateChangedHandler OnToolkitStateChanged;
+    
+    /// <summary>
+    /// 打开工具包
+    /// </summary>
+    public void OpenToolkit()
+    {
+        if (!IsToolkitOpen)
+        {
+            IsToolkitOpen = true;
+            OnToolkitStateChanged?.Invoke(true);
+        }
+    }
+    
+    /// <summary>
+    /// 关闭工具包
+    /// </summary>
+    public void CloseToolkit()
+    {
+        if (IsToolkitOpen)
+        {
+            IsToolkitOpen = false;
+            OnToolkitStateChanged?.Invoke(false);
+        }
+    }
+    
+    /// <summary>
+    /// 切换工具包状态
+    /// </summary>
+    public void ToggleToolkit()
+    {
+        IsToolkitOpen = !IsToolkitOpen;
+        OnToolkitStateChanged?.Invoke(IsToolkitOpen);
+    }
+    #endregion
+    
     private void Awake()
     {
         // 单例模式初始化
