@@ -347,7 +347,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4794900519118751622}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: CloseToolkit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &3511141040816567867
 GameObject:
   m_ObjectHideFlags: 0
@@ -526,7 +538,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5647059, g: 0.38431373, b: 0.3647059, a: 1}
+  m_Color: {r: 0.9339623, g: 0.9339623, b: 0.9339623, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -633,6 +645,7 @@ GameObject:
   - component: {fileID: 1787956203852378473}
   - component: {fileID: 8031690956729954099}
   - component: {fileID: 979155379866257539}
+  - component: {fileID: 5312327703532524067}
   m_Layer: 5
   m_Name: ToolsInfo
   m_TagString: Untagged
@@ -704,6 +717,22 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 1
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5312327703532524067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4130455682897424875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 891f5df28205a6e48b42fcd1ceb908a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  closeButton: {fileID: 2577140871867604128}
+  animationDuration: 0.3
+  animationEase: 27
+  hiddenPosition: {x: 0, y: 50}
 --- !u!1 &4741462272853929673
 GameObject:
   m_ObjectHideFlags: 0
@@ -1238,7 +1267,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: d1b37c61d548c8641b0f5cf129fe4aca, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a4bef890dfcd8b547b123f5bfa119557, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1

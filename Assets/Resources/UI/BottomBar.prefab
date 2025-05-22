@@ -312,6 +312,7 @@ GameObject:
   - component: {fileID: 7498476881056133740}
   - component: {fileID: 6156333961642847521}
   - component: {fileID: 4754322448218714706}
+  - component: {fileID: 7691021922182184364}
   m_Layer: 5
   m_Name: Tools
   m_TagString: Untagged
@@ -419,7 +420,35 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6156333961642847521}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: ToggleToolkit
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7691021922182184364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4421321787353661196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f4fc3bdd90c3894691cf5a2ec9d2f05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toolkitButton: {fileID: 4754322448218714706}
+  buttonImage: {fileID: 6156333961642847521}
+  defaultSprite: {fileID: 21300000, guid: 247774dc3f748944b8887f60380b3ae8, type: 3}
+  activeSprite: {fileID: 21300000, guid: 62fa5039f5cb55149884918df70c0351, type: 3}
 --- !u!1 &5148010446380702569
 GameObject:
   m_ObjectHideFlags: 0

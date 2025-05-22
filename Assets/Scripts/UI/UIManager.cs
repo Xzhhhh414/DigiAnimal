@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.EventSystems;
 
+// 添加DefaultExecutionOrder属性，确保UIManager最先初始化(-100表示比默认顺序更早执行)
+[DefaultExecutionOrder(-100)]
 public class UIManager : MonoBehaviour
 {
     [Header("UI引用")]
@@ -14,8 +16,24 @@ public class UIManager : MonoBehaviour
     [SerializeField] private SelectedPetInfo selectedPetInfoPanel;
     [SerializeField] private SelectedFoodInfo selectedFoodInfoPanel;
     
-    // 单例模式
-    public static UIManager Instance { get; private set; }
+    // 单例模式 - 添加静态引用初始化
+    private static UIManager _instance;
+    public static UIManager Instance 
+    { 
+        get 
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<UIManager>();
+                if (_instance == null)
+                {
+                    Debug.LogError("场景中未找到UIManager实例！");
+                }
+            }
+            return _instance;
+        }
+        private set { _instance = value; }
+    }
     
     #region 工具包管理
     // 当前工具包是否打开
@@ -35,6 +53,7 @@ public class UIManager : MonoBehaviour
         if (!IsToolkitOpen)
         {
             IsToolkitOpen = true;
+            Debug.Log("UIManager: 打开工具包");
             OnToolkitStateChanged?.Invoke(true);
         }
     }
@@ -47,6 +66,7 @@ public class UIManager : MonoBehaviour
         if (IsToolkitOpen)
         {
             IsToolkitOpen = false;
+            Debug.Log("UIManager: 关闭工具包");
             OnToolkitStateChanged?.Invoke(false);
         }
     }
@@ -57,36 +77,57 @@ public class UIManager : MonoBehaviour
     public void ToggleToolkit()
     {
         IsToolkitOpen = !IsToolkitOpen;
+        Debug.Log($"UIManager: 工具包状态切换为: {IsToolkitOpen}");
         OnToolkitStateChanged?.Invoke(IsToolkitOpen);
     }
     #endregion
     
     private void Awake()
     {
+        Debug.Log("UIManager: Awake开始执行");
+        
         // 单例模式初始化
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            Debug.Log("UIManager: 单例初始化完成");
         }
-        else
+        else if (Instance != this)
         {
+            Debug.Log("UIManager: 销毁重复实例");
             Destroy(gameObject);
             return;
         }
         
         // 初始化UI组件
         InitializeUI();
+        
+        Debug.Log("UIManager: Awake执行完成");
+    }
+    
+    // 在编辑器中验证组件设置
+    void OnValidate()
+    {
+        // 确保在编辑器中有正确的设置
+        if (gameCanvas == null)
+        {
+            Debug.LogWarning("UIManager: GameCanvas未设置，请在Inspector中设置引用");
+        }
     }
     
     public void Start()
     {
+        Debug.Log("UIManager: Start开始执行");
+        
         // 确保GameCanvas存在
         if (gameCanvas == null)
         {
             Debug.LogError("UIManager: GameCanvas未设置！请在Inspector中设置GameCanvas引用。");
             gameCanvas = FindObjectOfType<Canvas>();
         }
+        
+        Debug.Log("UIManager: Start执行完成");
     }
     
     // 初始化UI组件

@@ -197,7 +197,7 @@ public class SelectedFoodInfo : MonoBehaviour
     {
         // 停止当前可能正在运行的动画
         if (currentAnimation != null && currentAnimation.IsActive())
-        {
+    {
             currentAnimation.Kill();
             currentAnimation = null;
         }
@@ -244,9 +244,9 @@ public class SelectedFoodInfo : MonoBehaviour
         if (!animated)
         {
             // 不使用动画，直接设置最终状态
-            canvasGroup.alpha = 0;
-            canvasGroup.interactable = false;
-            canvasGroup.blocksRaycasts = false;
+        canvasGroup.alpha = 0;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
             rectTransform.anchoredPosition = shownPosition + hiddenPosition;
             return;
         }
