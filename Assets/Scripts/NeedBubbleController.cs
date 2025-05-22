@@ -39,10 +39,13 @@ public class NeedBubbleController : MonoBehaviour
     
     private void Start()
     {
-        // 初始时隐藏气泡
+        // 初始时隐藏气泡并保存初始位置
         if (bubbleObject != null)
         {
             startPosition = bubbleObject.transform.localPosition;
+            
+            // 确保气泡初始隐藏
+            currentNeed = PetNeedType.None;
             bubbleObject.SetActive(false);
         }
     }
@@ -67,28 +70,33 @@ public class NeedBubbleController : MonoBehaviour
     /// <param name="needType">需求类型</param>
     public void ShowNeed(PetNeedType needType)
     {
+        // 安全检查
+        if (needType == PetNeedType.None) return;
+        
         // 如果当前没有需求显示，或者新需求优先级更高
-        if (needType != PetNeedType.None && 
-            (currentNeed == PetNeedType.None || 
-             needPriorities[needType] > needPriorities[currentNeed]))
+        if (currentNeed == PetNeedType.None || 
+            needPriorities[needType] > needPriorities[currentNeed])
         {
             // 更新当前需求
             currentNeed = needType;
             
             // 根据需求类型设置相应的图标
-            switch (needType)
+            if (statusIconRenderer != null)
             {
-                case PetNeedType.Hungry:
-                    statusIconRenderer.sprite = hungryIcon;
-                    break;
-                case PetNeedType.Tired:
-                    statusIconRenderer.sprite = tiredIcon;
-                    break;
-                // 其他需求类型...
+                switch (needType)
+                {
+                    case PetNeedType.Hungry:
+                        statusIconRenderer.sprite = hungryIcon;
+                        break;
+                    case PetNeedType.Tired:
+                        statusIconRenderer.sprite = tiredIcon;
+                        break;
+                    // 其他需求类型...
+                }
             }
             
-            // 显示气泡
-            if (bubbleObject != null && !bubbleObject.activeSelf)
+            // 显示气泡 - 确保气泡可见
+            if (bubbleObject != null)
             {
                 bubbleObject.SetActive(true);
             }

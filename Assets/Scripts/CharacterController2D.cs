@@ -57,7 +57,11 @@ public class CharacterController2D : MonoBehaviour
     // 每个频率下饱腹度减少的数值
     [SerializeField]
     private int satietyDecreaseValue = 1;
-    
+
+    // 是否正在睡觉
+    [SerializeField]
+    private bool _IsSleeping = false;  
+
     // 是否正在吃食物
     [SerializeField]
     private bool _IsEating = false;
@@ -225,7 +229,6 @@ public class CharacterController2D : MonoBehaviour
         }
     }
     
-    private bool _IsSleeping;
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
     
@@ -278,6 +281,19 @@ public class CharacterController2D : MonoBehaviour
                 Debug.LogWarning($"宠物 {gameObject.name} 没有分配NeedBubbleController组件，气泡功能将不可用");
             }
         }
+        
+        // 启动延迟初始化协程，确保状态同步
+        StartCoroutine(DelayedStateCheck());
+    }
+    
+    // 延迟检查状态的协程
+    private IEnumerator DelayedStateCheck()
+    {
+        // 等待一小段时间，确保所有组件都初始化完成
+        yield return new WaitForSeconds(0.5f);
+        
+        // 强制更新一次需求状态
+        UpdateNeedBubbles();
     }
 
     // Update is called once per frame
@@ -399,7 +415,7 @@ public class CharacterController2D : MonoBehaviour
         }
         
         // 检查饥饿状态
-        if (Satiety <= hungryThreshold && !isShowingHungryBubble && !IsEating)
+        if (Satiety <= hungryThreshold && !IsEating)
         {
             // 显示饥饿气泡
             needBubbleController.ShowNeed(PetNeedType.Hungry);
@@ -416,7 +432,7 @@ public class CharacterController2D : MonoBehaviour
         }
         
         // 检查疲劳状态
-        if (Energy <= tiredThreshold && !isShowingTiredBubble && !IsSleeping)
+        if (Energy <= tiredThreshold && !IsSleeping)
         {
             // 显示疲劳气泡
             needBubbleController.ShowNeed(PetNeedType.Tired);

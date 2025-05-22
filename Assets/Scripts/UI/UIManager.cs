@@ -25,10 +25,6 @@ public class UIManager : MonoBehaviour
             if (_instance == null)
             {
                 _instance = FindObjectOfType<UIManager>();
-                if (_instance == null)
-                {
-                    Debug.LogError("场景中未找到UIManager实例！");
-                }
             }
             return _instance;
         }
@@ -39,11 +35,20 @@ public class UIManager : MonoBehaviour
     // 当前工具包是否打开
     public bool IsToolkitOpen { get; private set; } = false;
     
+    // 是否处于工具使用模式
+    public bool IsInToolUseMode { get; private set; } = false;
+    
     // 工具包状态改变事件委托
     public delegate void ToolkitStateChangedHandler(bool isOpen);
     
+    // 工具使用模式状态改变事件委托
+    public delegate void ToolUseModeChangedHandler(bool isInToolUseMode);
+    
     // 工具包状态改变事件
     public event ToolkitStateChangedHandler OnToolkitStateChanged;
+    
+    // 工具使用模式状态改变事件
+    public event ToolUseModeChangedHandler OnToolUseModeChanged;
     
     /// <summary>
     /// 打开工具包
@@ -53,7 +58,7 @@ public class UIManager : MonoBehaviour
         if (!IsToolkitOpen)
         {
             IsToolkitOpen = true;
-            Debug.Log("UIManager: 打开工具包");
+            //Debug.Log("UIManager: 打开工具包");
             OnToolkitStateChanged?.Invoke(true);
         }
     }
@@ -66,7 +71,7 @@ public class UIManager : MonoBehaviour
         if (IsToolkitOpen)
         {
             IsToolkitOpen = false;
-            Debug.Log("UIManager: 关闭工具包");
+            //Debug.Log("UIManager: 关闭工具包");
             OnToolkitStateChanged?.Invoke(false);
         }
     }
@@ -77,25 +82,72 @@ public class UIManager : MonoBehaviour
     public void ToggleToolkit()
     {
         IsToolkitOpen = !IsToolkitOpen;
-        Debug.Log($"UIManager: 工具包状态切换为: {IsToolkitOpen}");
+        //Debug.Log($"UIManager: 工具包状态切换为: {IsToolkitOpen}");
         OnToolkitStateChanged?.Invoke(IsToolkitOpen);
+    }
+    
+    /// <summary>
+    /// 进入工具使用模式
+    /// </summary>
+    public void EnterToolUseMode()
+    {
+        if (!IsInToolUseMode)
+        {
+            IsInToolUseMode = true;
+            OnToolUseModeChanged?.Invoke(true);
+            
+            // 隐藏所有可能的UI
+            HideAllUI();
+        }
+    }
+    
+    /// <summary>
+    /// 退出工具使用模式
+    /// </summary>
+    public void ExitToolUseMode()
+    {
+        if (IsInToolUseMode)
+        {
+            IsInToolUseMode = false;
+            OnToolUseModeChanged?.Invoke(false);
+            
+            // 恢复原有UI
+            RestoreUI();
+        }
+    }
+    
+    // 隐藏所有UI（但保留工具使用面板）
+    private void HideAllUI()
+    {
+        // 隐藏所有需要在工具使用模式下隐藏的UI面板
+        // 例如底部栏、按钮等
+        
+        // TODO: 隐藏其他UI
+    }
+    
+    // 恢复原有UI
+    private void RestoreUI()
+    {
+        // 恢复之前隐藏的UI
+        
+        // TODO: 恢复其他UI
     }
     #endregion
     
     private void Awake()
     {
-        Debug.Log("UIManager: Awake开始执行");
+        //Debug.Log("UIManager: Awake开始执行");
         
         // 单例模式初始化
         if (Instance == null)
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            Debug.Log("UIManager: 单例初始化完成");
+            //Debug.Log("UIManager: 单例初始化完成");
         }
         else if (Instance != this)
         {
-            Debug.Log("UIManager: 销毁重复实例");
+            //Debug.Log("UIManager: 销毁重复实例");
             Destroy(gameObject);
             return;
         }
@@ -103,31 +155,28 @@ public class UIManager : MonoBehaviour
         // 初始化UI组件
         InitializeUI();
         
-        Debug.Log("UIManager: Awake执行完成");
+        //Debug.Log("UIManager: Awake执行完成");
     }
     
     // 在编辑器中验证组件设置
     void OnValidate()
     {
         // 确保在编辑器中有正确的设置
-        if (gameCanvas == null)
-        {
-            Debug.LogWarning("UIManager: GameCanvas未设置，请在Inspector中设置引用");
-        }
+        // 移除了警告日志
     }
     
     public void Start()
     {
-        Debug.Log("UIManager: Start开始执行");
+        //Debug.Log("UIManager: Start开始执行");
         
         // 确保GameCanvas存在
         if (gameCanvas == null)
         {
-            Debug.LogError("UIManager: GameCanvas未设置！请在Inspector中设置GameCanvas引用。");
+            // 自动查找Canvas，不再输出错误日志
             gameCanvas = FindObjectOfType<Canvas>();
         }
         
-        Debug.Log("UIManager: Start执行完成");
+        //Debug.Log("UIManager: Start执行完成");
     }
     
     // 初始化UI组件
