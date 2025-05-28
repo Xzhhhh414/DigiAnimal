@@ -6,7 +6,7 @@ namespace NodeCanvas.Tasks.Actions
 {
     [Category("Pet AI")]
     [Description("触发宠物的起床动画")]
-    public class GetUp : ActionTask<CharacterController2D>
+    public class GetUp : ActionTask<PetController2D>
     {
         // protected override string info
         // {
@@ -22,7 +22,7 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
-            // 直接调用CharacterController2D的GetUp方法
+            // 直接调用PetController2D的GetUp方法
             agent.GetUp();
             
             // 任务完成

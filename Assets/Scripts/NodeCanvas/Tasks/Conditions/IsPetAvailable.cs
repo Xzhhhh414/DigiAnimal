@@ -6,7 +6,7 @@ namespace NodeCanvas.Tasks.Conditions
 {
     [Category("Pet AI")]
     [Description("检查宠物是否不处于任何特殊行为中 (如睡觉、吃饭等)")]
-    public class IsPetAvailable : ConditionTask<CharacterController2D>
+    public class IsPetAvailable : ConditionTask<PetController2D>
     {
         protected override string info
         {

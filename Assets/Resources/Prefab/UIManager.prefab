@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1936849289253910477}
   - component: {fileID: 4980267280547413652}
+  - component: {fileID: 7036593405418518353}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -47,3 +48,33 @@ MonoBehaviour:
   gameCanvas: {fileID: 0}
   selectedPetInfoPanel: {fileID: 0}
   selectedFoodInfoPanel: {fileID: 0}
+--- !u!114 &7036593405418518353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057780504264212069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 287bb033e4b6b0846bcd5446d7536bf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tools:
+  - toolName: "\u9017\u732B\u68D21"
+    toolIcon: {fileID: 21300000, guid: 1b023db7b4a496c45b65511bead5dade, type: 3}
+    toolDescription: "\u9017\u732B\u68D2\u63CF\u8FF0111"
+    useInstruction: "\u9017\u732B\u68D2111"
+    preferences: []
+  - toolName: "\u9017\u732B\u68D22"
+    toolIcon: {fileID: 21300000, guid: 6900f88d61cb96d4da8875503024f3ca, type: 3}
+    toolDescription: "\u9017\u732B\u68D2\u63CF\u8FF0222"
+    useInstruction: "\u9017\u732B\u68D2222"
+    preferences: []
+  - toolName: "\u76D8\u5B50"
+    toolIcon: {fileID: -1058956477, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
+    toolDescription: "\u76D8\u5B50\u63CF\u8FF0111111"
+    useInstruction: "\u76D8\u5B50111111"
+    preferences: []
+  toolUsePanel: {fileID: 0}
+  interactionDistance: 2

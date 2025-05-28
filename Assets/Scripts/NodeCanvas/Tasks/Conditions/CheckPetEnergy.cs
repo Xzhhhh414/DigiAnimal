@@ -15,7 +15,7 @@ namespace NodeCanvas.Tasks.Conditions
     
     [Category("Pet AI")]
     [Description("检查宠物精力值是否满足指定条件")]
-    public class CheckPetEnergy : ConditionTask<CharacterController2D>
+    public class CheckPetEnergy : ConditionTask<PetController2D>
     {
         [Tooltip("精力阈值")]
         public BBParameter<int> energyThreshold = 20;

@@ -19,7 +19,7 @@ public class SelectedPetInfo : MonoBehaviour
     [SerializeField] private Ease animationEase = Ease.OutBack; // 动画缓动效果
     [SerializeField] private Vector2 hiddenPosition = new Vector2(0, 100); // 隐藏时的位置偏移
     
-    private CharacterController2D currentPet;           // 当前显示的宠物
+    private PetController2D currentPet;           // 当前显示的宠物
     private CanvasGroup canvasGroup;                    // 用于控制面板显示/隐藏
     private RectTransform rectTransform;                // UI面板的RectTransform
     private Vector2 shownPosition;                      // 显示时的位置
@@ -43,7 +43,7 @@ public class SelectedPetInfo : MonoBehaviour
         HidePanel(false); // 不使用动画立即隐藏
         
         // 注册事件
-        EventManager.Instance.AddListener<CharacterController2D>(CustomEventType.PetSelected, OnPetSelected);
+        EventManager.Instance.AddListener<PetController2D>(CustomEventType.PetSelected, OnPetSelected);
         EventManager.Instance.AddListener(CustomEventType.PetUnselected, OnPetUnselected);
     }
     
@@ -57,12 +57,12 @@ public class SelectedPetInfo : MonoBehaviour
         }
         
         // 取消注册事件
-        EventManager.Instance.RemoveListener<CharacterController2D>(CustomEventType.PetSelected, OnPetSelected);
+        EventManager.Instance.RemoveListener<PetController2D>(CustomEventType.PetSelected, OnPetSelected);
         EventManager.Instance.RemoveListener(CustomEventType.PetUnselected, OnPetUnselected);
     }
     
     // 当宠物被选中时调用
-    private void OnPetSelected(CharacterController2D pet)
+    private void OnPetSelected(PetController2D pet)
     {
         if (pet != null)
         {

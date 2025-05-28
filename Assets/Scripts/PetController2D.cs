@@ -6,7 +6,7 @@ using UnityEngine.AI;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(NavMeshAgent))]
-public class CharacterController2D : MonoBehaviour
+public class PetController2D : MonoBehaviour
 {
     Rigidbody2D rb;
     //[SerializeField] float moveSpeed;
@@ -61,7 +61,7 @@ public class CharacterController2D : MonoBehaviour
     // 是否正在睡觉
     [SerializeField]
     private bool _IsSleeping = false;  
-
+    
     // 是否正在吃食物
     [SerializeField]
     private bool _IsEating = false;
@@ -76,6 +76,12 @@ public class CharacterController2D : MonoBehaviour
     [SerializeField] [Range(0, 100)] private int tiredThreshold = 5;
     private bool isShowingHungryBubble = false;
     private bool isShowingTiredBubble = false;
+    
+    // 逗乐CD系统
+    [Header("逗乐CD设置")]
+    [SerializeField] private float amusementCooldownTime = 30f; // 逗乐CD时间（秒）
+    private float lastAmusementTime = -1f; // 上次被逗乐的时间
+    private bool canBeAmused = true; // 是否可以被逗乐
     
     // 宠物名称属性
     public string PetDisplayName
@@ -536,4 +542,104 @@ public class CharacterController2D : MonoBehaviour
         IsSleeping = false;  
         //Debug.Log($"{gameObject.name} 触发起床动画");
     }
-}
+    
+    // 逗乐CD相关属性和方法
+    
+    /// <summary>
+    /// 获取是否可以被逗乐
+    /// </summary>
+    public bool CanBeAmused
+    {
+        get
+        {
+            // 如果从未被逗乐过，可以被逗乐
+            if (lastAmusementTime < 0)
+                return true;
+                
+            // 检查CD时间是否已过
+            return Time.time - lastAmusementTime >= amusementCooldownTime;
+        }
+    }
+    
+    /// <summary>
+    /// 获取逗乐CD剩余时间
+    /// </summary>
+    public float AmusementCooldownRemaining
+    {
+        get
+        {
+            if (lastAmusementTime < 0)
+                return 0f;
+                
+            float remaining = amusementCooldownTime - (Time.time - lastAmusementTime);
+            return Mathf.Max(0f, remaining);
+        }
+    }
+    
+    /// <summary>
+    /// 尝试逗乐宠物
+    /// </summary>
+    /// <param name="toolAffection">工具对宠物的喜好值</param>
+    /// <returns>是否成功逗乐</returns>
+    public bool TryAmuse(float toolAffection)
+    {
+        // 检查是否可以被逗乐
+        if (!CanBeAmused)
+        {
+            // 显示无感气泡
+            ShowEmotionBubble(PetNeedType.Indifferent);
+            return false;
+        }
+        
+        // 根据工具喜好值判断是否被逗乐
+        // 喜好值大于0表示喜欢，会被逗乐
+        if (toolAffection > 0)
+        {
+            // 被逗乐成功
+            lastAmusementTime = Time.time;
+            ShowEmotionBubble(PetNeedType.Happy);
+            
+            // 获得爱心货币
+            if (PlayerManager.Instance != null)
+            {
+                PlayerManager.Instance.AddHeartCurrency(1);
+            }
+            
+            return true;
+        }
+        else
+        {
+            // 没有被逗乐，显示无感气泡
+            ShowEmotionBubble(PetNeedType.Indifferent);
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// 显示情感气泡
+    /// </summary>
+    /// <param name="emotionType">情感类型</param>
+    private void ShowEmotionBubble(PetNeedType emotionType)
+    {
+        if (needBubbleController != null)
+        {
+            needBubbleController.ShowNeed(emotionType);
+            
+            // 2秒后自动隐藏情感气泡
+            StartCoroutine(HideEmotionBubbleAfterDelay(emotionType, 2f));
+        }
+    }
+    
+    /// <summary>
+    /// 延迟隐藏情感气泡
+    /// </summary>
+    private IEnumerator HideEmotionBubbleAfterDelay(PetNeedType emotionType, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        if (needBubbleController != null)
+        {
+            needBubbleController.HideNeed(emotionType);
+        }
+    }
+} 

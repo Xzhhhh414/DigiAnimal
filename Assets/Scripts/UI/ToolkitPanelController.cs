@@ -15,6 +15,8 @@ public class ToolkitPanelController : MonoBehaviour
     
     [Header("工具按钮")]
     [SerializeField] private Button[] toolButtons; // 工具按钮数组（预期有3个）
+    [SerializeField] private Image[] toolIcons; // 工具图标数组（与toolButtons对应）
+    [SerializeField] private Text selectedToolDescription; // 选中工具的描述文本（单个组件）
     [SerializeField] private GameObject toolSelectionIndicator; // 工具选择指示器
     
     [Header("动画设置")]
@@ -32,8 +34,6 @@ public class ToolkitPanelController : MonoBehaviour
     
     private void Awake()
     {
-        //Debug.Log("ToolkitPanelController: Awake开始执行");
-        
         // 获取组件
         rectTransform = GetComponent<RectTransform>();
         if (rectTransform == null)
@@ -44,19 +44,19 @@ public class ToolkitPanelController : MonoBehaviour
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
         {
-            //Debug.Log("ToolkitPanelController: 添加CanvasGroup组件");
             canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
         
+        // 验证引用设置
+        ValidateReferences();
+        
         // 保存显示位置
         shownPosition = rectTransform.anchoredPosition;
-        //Debug.Log($"ToolkitPanelController: 保存显示位置 = {shownPosition}");
         
         // 添加关闭按钮事件
         if (closeButton != null)
         {
             closeButton.onClick.AddListener(OnCloseButtonClick);
-            //Debug.Log("ToolkitPanelController: 已添加关闭按钮事件");
         }
         else
         {
@@ -84,6 +84,13 @@ public class ToolkitPanelController : MonoBehaviour
             toolSelectionIndicator.SetActive(false);
         }
         
+        // 初始状态隐藏工具描述文本
+        if (selectedToolDescription != null)
+        {
+            selectedToolDescription.text = string.Empty;
+            selectedToolDescription.gameObject.SetActive(false);
+        }
+        
         // 初始状态隐藏(但不禁用游戏对象，只使其不可见和不可交互)
         if (canvasGroup != null)
         {
@@ -92,10 +99,60 @@ public class ToolkitPanelController : MonoBehaviour
             canvasGroup.blocksRaycasts = false;
             rectTransform.anchoredPosition = shownPosition + hiddenPosition;
         }
-        //Debug.Log("ToolkitPanelController: Awake完成，面板已设为不可见");
         
         // 启动延迟初始化协程，确保订阅事件
         StartCoroutine(DelayedInitialization());
+    }
+    
+    // 验证引用设置
+    private void ValidateReferences()
+    {
+        // 验证工具按钮数组
+        if (toolButtons == null || toolButtons.Length == 0)
+        {
+            Debug.LogError("ToolkitPanelController: toolButtons数组未设置或为空！");
+        }
+        else
+        {
+            for (int i = 0; i < toolButtons.Length; i++)
+            {
+                if (toolButtons[i] == null)
+                {
+                    Debug.LogError($"ToolkitPanelController: toolButtons[{i}] 引用为空！");
+                }
+            }
+        }
+        
+        // 验证工具图标数组
+        if (toolIcons == null || toolIcons.Length == 0)
+        {
+            Debug.LogError("ToolkitPanelController: toolIcons数组未设置或为空！");
+        }
+        else
+        {
+            for (int i = 0; i < toolIcons.Length; i++)
+            {
+                if (toolIcons[i] == null)
+                {
+                    Debug.LogError($"ToolkitPanelController: toolIcons[{i}] 引用为空！");
+                }
+            }
+        }
+        
+        // 验证工具描述文本
+        if (selectedToolDescription == null)
+        {
+            Debug.LogError("ToolkitPanelController: selectedToolDescription引用为空！");
+        }
+        
+        // 验证数组长度是否一致
+        if (toolButtons != null && toolIcons != null && selectedToolDescription != null)
+        {
+            if (toolButtons.Length != toolIcons.Length)
+            {
+                Debug.LogWarning($"ToolkitPanelController: 数组长度不一致！按钮:{toolButtons.Length}, 图标:{toolIcons.Length}");
+            }
+        }
     }
     
     // 初始化工具按钮
@@ -115,11 +172,88 @@ public class ToolkitPanelController : MonoBehaviour
                 toolButtons[i].onClick.AddListener(() => OnToolButtonClick(index));
             }
         }
+        
+        // 加载工具信息
+        LoadToolInformation();
+    }
+    
+    // 加载工具信息
+    private void LoadToolInformation()
+    {
+        // 等待ToolInteractionManager初始化
+        StartCoroutine(LoadToolInformationCoroutine());
+    }
+    
+    private IEnumerator LoadToolInformationCoroutine()
+    {
+        // 等待ToolInteractionManager可用
+        while (ToolInteractionManager.Instance == null)
+        {
+            yield return null;
+        }
+        
+        // 获取工具信息并设置到按钮上
+        var toolManager = ToolInteractionManager.Instance;
+        
+        // 通过反射或公共方法获取工具信息
+        // 由于tools字段是private，我们需要添加一个公共方法来获取工具信息
+        var tools = toolManager.GetTools();
+        
+        if (tools != null)
+        {
+            for (int i = 0; i < toolButtons.Length && i < tools.Length; i++)
+            {
+                // 设置工具图标
+                if (toolIcons != null && i < toolIcons.Length && toolIcons[i] != null)
+                {
+                    toolIcons[i].sprite = tools[i].toolIcon;
+                    toolIcons[i].gameObject.SetActive(tools[i].toolIcon != null);
+                }
+                
+                // 启用按钮
+                if (toolButtons[i] != null)
+                {
+                    toolButtons[i].interactable = true;
+                }
+            }
+            
+            // 禁用多余的按钮
+            for (int i = tools.Length; i < toolButtons.Length; i++)
+            {
+                if (toolButtons[i] != null)
+                {
+                    toolButtons[i].interactable = false;
+                }
+                
+                if (toolIcons != null && i < toolIcons.Length && toolIcons[i] != null)
+                {
+                    toolIcons[i].gameObject.SetActive(false);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogError("ToolkitPanelController: 无法获取工具信息数组");
+        }
     }
     
     // 工具按钮点击事件
     private void OnToolButtonClick(int toolIndex)
     {
+        // 检查工具索引是否有效
+        if (ToolInteractionManager.Instance == null)
+        {
+            Debug.LogError("ToolInteractionManager实例不存在！");
+            return;
+        }
+        
+        var tools = ToolInteractionManager.Instance.GetTools();
+        if (tools == null || toolIndex >= tools.Length)
+        {
+            Debug.LogError($"工具索引无效: {toolIndex}");
+            return;
+        }
+        
         // 如果已经选择了该工具，则取消选择
         if (selectedToolIndex == toolIndex)
         {
@@ -151,6 +285,17 @@ public class ToolkitPanelController : MonoBehaviour
         {
             useToolButton.interactable = true;
         }
+        
+        // 设置选中工具的描述
+        if (selectedToolDescription != null && ToolInteractionManager.Instance != null)
+        {
+            var tools = ToolInteractionManager.Instance.GetTools();
+            if (tools != null && toolIndex < tools.Length)
+            {
+                selectedToolDescription.text = tools[toolIndex].toolDescription;
+                selectedToolDescription.gameObject.SetActive(!string.IsNullOrEmpty(tools[toolIndex].toolDescription));
+            }
+        }
     }
     
     // 取消选择工具
@@ -169,6 +314,13 @@ public class ToolkitPanelController : MonoBehaviour
         {
             useToolButton.interactable = false;
         }
+        
+        // 清除选中工具的描述
+        if (selectedToolDescription != null)
+        {
+            selectedToolDescription.text = string.Empty;
+            selectedToolDescription.gameObject.SetActive(false);
+        }
     }
     
     // 使用工具按钮点击事件
@@ -178,20 +330,18 @@ public class ToolkitPanelController : MonoBehaviour
             return;
         
         // 通知工具交互管理器进入工具使用状态
-        ToolInteractionManager.Instance.StartToolUse(selectedToolIndex);
-        
-        // 关闭工具包面板
-        if (UIManager.Instance != null)
+        if (ToolInteractionManager.Instance != null)
         {
-            UIManager.Instance.CloseToolkit();
+            ToolInteractionManager.Instance.StartToolUse(selectedToolIndex);
         }
+        
+        // 不再手动关闭工具包，让UIManager的工具使用模式来处理UI的隐藏和恢复
+        // 这样当工具使用结束时，工具包可以重新显示
     }
     
     // 协程：延迟初始化
     private IEnumerator DelayedInitialization()
     {
-        //Debug.Log("ToolkitPanelController: 开始延迟初始化");
-        
         // 等待一帧，确保所有其他Awake方法都执行完成
         yield return null;
         
@@ -208,12 +358,10 @@ public class ToolkitPanelController : MonoBehaviour
         // 尝试获取UIManager实例并订阅事件
         if (UIManager.Instance != null)
         {
-            //Debug.Log("ToolkitPanelController: 成功获取UIManager，订阅事件");
             UIManager.Instance.OnToolkitStateChanged += OnToolkitStateChanged;
             
             // 同步当前状态
             bool isOpen = UIManager.Instance.IsToolkitOpen;
-            //Debug.Log($"ToolkitPanelController: 同步当前工具包状态: {isOpen}");
             if (isOpen)
             {
                 ShowPanel();
@@ -240,22 +388,17 @@ public class ToolkitPanelController : MonoBehaviour
     
     private void OnEnable()
     {
-        //Debug.Log("ToolkitPanelController: OnEnable被调用");
-        
         // 尝试重新订阅事件
         SubscribeToUIManagerEvents();
     }
     
     private void OnDisable()
     {
-        //Debug.Log("ToolkitPanelController: OnDisable被调用");
         // 不取消订阅，因为我们希望即使面板禁用也能接收事件
     }
     
     private void OnDestroy()
     {
-        //Debug.Log("ToolkitPanelController: OnDestroy被调用");
-        
         // 移除关闭按钮事件
         if (closeButton != null)
         {
@@ -297,7 +440,6 @@ public class ToolkitPanelController : MonoBehaviour
     /// </summary>
     private void OnToolkitStateChanged(bool isOpen)
     {
-        //Debug.Log($"ToolkitPanelController: 接收到工具包状态变化: {isOpen}");
         if (isOpen)
         {
             ShowPanel();
@@ -326,8 +468,6 @@ public class ToolkitPanelController : MonoBehaviour
     /// </summary>
     private void ShowPanel(bool animated = true)
     {
-        //Debug.Log("ToolkitPanelController: 开始显示面板" + (animated ? "（带动画）" : "（无动画）"));
-        
         // 停止当前可能正在运行的动画
         if (currentAnimation != null && currentAnimation.IsActive())
         {
@@ -339,19 +479,20 @@ public class ToolkitPanelController : MonoBehaviour
         if (!gameObject.activeSelf)
         {
             gameObject.SetActive(true);
-            //Debug.Log("ToolkitPanelController: 激活游戏对象");
         }
         
         // 确保面板处于可交互状态
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
         
+        // 立即选中第一个工具（在动画开始前）
+        SelectFirstToolIfAvailable();
+        
         if (!animated)
         {
             // 不使用动画，直接设置最终状态
             canvasGroup.alpha = 1;
             rectTransform.anchoredPosition = shownPosition;
-            //Debug.Log("ToolkitPanelController: 面板已立即显示（无动画）");
             return;
         }
         
@@ -368,7 +509,23 @@ public class ToolkitPanelController : MonoBehaviour
         
         // 播放动画
         currentAnimation.Play();
-        //Debug.Log("ToolkitPanelController: 面板显示动画已开始播放");
+    }
+    
+    /// <summary>
+    /// 默认选中第一个可用的工具
+    /// </summary>
+    private void SelectFirstToolIfAvailable()
+    {
+        // 检查是否有可用的工具
+        if (ToolInteractionManager.Instance != null)
+        {
+            var tools = ToolInteractionManager.Instance.GetTools();
+            if (tools != null && tools.Length > 0 && toolButtons != null && toolButtons.Length > 0)
+            {
+                // 选中第一个工具
+                SelectTool(0);
+            }
+        }
     }
     
     /// <summary>
@@ -376,12 +533,9 @@ public class ToolkitPanelController : MonoBehaviour
     /// </summary>
     private void HidePanel(bool animated = true)
     {
-        //Debug.Log("ToolkitPanelController: 开始隐藏面板" + (animated ? "（带动画）" : "（无动画）"));
-        
         // 如果游戏对象已经处于非激活状态，无需再次隐藏
         if (!gameObject.activeSelf)
         {
-            //Debug.Log("ToolkitPanelController: 游戏对象已经处于非激活状态，无需再次隐藏");
             return;
         }
         
@@ -400,11 +554,6 @@ public class ToolkitPanelController : MonoBehaviour
             canvasGroup.blocksRaycasts = false;
             rectTransform.anchoredPosition = shownPosition + hiddenPosition;
             
-            // 注意：通常我们在无动画时会禁用游戏对象，但这可能导致事件订阅问题
-            // 所以这里我们只设置为不可见，而不禁用游戏对象
-            // gameObject.SetActive(false);
-            
-            //Debug.Log("ToolkitPanelController: 面板已立即隐藏（无动画）");
             return;
         }
         
@@ -419,15 +568,9 @@ public class ToolkitPanelController : MonoBehaviour
         currentAnimation.OnComplete(() => {
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
-            
-            // 注意：我们保持游戏对象激活，只是使其不可见
-            // gameObject.SetActive(false);
-            
-            //Debug.Log("ToolkitPanelController: 隐藏动画完成，面板已设为不可见");
         });
         
         // 播放动画
         currentAnimation.Play();
-        //Debug.Log("ToolkitPanelController: 隐藏面板动画已开始播放");
     }
 } 

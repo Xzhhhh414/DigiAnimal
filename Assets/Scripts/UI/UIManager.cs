@@ -116,21 +116,71 @@ public class UIManager : MonoBehaviour
         }
     }
     
+    // 存储隐藏前的UI状态
+    private Dictionary<GameObject, bool> hiddenUIStates = new Dictionary<GameObject, bool>();
+    
     // 隐藏所有UI（但保留工具使用面板）
     private void HideAllUI()
     {
-        // 隐藏所有需要在工具使用模式下隐藏的UI面板
-        // 例如底部栏、按钮等
+        // 清空之前的状态记录
+        hiddenUIStates.Clear();
         
-        // TODO: 隐藏其他UI
+        // 隐藏底部面板
+        var bottomPanel = FindObjectOfType<BottomPanelController>();
+        if (bottomPanel != null)
+        {
+            hiddenUIStates[bottomPanel.gameObject] = bottomPanel.gameObject.activeSelf;
+            bottomPanel.gameObject.SetActive(false);
+        }
+        
+        // 隐藏工具包面板（但不改变工具包的打开状态）
+        var toolkitPanel = FindObjectOfType<ToolkitPanelController>();
+        if (toolkitPanel != null)
+        {
+            hiddenUIStates[toolkitPanel.gameObject] = toolkitPanel.gameObject.activeSelf;
+            toolkitPanel.gameObject.SetActive(false);
+        }
+        
+        // 隐藏选中宠物信息面板
+        if (selectedPetInfoPanel != null && selectedPetInfoPanel.gameObject.activeSelf)
+        {
+            hiddenUIStates[selectedPetInfoPanel.gameObject] = true;
+            selectedPetInfoPanel.gameObject.SetActive(false);
+        }
+        
+        // 隐藏选中食物信息面板
+        if (selectedFoodInfoPanel != null && selectedFoodInfoPanel.gameObject.activeSelf)
+        {
+            hiddenUIStates[selectedFoodInfoPanel.gameObject] = true;
+            selectedFoodInfoPanel.gameObject.SetActive(false);
+        }
+        
+        // 隐藏工具包按钮
+        var toolkitButton = FindObjectOfType<ToolkitButtonController>();
+        if (toolkitButton != null)
+        {
+            hiddenUIStates[toolkitButton.gameObject] = toolkitButton.gameObject.activeSelf;
+            toolkitButton.gameObject.SetActive(false);
+        }
+        
+        // 可以在这里添加更多需要隐藏的UI组件
+        // 例如：顶部状态栏、侧边栏等
     }
     
     // 恢复原有UI
     private void RestoreUI()
     {
-        // 恢复之前隐藏的UI
+        // 恢复所有之前隐藏的UI组件
+        foreach (var kvp in hiddenUIStates)
+        {
+            if (kvp.Key != null && kvp.Value)
+            {
+                kvp.Key.SetActive(true);
+            }
+        }
         
-        // TODO: 恢复其他UI
+        // 清空状态记录
+        hiddenUIStates.Clear();
     }
     #endregion
     
@@ -206,7 +256,7 @@ public class UIManager : MonoBehaviour
     }
     
     // 显示选中宠物信息面板
-    public void ShowSelectedPetInfo(CharacterController2D pet)
+    public void ShowSelectedPetInfo(PetController2D pet)
     {
         if (selectedPetInfoPanel != null)
         {

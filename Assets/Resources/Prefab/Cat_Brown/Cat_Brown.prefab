@@ -235,26 +235,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 5640147886649532383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bcfd4836507924040898384c63d47feb, type: 3}
+  m_Script: {fileID: 11500000, guid: 49cf43af18e9f3b4a833dec5dec47c01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   petDisplayName: "\u68D5\u8272\u732B\u732B"
   petProfileImage: {fileID: 21300000, guid: 7f5d026a77a7b3e4b93a3d71d6998878, type: 3}
-  preference: "\u9017\u732B\u68D2\u3001\u62B1\u62B1"
+  preference: 
   isSelected: 0
   _IsMoving: 0
-  _Energy: 39
-  energyDecreaseInterval: 3
+  _Energy: 29
+  energyDecreaseInterval: 1
   energyDecreaseValue: 1
-  energyRecoveryValue: 1
-  _Satiety: 7
-  satietyDecreaseInterval: 3
+  energyRecoveryValue: 2
+  _Satiety: 28
+  satietyDecreaseInterval: 2
   satietyDecreaseValue: 1
   _IsSleeping: 0
   _IsEating: 0
   needBubbleController: {fileID: 8385827696282192901}
   hungryThreshold: 5
   tiredThreshold: 5
+  amusementCooldownTime: 30
 --- !u!114 &8883347001294338108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -270,7 +271,7 @@ MonoBehaviour:
   outlineColor: {r: 0.2830189, g: 0.2830189, b: 0.2830189, a: 1}
   outlineSize: 1
   alphaCutoff: 0.8
-  pixelOutlineShader: {fileID: 0}
+  pixelOutlineShader: {fileID: 4800000, guid: a0a484dc243dc624c874ea4b743ecfa9, type: 3}
   outlineOnAwake: 0
 --- !u!61 &79143899726710932
 BoxCollider2D:
@@ -479,6 +480,8 @@ MonoBehaviour:
   statusIconRenderer: {fileID: 8918341074698601020}
   hungryIcon: {fileID: 21300000, guid: 4e30a57bcb4dc7f4b9a98eeca8715a96, type: 3}
   tiredIcon: {fileID: 21300000, guid: fb282fde594fd1f4f83314553422aaeb, type: 3}
+  happyIcon: {fileID: 0}
+  indifferentIcon: {fileID: 0}
   floatSpeed: 0.5
   floatAmount: 0.05
 --- !u!212 &3543993800503116240

@@ -212,7 +212,7 @@ GameObject:
   - component: {fileID: 8745821820989714825}
   - component: {fileID: 4950562302011963027}
   m_Layer: 5
-  m_Name: Icon
+  m_Name: Icon_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -781,9 +781,14 @@ MonoBehaviour:
   closeButton: {fileID: 2577140871867604128}
   useToolButton: {fileID: 6043104687787154111}
   toolButtons:
-  - {fileID: 129199842575946433}
   - {fileID: 2368722162706206164}
+  - {fileID: 129199842575946433}
   - {fileID: 1289095016676352340}
+  toolIcons:
+  - {fileID: 5049294446108492179}
+  - {fileID: 4950562302011963027}
+  - {fileID: 5497575800700704468}
+  selectedToolDescription: {fileID: 7916855788347870962}
   toolSelectionIndicator: {fileID: 1045454042446214767}
   animationDuration: 0.3
   animationEase: 27
@@ -837,7 +842,7 @@ GameObject:
   - component: {fileID: 8172217386543445750}
   - component: {fileID: 5497575800700704468}
   m_Layer: 5
-  m_Name: Icon
+  m_Name: Icon_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -912,7 +917,7 @@ GameObject:
   - component: {fileID: 6689337653373937574}
   - component: {fileID: 5049294446108492179}
   m_Layer: 5
-  m_Name: Icon
+  m_Name: Icon_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

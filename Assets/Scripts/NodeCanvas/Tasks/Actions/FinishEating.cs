@@ -6,7 +6,7 @@ namespace NodeCanvas.Tasks.Actions
 {
     [Category("Pet AI")]
     [Description("宠物结束吃食物的动作，并恢复饱腹度")]
-    public class FinishEating : ActionTask<CharacterController2D>
+    public class FinishEating : ActionTask<PetController2D>
     {
         [Tooltip("要吃的食物对象")]
         [RequiredField]

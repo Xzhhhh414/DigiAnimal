@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4526765363287032426}
   - component: {fileID: 4720878334869674178}
+  - component: {fileID: 8217037408411075934}
+  - component: {fileID: 3045847506654479961}
   m_Layer: 0
   m_Name: GameManger
   m_TagString: Untagged
@@ -44,3 +46,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a27369ab56f50e14181bcdaedc661b06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8217037408411075934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4353075851608123511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: defadce8940e0904f898ce426a6654d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  petManager: {fileID: 4720878334869674178}
+  cameraController: {fileID: 0}
+--- !u!114 &3045847506654479961
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4353075851608123511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 997d2687447554642ba748834cb23417, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  heartCurrency: 0
+  tools:
+  - toolName: "\u9017\u732B\u68D21"
+    toolIcon: {fileID: 21300000, guid: 1b023db7b4a496c45b65511bead5dade, type: 3}
+    toolDescription: "\u9017\u732B\u68D2\u63CF\u8FF0111"
+    useInstruction: "\u9017\u732B\u68D2\u4F7F\u75281111"
+    preferences: []
+  - toolName: "\u9017\u732B\u68D22"
+    toolIcon: {fileID: 21300000, guid: 6900f88d61cb96d4da8875503024f3ca, type: 3}
+    toolDescription: "\u9017\u732B\u68D2\u63CF\u8FF02222"
+    useInstruction: "\u9017\u732B\u68D2\u4F7F\u75282222"
+    preferences: []
+  - toolName: "\u9017\u732B\u68D23"
+    toolIcon: {fileID: 21300000, guid: 6900f88d61cb96d4da8875503024f3ca, type: 3}
+    toolDescription: "\u9017\u732B\u68D2\u63CF\u8FF03333"
+    useInstruction: "\u9017\u732B\u68D2\u4F7F\u75283333"
+    preferences: []

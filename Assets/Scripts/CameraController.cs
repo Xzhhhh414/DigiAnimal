@@ -55,7 +55,7 @@ public class CameraController : MonoBehaviour
     private Vector3 targetFollowOffset;
     
     // 上一个选中的宠物
-    private CharacterController2D previousSelectedPet = null;
+    private PetController2D previousSelectedPet = null;
     
     // 摄像机默认目标
     private Transform defaultTarget;
@@ -170,7 +170,7 @@ public class CameraController : MonoBehaviour
         lastCameraPosition = virtualCamera.transform.position;
         
         // 检查是否有选中的宠物
-        CharacterController2D selectedPet = petManager?.GetSelectedPet();
+        PetController2D selectedPet = petManager?.GetSelectedPet();
         
         // 检查是否有选中的食物
         FoodController selectedFood = foodManager?.GetSelectedFood();
@@ -227,7 +227,7 @@ public class CameraController : MonoBehaviour
         HandleZoom();
     }
     
-    private void UpdateCameraTargetPosition(CharacterController2D selectedPet)
+    private void UpdateCameraTargetPosition(PetController2D selectedPet)
     {
         if (selectedPet != null && currentState == CameraState.FollowingPet)
         {

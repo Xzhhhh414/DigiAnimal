@@ -8,14 +8,8 @@ using UnityEngine.UI;
 /// </summary>
 public class ToolInteractionManager : MonoBehaviour
 {
-    [Header("工具信息")]
-    [SerializeField] private ToolInfo[] tools;
-    
     [Header("UI引用")]
     [SerializeField] private ToolUsePanelController toolUsePanel;
-    
-    [Header("设置")]
-    [SerializeField] private float interactionDistance = 2f; // 与宠物交互的最大距离
     
     // 单例模式
     private static ToolInteractionManager _instance;
@@ -40,10 +34,36 @@ public class ToolInteractionManager : MonoBehaviour
     private int currentToolIndex = -1;
     
     // 当前选中的工具信息
-    private ToolInfo CurrentTool => (currentToolIndex >= 0 && currentToolIndex < tools.Length) ? tools[currentToolIndex] : null;
+    private ToolInfo CurrentTool => GetCurrentTool();
     
     // 工具使用状态
     private bool isUsingTool = false;
+    
+    /// <summary>
+    /// 获取工具信息数组（供其他脚本访问）
+    /// </summary>
+    public ToolInfo[] GetTools()
+    {
+        if (PlayerManager.Instance != null)
+        {
+            return PlayerManager.Instance.GetTools();
+        }
+        
+        Debug.LogError("ToolInteractionManager: PlayerManager.Instance为空！");
+        return new ToolInfo[0];
+    }
+    
+    /// <summary>
+    /// 获取当前选中的工具信息
+    /// </summary>
+    private ToolInfo GetCurrentTool()
+    {
+        if (PlayerManager.Instance != null && currentToolIndex >= 0)
+        {
+            return PlayerManager.Instance.GetTool(currentToolIndex);
+        }
+        return null;
+    }
     
     private void Awake()
     {
@@ -85,7 +105,7 @@ public class ToolInteractionManager : MonoBehaviour
         // 检查是否点击到宠物
         if (hit.collider != null)
         {
-            CharacterController2D pet = hit.collider.GetComponent<CharacterController2D>();
+            PetController2D pet = hit.collider.GetComponent<PetController2D>();
             
             if (pet != null)
             {
@@ -100,7 +120,15 @@ public class ToolInteractionManager : MonoBehaviour
     /// </summary>
     public void StartToolUse(int toolIndex)
     {
-        if (toolIndex < 0 || toolIndex >= tools.Length)
+        // 验证PlayerManager
+        if (PlayerManager.Instance == null)
+        {
+            Debug.LogError("ToolInteractionManager: PlayerManager.Instance为空！");
+            return;
+        }
+        
+        // 验证工具索引
+        if (toolIndex < 0 || toolIndex >= PlayerManager.Instance.GetToolCount())
         {
             Debug.LogError($"工具索引无效: {toolIndex}");
             return;
@@ -122,11 +150,19 @@ public class ToolInteractionManager : MonoBehaviour
             // 显示面板
             toolUsePanel.ShowPanel();
         }
+        else
+        {
+            Debug.LogError("ToolInteractionManager: toolUsePanel引用为空！请在Inspector中设置ToolUsePanelController引用");
+        }
         
         // 进入工具使用模式，隐藏其他UI界面
         if (UIManager.Instance != null)
         {
             UIManager.Instance.EnterToolUseMode();
+        }
+        else
+        {
+            Debug.LogWarning("ToolInteractionManager: UIManager.Instance为空");
         }
     }
     
@@ -154,64 +190,33 @@ public class ToolInteractionManager : MonoBehaviour
     /// <summary>
     /// 与宠物交互
     /// </summary>
-    private void InteractWithPet(CharacterController2D pet)
+    private void InteractWithPet(PetController2D pet)
     {
         if (pet == null || CurrentTool == null) return;
         
         // 获取宠物对工具的喜好值
         float affectionValue = CurrentTool.GetPetAffection(pet.Preference);
         
-        // 执行交互效果（可以在这里添加特效或动画）
-        Debug.Log($"与宠物 {pet.PetDisplayName} 使用工具 {CurrentTool.toolName}，喜好值: {affectionValue}");
+        // 尝试逗乐宠物
+        bool wasAmused = pet.TryAmuse(affectionValue);
         
-        // TODO: 根据宠物对工具的喜好更新宠物状态
-        // 例如：增加亲密度，恢复饱腹度等
-    }
-}
-
-/// <summary>
-/// 定义工具信息类
-/// </summary>
-[System.Serializable]
-public class ToolInfo
-{
-    public string toolName;              // 工具名称
-    public Sprite toolIcon;              // 工具图标
-    public string useInstruction;        // 使用说明
-    
-    [Header("交互设置")]
-    public ToolPreference[] preferences; // 不同宠物种类对此工具的喜好配置
-    
-    /// <summary>
-    /// 获取指定宠物类型对这个工具的喜好值
-    /// </summary>
-    public float GetPetAffection(string petPreference)
-    {
-        if (string.IsNullOrEmpty(petPreference) || preferences == null)
-            return 0f;
-            
-        // 遍历喜好配置，找到匹配的宠物类型
-        foreach (var pref in preferences)
+        if (wasAmused)
         {
-            if (pref.petPreference.Equals(petPreference, System.StringComparison.OrdinalIgnoreCase))
+            Debug.Log($"宠物 {pet.PetDisplayName} 被 {CurrentTool.toolName} 逗乐了！获得爱心货币 +1");
+        }
+        else
+        {
+            if (!pet.CanBeAmused)
             {
-                return pref.affectionValue;
+                Debug.Log($"宠物 {pet.PetDisplayName} 还在逗乐CD中，剩余时间: {pet.AmusementCooldownRemaining:F1}秒");
+            }
+            else
+            {
+                Debug.Log($"宠物 {pet.PetDisplayName} 对 {CurrentTool.toolName} 没有兴趣");
             }
         }
         
-        // 默认情况下返回中性值
-        return 0f;
+        // 交互完成后，自动退出工具使用界面
+        CancelToolUse();
     }
-}
-
-/// <summary>
-/// 定义宠物对工具的喜好配置
-/// </summary>
-[System.Serializable]
-public class ToolPreference
-{
-    public string petPreference;  // 宠物偏好类型
-    
-    [Range(-1f, 1f)]
-    public float affectionValue;  // 喜好值：-1(厌恶) 到 1(喜爱)
 } 

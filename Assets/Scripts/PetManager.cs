@@ -5,7 +5,7 @@ using UnityEngine;
 public class PetManager : MonoBehaviour
 {
     // 当前选中的宠物
-    private CharacterController2D selectedPet;
+    private PetController2D selectedPet;
     
     // 是否有UI交互正在发生 - 暂未使用
     #pragma warning disable 0414
@@ -42,7 +42,7 @@ public class PetManager : MonoBehaviour
         // 如果点击到了宠物
         if (hit.collider != null)
         {
-            CharacterController2D clickedPet = hit.collider.GetComponent<CharacterController2D>();
+            PetController2D clickedPet = hit.collider.GetComponent<PetController2D>();
             if (clickedPet != null)
             {
                 // 如果点击的是已选中的宠物，取消选中
@@ -65,7 +65,7 @@ public class PetManager : MonoBehaviour
         }
     }
     
-    void SelectPet(CharacterController2D pet)
+    void SelectPet(PetController2D pet)
     {
         // 如果之前有选中的宠物，先取消选中
         if (selectedPet != null)
@@ -95,7 +95,7 @@ public class PetManager : MonoBehaviour
     }
     
     // 获取当前选中的宠物，供其他脚本访问
-    public CharacterController2D GetSelectedPet()
+    public PetController2D GetSelectedPet()
     {
         return selectedPet;
     }

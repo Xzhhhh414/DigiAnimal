@@ -15,7 +15,7 @@ namespace NodeCanvas.Tasks.Conditions
     
     [Category("Pet AI")]
     [Description("检查宠物饱腹度是否满足指定条件")]
-    public class CheckPetSatiety : ConditionTask<CharacterController2D>
+    public class CheckPetSatiety : ConditionTask<PetController2D>
     {
         [Tooltip("饱腹度阈值")]
         public BBParameter<int> satietyThreshold = 20;

@@ -6,7 +6,7 @@ namespace NodeCanvas.Tasks.Actions
 {
     [Category("Pet AI")]
     [Description("宠物开始吃食物的动作")]
-    public class StartEating : ActionTask<CharacterController2D>
+    public class StartEating : ActionTask<PetController2D>
     {
         [Tooltip("要吃的食物对象")]
         [RequiredField]

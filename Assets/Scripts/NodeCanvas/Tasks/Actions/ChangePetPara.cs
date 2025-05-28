@@ -6,7 +6,7 @@ namespace NodeCanvas.Tasks.Actions
 {
     [Category("Pet AI")]
     [Description("改变宠物的动画参数或触发动画触发器")]
-    public class ChangePetPara : ActionTask<CharacterController2D>
+    public class ChangePetPara : ActionTask<PetController2D>
     {
         // 支持的参数类型的枚举
         public enum PetParameterType

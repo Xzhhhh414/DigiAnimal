@@ -6,7 +6,7 @@ namespace NodeCanvas.Tasks.Actions
 {
     [Category("Pet AI")]
     [Description("触发宠物的睡眠动画")]
-    public class Sleep : ActionTask<CharacterController2D>
+    public class Sleep : ActionTask<PetController2D>
     {
         protected override string info
         {
@@ -22,7 +22,7 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
-            // 直接调用CharacterController2D的Sleep方法
+            // 直接调用PetController2D的Sleep方法
             agent.Sleep();
             
             // 任务完成

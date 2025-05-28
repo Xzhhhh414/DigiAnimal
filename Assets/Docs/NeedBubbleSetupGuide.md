@@ -43,21 +43,20 @@
    - **Float Speed**：设置浮动动画速度，推荐值为`1.0`
    - **Float Amount**：设置浮动幅度，推荐值为`0.1`
 
-## 步骤四：配置CharacterController2D
+## 步骤四：配置PetController2D
 
-1. 选中宠物对象
-2. 在CharacterController2D组件中，找到"需求气泡设置"部分
-3. 设置以下参数：
-   - **Need Bubble Controller**：拖拽上面添加的NeedBubbleController组件
-   - **Hungry Threshold**：设置饥饿阈值（饱腹度低于此值时显示饥饿气泡），默认值为`25`
-   - **Tired Threshold**：设置疲劳阈值（精力值低于此值时显示疲劳气泡），默认值为`30`
+1. 选择场景中的宠物对象
+2. 在PetController2D组件中，找到"需求气泡设置"部分
+3. 设置`hungryThreshold`（饥饿阈值，默认5）
+4. 设置`tiredThreshold`（疲劳阈值，默认5）
+5. 将`NeedBubbleController`组件拖拽到`needBubbleController`字段中
 
-## 步骤五：测试系统
+## 步骤五：测试功能
 
-1. 进入游戏预览模式
-2. 等待宠物的饱腹度或精力值降至阈值以下
-3. 观察气泡是否正确出现并有浮动效果
-4. 测试当宠物吃食物或睡觉时，气泡是否正确消失
+1. 运行游戏
+2. 等待宠物的饱腹度或精力值降低到阈值以下
+3. 观察是否显示相应的需求气泡
+4. 在`PetController2D`中添加相应的监测和显示逻辑
 
 ## 扩展添加新的需求类型
 
