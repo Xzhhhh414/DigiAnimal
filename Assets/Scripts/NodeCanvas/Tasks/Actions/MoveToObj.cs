@@ -14,7 +14,7 @@ namespace NodeCanvas.Tasks.Actions
         public BBParameter<float> keepDistance = 0.1f;
         
         // 用于缓存NavMeshAgent和PetController2D组件
-        private NavMeshAgent agent;
+        private NavMeshAgent navMeshAgent;
         private PetController2D characterController;
         
         // 用于追踪目标位置
@@ -33,11 +33,11 @@ namespace NodeCanvas.Tasks.Actions
         
         protected override void OnExecute() {
             // 获取所需组件
-            agent = agent.GetComponent<NavMeshAgent>();
+            navMeshAgent = agent.GetComponent<NavMeshAgent>();
             characterController = agent.GetComponent<PetController2D>();
             petName = agent.name; // 记录宠物名称，用于日志区分
             
-            if (agent == null) {
+            if (navMeshAgent == null) {
                 // Debug.LogError($"[{petName}] MoveToObj需要NavMeshAgent组件");
                 EndAction(false);
                 return;
@@ -57,18 +57,18 @@ namespace NodeCanvas.Tasks.Actions
             lastTargetPosition = targetPosition;
             
             // 记录初始状态
-            Vector2 agentPosition = new Vector2(agent.transform.position.x, agent.transform.position.y);
+            Vector2 agentPosition = new Vector2(navMeshAgent.transform.position.x, navMeshAgent.transform.position.y);
             lastAgentPosition = agentPosition; // 记录初始位置用于检测卡住
             float distanceToTarget = Vector2.Distance(agentPosition, targetPosition);
-            float stoppingDist = agent.stoppingDistance;
+            float stoppingDist = navMeshAgent.stoppingDistance;
             
             // Debug.Log($"[{petName}] 开始移动 - 目标:{target.value.name} 位置:{targetPosition} " +
             //          $"当前位置:{agentPosition} 距离:{distanceToTarget} " +
             //          $"停止距离:{stoppingDist} 保持距离:{keepDistance.value}");
             
             // 设置导航目标
-            Vector3 destination = new Vector3(targetPosition.x, targetPosition.y, agent.transform.position.z);
-            agent.SetDestination(destination);
+            Vector3 destination = new Vector3(targetPosition.x, targetPosition.y, navMeshAgent.transform.position.z);
+            navMeshAgent.SetDestination(destination);
             
             // 检查是否已经在目标附近
             if (distanceToTarget <= stoppingDist + keepDistance.value) {
@@ -91,8 +91,8 @@ namespace NodeCanvas.Tasks.Actions
             }
             
             // 获取当前位置和速度
-            Vector2 agentPosition = new Vector2(agent.transform.position.x, agent.transform.position.y);
-            Vector2 agentVelocity = new Vector2(agent.velocity.x, agent.velocity.y);
+            Vector2 agentPosition = new Vector2(navMeshAgent.transform.position.x, navMeshAgent.transform.position.y);
+            Vector2 agentVelocity = new Vector2(navMeshAgent.velocity.x, navMeshAgent.velocity.y);
             
             // 获取目标位置（2D坐标）
             Vector2 targetPosition = new Vector2(target.value.transform.position.x, target.value.transform.position.y);
@@ -106,12 +106,12 @@ namespace NodeCanvas.Tasks.Actions
             pathRetryTimer += Time.deltaTime;
             
             // 如果几乎没有移动且不在目标附近，增加卡住计时器
-            if (movementDelta < 0.01f && distanceToTarget > agent.stoppingDistance + keepDistance.value) {
+            if (movementDelta < 0.01f && distanceToTarget > navMeshAgent.stoppingDistance + keepDistance.value) {
                 stuckTimer += Time.deltaTime;
                 // 如果卡住超过1秒，尝试重新计算路径
                 if (stuckTimer > 1.0f && pathRetryTimer > PATH_RETRY_INTERVAL) {
                     // Debug.LogWarning($"[{petName}] 检测到卡住，重新计算路径。距离:{distanceToTarget}，移动量:{movementDelta}");
-                    agent.SetDestination(new Vector3(targetPosition.x, targetPosition.y, agent.transform.position.z));
+                    navMeshAgent.SetDestination(new Vector3(targetPosition.x, targetPosition.y, navMeshAgent.transform.position.z));
                     stuckTimer = 0f;
                     pathRetryTimer = 0f;
                 }
@@ -124,43 +124,43 @@ namespace NodeCanvas.Tasks.Actions
             // if(Time.frameCount % 5 == 0) {
             //     Debug.Log($"[{petName}] 移动中 - 当前位置:{agentPosition} 目标位置:{targetPosition} " +
             //               $"距离:{distanceToTarget} 速度:{agentVelocity.magnitude} " +
-            //               $"路径待处理:{agent.pathPending} 剩余距离:{agent.remainingDistance} " +
-            //               $"路径状态:{agent.pathStatus}");
+            //               $"路径待处理:{navMeshAgent.pathPending} 剩余距离:{navMeshAgent.remainingDistance} " +
+            //               $"路径状态:{navMeshAgent.pathStatus}");
             // }
             
             // 如果目标位置发生了显著变化，更新导航目标
             if (Vector2.Distance(lastTargetPosition, targetPosition) > 0.1f) {
-                Vector3 destination = new Vector3(targetPosition.x, targetPosition.y, agent.transform.position.z);
-                agent.SetDestination(destination);
+                Vector3 destination = new Vector3(targetPosition.x, targetPosition.y, navMeshAgent.transform.position.z);
+                navMeshAgent.SetDestination(destination);
                 lastTargetPosition = targetPosition;
                 // Debug.Log($"[{petName}] 目标位置变化，更新导航目标到:{targetPosition}");
             }
             
             // 速度检查 - 如果宠物应该移动但速度几乎为0，可能是卡住了
-            if (agent.remainingDistance > agent.stoppingDistance && agentVelocity.magnitude < 0.01f) {
-                // Debug.LogWarning($"[{petName}] 可能卡住了！距离:{agent.remainingDistance} > {agent.stoppingDistance}，但速度:{agentVelocity.magnitude}");
+            if (navMeshAgent.remainingDistance > navMeshAgent.stoppingDistance && agentVelocity.magnitude < 0.01f) {
+                // Debug.LogWarning($"[{petName}] 可能卡住了！距离:{navMeshAgent.remainingDistance} > {navMeshAgent.stoppingDistance}，但速度:{agentVelocity.magnitude}");
             }
             
             // 检查是否到达目标 - 添加更严格的检查
-            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + keepDistance.value) {
+            if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance + keepDistance.value) {
                 // 额外检查实际距离，防止NavMesh路径计算错误的情况
-                if (distanceToTarget > agent.stoppingDistance + keepDistance.value + 0.5f) {
+                if (distanceToTarget > navMeshAgent.stoppingDistance + keepDistance.value + 0.5f) {
                     // 如果NavMesh认为已到达但实际距离还很远，说明路径计算有问题
-                    // Debug.LogWarning($"[{petName}] 路径计算异常！remainingDistance:{agent.remainingDistance}很小，" +
-                    //                $"但实际距离:{distanceToTarget}很大，路径状态:{agent.pathStatus}，尝试重新计算路径");
+                    // Debug.LogWarning($"[{petName}] 路径计算异常！remainingDistance:{navMeshAgent.remainingDistance}很小，" +
+                    //                $"但实际距离:{distanceToTarget}很大，路径状态:{navMeshAgent.pathStatus}，尝试重新计算路径");
                     
                     // 只有在一定间隔后才重试路径计算，避免频繁计算
                     if (pathRetryTimer > PATH_RETRY_INTERVAL) {
-                        agent.SetDestination(new Vector3(targetPosition.x, targetPosition.y, agent.transform.position.z));
+                        navMeshAgent.SetDestination(new Vector3(targetPosition.x, targetPosition.y, navMeshAgent.transform.position.z));
                         pathRetryTimer = 0f;
                     }
                     return; // 继续尝试移动，不结束动作
                 }
                 
                 // 正常到达目标
-                // Debug.Log($"[{petName}] 判定到达目标位置 - pathPending:{agent.pathPending} " +
-                //           $"remainingDistance:{agent.remainingDistance} <= {agent.stoppingDistance + keepDistance.value} " +
-                //           $"实际距离:{distanceToTarget} 路径状态:{agent.pathStatus}");
+                // Debug.Log($"[{petName}] 判定到达目标位置 - pathPending:{navMeshAgent.pathPending} " +
+                //           $"remainingDistance:{navMeshAgent.remainingDistance} <= {navMeshAgent.stoppingDistance + keepDistance.value} " +
+                //           $"实际距离:{distanceToTarget} 路径状态:{navMeshAgent.pathStatus}");
                 EndAction(true);
                 return;
             }
@@ -168,9 +168,9 @@ namespace NodeCanvas.Tasks.Actions
 
         protected override void OnPause() { OnStop(); }
         protected override void OnStop() {
-            if (agent != null && agent.gameObject.activeSelf) {
+            if (navMeshAgent != null && navMeshAgent.gameObject.activeSelf) {
                 // Debug.Log($"[{petName}] 停止移动，重置路径");
-                agent.ResetPath();
+                navMeshAgent.ResetPath();
             }
         }
 

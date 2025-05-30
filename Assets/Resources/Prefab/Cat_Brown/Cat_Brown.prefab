@@ -240,7 +240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   petDisplayName: "\u68D5\u8272\u732B\u732B"
   petProfileImage: {fileID: 21300000, guid: 7f5d026a77a7b3e4b93a3d71d6998878, type: 3}
-  preference: 
+  preference: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
   isSelected: 0
   _IsMoving: 0
   _Energy: 29
@@ -255,7 +255,9 @@ MonoBehaviour:
   needBubbleController: {fileID: 8385827696282192901}
   hungryThreshold: 5
   tiredThreshold: 5
-  amusementCooldownTime: 30
+  canInteractWithToy: 0
+  boredomChance: 0.3
+  boredomRecoveryMinutes: 5
 --- !u!114 &8883347001294338108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -480,8 +482,8 @@ MonoBehaviour:
   statusIconRenderer: {fileID: 8918341074698601020}
   hungryIcon: {fileID: 21300000, guid: 4e30a57bcb4dc7f4b9a98eeca8715a96, type: 3}
   tiredIcon: {fileID: 21300000, guid: fb282fde594fd1f4f83314553422aaeb, type: 3}
-  happyIcon: {fileID: 0}
-  indifferentIcon: {fileID: 0}
+  happyIcon: {fileID: 21300000, guid: ab793af5427255942974c05d97190f4b, type: 3}
+  indifferentIcon: {fileID: 21300000, guid: 3ce61be10fe87224cb140aa5f41a491e, type: 3}
   floatSpeed: 0.5
   floatAmount: 0.05
 --- !u!212 &3543993800503116240

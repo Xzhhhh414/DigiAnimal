@@ -77,11 +77,15 @@ public class PetController2D : MonoBehaviour
     private bool isShowingHungryBubble = false;
     private bool isShowingTiredBubble = false;
     
-    // 逗乐CD系统
-    [Header("逗乐CD设置")]
-    [SerializeField] private float amusementCooldownTime = 30f; // 逗乐CD时间（秒）
-    private float lastAmusementTime = -1f; // 上次被逗乐的时间
-    private bool canBeAmused = true; // 是否可以被逗乐
+    // 玩具互动系统
+    [Header("玩具互动设置")]
+    [SerializeField] private bool canInteractWithToy = true; // 是否可以进行玩具互动
+    
+    [Header("厌倦状态设置")]
+    [SerializeField] [Range(0f, 1f)] private float boredomChance = 0.3f; // 进入厌倦状态的几率 (0-1)
+    [SerializeField] private float boredomRecoveryMinutes = 2f; // 厌倦状态恢复时间（分钟）
+    private float lastBoredomTime = -1f; // 上次进入厌倦状态的时间
+    private bool isBored = false; // 当前是否处于厌倦状态
     
     // 宠物名称属性
     public string PetDisplayName
@@ -543,100 +547,115 @@ public class PetController2D : MonoBehaviour
         //Debug.Log($"{gameObject.name} 触发起床动画");
     }
     
-    // 逗乐CD相关属性和方法
-    
     /// <summary>
-    /// 获取是否可以被逗乐
+    /// 获取是否处于厌倦状态
     /// </summary>
-    public bool CanBeAmused
+    public bool IsBored
     {
         get
         {
-            // 如果从未被逗乐过，可以被逗乐
-            if (lastAmusementTime < 0)
-                return true;
-                
-            // 检查CD时间是否已过
-            return Time.time - lastAmusementTime >= amusementCooldownTime;
+            // 检查厌倦状态是否已恢复
+            if (isBored && lastBoredomTime >= 0)
+            {
+                float boredomRecoverySeconds = boredomRecoveryMinutes * 60f;
+                if (Time.time - lastBoredomTime >= boredomRecoverySeconds)
+                {
+                    isBored = false;
+                    // Debug.Log($"宠物 {PetDisplayName} 从厌倦状态中恢复了");
+                }
+            }
+            return isBored;
         }
     }
     
     /// <summary>
-    /// 获取逗乐CD剩余时间
+    /// 获取厌倦状态剩余时间（分钟）
     /// </summary>
-    public float AmusementCooldownRemaining
+    public float BoredomRecoveryRemaining
     {
         get
         {
-            if (lastAmusementTime < 0)
+            if (!isBored || lastBoredomTime < 0)
                 return 0f;
                 
-            float remaining = amusementCooldownTime - (Time.time - lastAmusementTime);
-            return Mathf.Max(0f, remaining);
+            float boredomRecoverySeconds = boredomRecoveryMinutes * 60f;
+            float remaining = boredomRecoverySeconds - (Time.time - lastBoredomTime);
+            return Mathf.Max(0f, remaining / 60f); // 转换为分钟
+        }
+    }
+    
+    // 玩具互动相关属性和方法
+    
+    /// <summary>
+    /// 获取是否可以进行玩具互动（只检查厌倦状态）
+    /// </summary>
+    public bool CanInteractWithToy
+    {
+        get
+        {
+            // 如果处于厌倦状态，则不能互动
+            return !IsBored;
         }
     }
     
     /// <summary>
-    /// 尝试逗乐宠物
+    /// 尝试与玩具互动
     /// </summary>
-    /// <param name="toolAffection">工具对宠物的喜好值</param>
-    /// <returns>是否成功逗乐</returns>
-    public bool TryAmuse(float toolAffection)
+    /// <param name="heartReward">获得的爱心奖励数量</param>
+    /// <returns>是否成功互动</returns>
+    public bool TryToyInteraction(float heartReward)
     {
-        // 检查是否可以被逗乐
-        if (!CanBeAmused)
+        // 检查是否可以进行玩具互动（厌倦状态检查）
+        if (!CanInteractWithToy)
         {
-            // 显示无感气泡
-            ShowEmotionBubble(PetNeedType.Indifferent);
+            // 不在这里显示气泡，交给PetMessageManager统一控制
             return false;
         }
         
-        // 根据工具喜好值判断是否被逗乐
-        // 喜好值大于0表示喜欢，会被逗乐
-        if (toolAffection > 0)
+        // 每次互动都成功，立即获得爱心货币（使用传入的奖励数量）
+        if (PlayerManager.Instance != null)
         {
-            // 被逗乐成功
-            lastAmusementTime = Time.time;
-            ShowEmotionBubble(PetNeedType.Happy);
-            
-            // 获得爱心货币
-            if (PlayerManager.Instance != null)
-            {
-                PlayerManager.Instance.AddHeartCurrency(1);
-            }
-            
-            return true;
+            PlayerManager.Instance.AddHeartCurrency(Mathf.RoundToInt(heartReward));
+        }
+        
+        // 不在这里显示气泡，交给PetMessageManager统一控制
+        
+        // 检查是否进入厌倦状态
+        bool willBeBored = Random.Range(0f, 1f) < boredomChance;
+        
+        if (willBeBored)
+        {
+            // 进入厌倦状态
+            isBored = true;
+            lastBoredomTime = Time.time;
+            // Debug.Log($"宠物 {PetDisplayName} 对玩具感到厌倦了，需要 {boredomRecoveryMinutes} 分钟恢复");
         }
         else
         {
-            // 没有被逗乐，显示无感气泡
-            ShowEmotionBubble(PetNeedType.Indifferent);
-            return false;
+            // Debug.Log($"宠物 {PetDisplayName} 很开心地玩着玩具");
         }
+        
+        return true;
     }
     
     /// <summary>
-    /// 显示情感气泡
+    /// 显示情感气泡（供外部调用）
     /// </summary>
     /// <param name="emotionType">情感类型</param>
-    private void ShowEmotionBubble(PetNeedType emotionType)
+    public void ShowEmotionBubble(PetNeedType emotionType)
     {
         if (needBubbleController != null)
         {
             needBubbleController.ShowNeed(emotionType);
-            
-            // 2秒后自动隐藏情感气泡
-            StartCoroutine(HideEmotionBubbleAfterDelay(emotionType, 2f));
         }
     }
     
     /// <summary>
-    /// 延迟隐藏情感气泡
+    /// 隐藏情感气泡（供外部调用）
     /// </summary>
-    private IEnumerator HideEmotionBubbleAfterDelay(PetNeedType emotionType, float delay)
+    /// <param name="emotionType">情感类型</param>
+    public void HideEmotionBubble(PetNeedType emotionType)
     {
-        yield return new WaitForSeconds(delay);
-        
         if (needBubbleController != null)
         {
             needBubbleController.HideNeed(emotionType);

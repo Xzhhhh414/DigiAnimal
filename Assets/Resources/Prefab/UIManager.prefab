@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 1936849289253910477}
   - component: {fileID: 4980267280547413652}
   - component: {fileID: 7036593405418518353}
+  - component: {fileID: 3038366896281046046}
+  - component: {fileID: 3740905442747075340}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -60,21 +62,97 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 287bb033e4b6b0846bcd5446d7536bf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tools:
-  - toolName: "\u9017\u732B\u68D21"
-    toolIcon: {fileID: 21300000, guid: 1b023db7b4a496c45b65511bead5dade, type: 3}
-    toolDescription: "\u9017\u732B\u68D2\u63CF\u8FF0111"
-    useInstruction: "\u9017\u732B\u68D2111"
-    preferences: []
-  - toolName: "\u9017\u732B\u68D22"
-    toolIcon: {fileID: 21300000, guid: 6900f88d61cb96d4da8875503024f3ca, type: 3}
-    toolDescription: "\u9017\u732B\u68D2\u63CF\u8FF0222"
-    useInstruction: "\u9017\u732B\u68D2222"
-    preferences: []
-  - toolName: "\u76D8\u5B50"
-    toolIcon: {fileID: -1058956477, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
-    toolDescription: "\u76D8\u5B50\u63CF\u8FF0111111"
-    useInstruction: "\u76D8\u5B50111111"
-    preferences: []
   toolUsePanel: {fileID: 0}
-  interactionDistance: 2
+  happyInteractionMessage: "{PetName}\u73A9\u7684\u975E\u5E38\u5F00\u5FC3~"
+  boredInteractionMessage: "{PetName}\u914D\u5408\u4F60\u5728\u73A9\uFF0C\u4F3C\u4E4E\u6709\u70B9\u7D2F\u4E86"
+  cannotInteractMessage: "{PetName}\u73A9\u817B\u4E86\uFF0C\u7B49\u4F1A\u513F\u518D\u73A9\u5427\u2026"
+  otherFailureMessage: "\u6682\u65F6\u65E0\u6CD5\u4F7F\u7528\u73A9\u5177"
+--- !u!114 &3038366896281046046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057780504264212069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a3fe9d816d0ca4499742351a662c75a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  petMessageObject: {fileID: 0}
+  petAvatarImage: {fileID: 0}
+  messageText: {fileID: 0}
+  messageDuration: 1.5
+  fadeInDuration: 0.4
+  fadeOutDuration: 0.4
+  slideUpDistance: 30
+--- !u!114 &3740905442747075340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057780504264212069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2af46a1880fe237439706eda2061f42c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  heartMessagePrefab: {fileID: 1657893186496397824, guid: 0b94e961012680b478476140f373c0da, type: 3}
+  targetCanvas: {fileID: 0}
+  messageTextReference: {fileID: 0}
+  offsetFromPet: {x: 100, y: 50}
+  displayDuration: 1
+  fadeInDuration: 0.2
+  fadeOutDuration: 0.4
+  moveUpDistance: 30
+  scalePopDuration: 0.15
+  maxScaleEffect: 1.3
+  moveUpCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  scaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

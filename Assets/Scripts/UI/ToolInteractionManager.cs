@@ -11,6 +11,15 @@ public class ToolInteractionManager : MonoBehaviour
     [Header("UI引用")]
     [SerializeField] private ToolUsePanelController toolUsePanel;
     
+    [Header("Toast消息配置")]
+    [SerializeField] private string happyInteractionMessage = "{PetName} 很开心地玩着玩具！\n获得爱心货币 +{HeartReward}";
+    [SerializeField] private string boredInteractionMessage = "{PetName} 获得了爱心货币 +{HeartReward}，但对玩具感到厌倦了";
+    [SerializeField] private string cannotInteractMessage = "{PetName} 对玩具感到厌倦，需要休息一下";
+    [SerializeField] private string otherFailureMessage = "{PetName} 现在无法进行玩具互动";
+    
+    //[Header("文本替换符号说明")]
+    //[SerializeField] [TextArea(2, 3)] private string symbolHelp = "可用符号:\n{PetName} - 宠物名字\n{ToolName} - 工具名字\n{HeartReward} - 爱心奖励数量";
+    
     // 单例模式
     private static ToolInteractionManager _instance;
     public static ToolInteractionManager Instance
@@ -194,29 +203,124 @@ public class ToolInteractionManager : MonoBehaviour
     {
         if (pet == null || CurrentTool == null) return;
         
-        // 获取宠物对工具的喜好值
-        float affectionValue = CurrentTool.GetPetAffection(pet.Preference);
+        // 获取当前工具的爱心奖励数量
+        int heartReward = CurrentTool.heartReward;
         
-        // 尝试逗乐宠物
-        bool wasAmused = pet.TryAmuse(affectionValue);
+        // 记录交互前的厌倦状态
+        bool wasBoredBefore = pet.IsBored;
         
-        if (wasAmused)
+        // 尝试玩具互动（传入奖励值而不是固定的1.0f）
+        bool interactionSuccessful = pet.TryToyInteraction(heartReward);
+        
+        if (interactionSuccessful)
         {
-            Debug.Log($"宠物 {pet.PetDisplayName} 被 {CurrentTool.toolName} 逗乐了！获得爱心货币 +1");
-        }
-        else
-        {
-            if (!pet.CanBeAmused)
+            // 检查本次交互是否让宠物进入厌倦状态
+            bool becameBored = !wasBoredBefore && pet.IsBored;
+            
+            // 显示爱心获得提示
+            var heartManager = FindObjectOfType<HeartMessageManager>();
+            if (heartManager != null)
             {
-                Debug.Log($"宠物 {pet.PetDisplayName} 还在逗乐CD中，剩余时间: {pet.AmusementCooldownRemaining:F1}秒");
+                Debug.Log("找到HeartMessageManager组件，准备显示爱心提示");
+                heartManager.ShowHeartGainMessage(pet, heartReward);
             }
             else
             {
-                Debug.Log($"宠物 {pet.PetDisplayName} 对 {CurrentTool.toolName} 没有兴趣");
+                Debug.LogWarning("未找到HeartMessageManager组件，爱心提示将不会显示");
+            }
+            
+            if (becameBored)
+            {
+                // 本次交互让宠物进入厌倦状态，但仍然显示成功的消息
+                string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
+                ShowPetMessage(pet, message, PetNeedType.Happy);
+            }
+            else
+            {
+                // 宠物没有因本次交互进入厌倦状态，很开心
+                string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
+                ShowPetMessage(pet, message, PetNeedType.Happy);
+            }
+        }
+        else
+        {
+            // 交互失败（宠物处于厌倦状态）
+            if (pet.IsBored)
+            {
+                string message = ReplaceTextSymbols(cannotInteractMessage, pet, 0);
+                ShowPetMessage(pet, message, PetNeedType.Indifferent);
+            }
+            else
+            {
+                string message = ReplaceTextSymbols(otherFailureMessage, pet, 0);
+                ShowPetMessage(pet, message, PetNeedType.Indifferent);
             }
         }
         
-        // 交互完成后，自动退出工具使用界面
-        CancelToolUse();
+        // 不再自动关闭工具使用界面，保持在玩具使用状态
+        // CancelToolUse(); // 注释掉这行
+    }
+    
+    /// <summary>
+    /// 显示宠物消息
+    /// </summary>
+    private void ShowPetMessage(PetController2D pet, string message)
+    {
+        var petMessageManager = FindObjectOfType<PetMessageManager>();
+        if (petMessageManager != null)
+        {
+            petMessageManager.ShowPetMessage(pet, message);
+        }
+        else
+        {
+            // Debug.Log($"PetMessage: {message}");
+            Debug.LogWarning("未找到PetMessageManager！请在场景中添加PetMessageManager组件以显示宠物消息。");
+        }
+    }
+    
+    /// <summary>
+    /// 显示宠物消息（指定气泡类型）
+    /// </summary>
+    private void ShowPetMessage(PetController2D pet, string message, PetNeedType bubbleType)
+    {
+        var petMessageManager = FindObjectOfType<PetMessageManager>();
+        if (petMessageManager != null)
+        {
+            petMessageManager.ShowPetMessage(pet, message, bubbleType);
+        }
+        else
+        {
+            // Debug.Log($"PetMessage: {message}");
+            Debug.LogWarning("未找到PetMessageManager！请在场景中添加PetMessageManager组件以显示宠物消息。");
+        }
+    }
+    
+    /// <summary>
+    /// 替换文本中的符号
+    /// </summary>
+    /// <param name="text">原始文本</param>
+    /// <param name="pet">宠物对象</param>
+    /// <param name="heartReward">爱心奖励数量</param>
+    /// <returns>替换后的文本</returns>
+    private string ReplaceTextSymbols(string text, PetController2D pet, int heartReward)
+    {
+        string result = text;
+        
+        // 替换宠物名字
+        if (pet != null)
+        {
+            result = result.Replace("{PetName}", pet.PetDisplayName);
+        }
+        
+        // 替换工具名字
+        if (CurrentTool != null)
+        {
+            result = result.Replace("{ToolName}", CurrentTool.toolName);
+        }
+        
+        // 替换爱心奖励数量
+        result = result.Replace("{HeartReward}", heartReward.ToString());
+        
+        return result;
     }
 } 

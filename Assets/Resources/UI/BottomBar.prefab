@@ -975,6 +975,7 @@ GameObject:
   - component: {fileID: 3079233151295998497}
   - component: {fileID: 1815101232451650820}
   - component: {fileID: 5258632675399596658}
+  - component: {fileID: 2709359434992904530}
   m_Layer: 5
   m_Name: HeartShop
   m_TagString: Untagged
@@ -1085,3 +1086,17 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2709359434992904530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8539310830690569663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5230580278393fc40adb6f65d59afd13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shopButton: {fileID: 5258632675399596658}
+  heartCountText: {fileID: 8016173308537892675}

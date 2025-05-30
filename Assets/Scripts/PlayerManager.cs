@@ -15,10 +15,18 @@ public class PlayerManager : MonoBehaviour
     
     // 单例模式
     private static PlayerManager _instance;
+    private static bool _applicationIsQuitting = false;
+    
     public static PlayerManager Instance
     {
         get
         {
+            // 如果应用程序正在退出，不创建新实例
+            if (_applicationIsQuitting)
+            {
+                return null;
+            }
+            
             if (_instance == null)
             {
                 _instance = FindObjectOfType<PlayerManager>();
@@ -67,7 +75,7 @@ public class PlayerManager : MonoBehaviour
         if (amount > 0)
         {
             HeartCurrency += amount;
-            Debug.Log($"获得爱心货币 +{amount}，当前总数: {HeartCurrency}");
+            // Debug.Log($"获得爱心货币 +{amount}，当前总数: {HeartCurrency}");
         }
     }
     
@@ -81,7 +89,7 @@ public class PlayerManager : MonoBehaviour
         if (amount > 0 && HeartCurrency >= amount)
         {
             HeartCurrency -= amount;
-            Debug.Log($"消费爱心货币 -{amount}，当前总数: {HeartCurrency}");
+            // Debug.Log($"消费爱心货币 -{amount}，当前总数: {HeartCurrency}");
             return true;
         }
         return false;
@@ -223,6 +231,40 @@ public class PlayerManager : MonoBehaviour
         ValidateToolConfiguration();
     }
     
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        // 当应用程序暂停时的处理（移动平台）
+        if (pauseStatus)
+        {
+            // 可以在这里添加保存数据的逻辑
+        }
+    }
+    
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        // 当应用程序失去/获得焦点时的处理
+        if (!hasFocus)
+        {
+            // 可以在这里添加保存数据的逻辑
+        }
+    }
+    
+    private void OnApplicationQuit()
+    {
+        // 应用程序退出时清理单例引用
+        _instance = null;
+        _applicationIsQuitting = true;
+    }
+    
+    private void OnDestroy()
+    {
+        // 对象被销毁时清理单例引用
+        if (_instance == this)
+        {
+            _instance = null;
+        }
+    }
+    
     /// <summary>
     /// 验证工具配置
     /// </summary>
@@ -266,39 +308,6 @@ public class ToolInfo
     public string toolDescription;       // 工具描述（在工具背包面板中显示）
     public string useInstruction;        // 使用说明（在工具使用面板中显示）
     
-    [Header("交互设置")]
-    public ToolPreference[] preferences; // 不同宠物种类对此工具的喜好配置
-    
-    /// <summary>
-    /// 获取指定宠物类型对这个工具的喜好值
-    /// </summary>
-    public float GetPetAffection(string petPreference)
-    {
-        if (string.IsNullOrEmpty(petPreference) || preferences == null)
-            return 0f;
-            
-        // 遍历喜好配置，找到匹配的宠物类型
-        foreach (var pref in preferences)
-        {
-            if (pref.petPreference.Equals(petPreference, System.StringComparison.OrdinalIgnoreCase))
-            {
-                return pref.affectionValue;
-            }
-        }
-        
-        // 默认情况下返回中性值
-        return 0f;
-    }
-}
-
-/// <summary>
-/// 定义宠物对工具的喜好配置
-/// </summary>
-[System.Serializable]
-public class ToolPreference
-{
-    public string petPreference;  // 宠物偏好类型
-    
-    [Range(-1f, 1f)]
-    public float affectionValue;  // 喜好值：-1(厌恶) 到 1(喜爱)
+    [Header("交互奖励")]
+    public int heartReward = 1;          // 交互成功时获得的爱心数量
 } 
