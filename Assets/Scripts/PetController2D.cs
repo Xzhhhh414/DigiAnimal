@@ -602,14 +602,25 @@ public class PetController2D : MonoBehaviour
     /// 尝试与玩具互动
     /// </summary>
     /// <param name="heartReward">获得的爱心奖励数量</param>
-    /// <returns>是否成功互动</returns>
-    public bool TryToyInteraction(float heartReward)
+    /// <returns>互动结果：0=成功，1=厌倦状态，2=正在睡觉，3=正在吃饭</returns>
+    public int TryToyInteraction(float heartReward)
     {
+        // 检查是否正在睡觉
+        if (IsSleeping)
+        {
+            return 2; // 正在睡觉
+        }
+        
+        // 检查是否正在吃饭
+        if (IsEating)
+        {
+            return 3; // 正在吃饭
+        }
+        
         // 检查是否可以进行玩具互动（厌倦状态检查）
         if (!CanInteractWithToy)
         {
-            // 不在这里显示气泡，交给PetMessageManager统一控制
-            return false;
+            return 1; // 厌倦状态
         }
         
         // 每次互动都成功，立即获得爱心货币（使用传入的奖励数量）
@@ -617,8 +628,6 @@ public class PetController2D : MonoBehaviour
         {
             PlayerManager.Instance.AddHeartCurrency(Mathf.RoundToInt(heartReward));
         }
-        
-        // 不在这里显示气泡，交给PetMessageManager统一控制
         
         // 检查是否进入厌倦状态
         bool willBeBored = Random.Range(0f, 1f) < boredomChance;
@@ -635,7 +644,7 @@ public class PetController2D : MonoBehaviour
             // Debug.Log($"宠物 {PetDisplayName} 很开心地玩着玩具");
         }
         
-        return true;
+        return 0; // 成功
     }
     
     /// <summary>

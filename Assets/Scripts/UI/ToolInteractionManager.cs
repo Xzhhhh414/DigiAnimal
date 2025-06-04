@@ -15,6 +15,8 @@ public class ToolInteractionManager : MonoBehaviour
     [SerializeField] private string happyInteractionMessage = "{PetName} 很开心地玩着玩具！\n获得爱心货币 +{HeartReward}";
     [SerializeField] private string boredInteractionMessage = "{PetName} 获得了爱心货币 +{HeartReward}，但对玩具感到厌倦了";
     [SerializeField] private string cannotInteractMessage = "{PetName} 对玩具感到厌倦，需要休息一下";
+    [SerializeField] private string sleepingInteractionMessage = "{PetName} 正在睡觉呢，别打扰ta的美梦~";
+    [SerializeField] private string eatingInteractionMessage = "{PetName} 正在专心吃饭，现在可不想玩玩具";
     [SerializeField] private string otherFailureMessage = "{PetName} 现在无法进行玩具互动";
     
     //[Header("文本替换符号说明")]
@@ -47,6 +49,10 @@ public class ToolInteractionManager : MonoBehaviour
     
     // 工具使用状态
     private bool isUsingTool = false;
+    
+    // 交互间隔控制（防止过快连续点击）
+    private float lastInteractionTime = 0f;
+    private float interactionCooldown = 0.3f; // 0.3秒交互间隔
     
     /// <summary>
     /// 获取工具信息数组（供其他脚本访问）
@@ -189,6 +195,12 @@ public class ToolInteractionManager : MonoBehaviour
             toolUsePanel.HidePanel();
         }
         
+        // 关闭工具包选择界面
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.CloseToolkit();
+        }
+        
         // 退出工具使用模式，恢复其他UI界面
         if (UIManager.Instance != null)
         {
@@ -203,6 +215,15 @@ public class ToolInteractionManager : MonoBehaviour
     {
         if (pet == null || CurrentTool == null) return;
         
+        // 检查交互间隔
+        if (Time.time - lastInteractionTime < interactionCooldown)
+        {
+            return; // 还在冷却期内，忽略这次交互
+        }
+        
+        // 更新最后交互时间
+        lastInteractionTime = Time.time;
+        
         // 获取当前工具的爱心奖励数量
         int heartReward = CurrentTool.heartReward;
         
@@ -210,51 +231,59 @@ public class ToolInteractionManager : MonoBehaviour
         bool wasBoredBefore = pet.IsBored;
         
         // 尝试玩具互动（传入奖励值而不是固定的1.0f）
-        bool interactionSuccessful = pet.TryToyInteraction(heartReward);
+        int interactionResult = pet.TryToyInteraction(heartReward);
         
-        if (interactionSuccessful)
+        switch (interactionResult)
         {
-            // 检查本次交互是否让宠物进入厌倦状态
-            bool becameBored = !wasBoredBefore && pet.IsBored;
-            
-            // 显示爱心获得提示
-            var heartManager = FindObjectOfType<HeartMessageManager>();
-            if (heartManager != null)
-            {
-                Debug.Log("找到HeartMessageManager组件，准备显示爱心提示");
-                heartManager.ShowHeartGainMessage(pet, heartReward);
-            }
-            else
-            {
-                Debug.LogWarning("未找到HeartMessageManager组件，爱心提示将不会显示");
-            }
-            
-            if (becameBored)
-            {
-                // 本次交互让宠物进入厌倦状态，但仍然显示成功的消息
-                string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
-                ShowPetMessage(pet, message, PetNeedType.Happy);
-            }
-            else
-            {
-                // 宠物没有因本次交互进入厌倦状态，很开心
-                string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
-                ShowPetMessage(pet, message, PetNeedType.Happy);
-            }
-        }
-        else
-        {
-            // 交互失败（宠物处于厌倦状态）
-            if (pet.IsBored)
-            {
-                string message = ReplaceTextSymbols(cannotInteractMessage, pet, 0);
-                ShowPetMessage(pet, message, PetNeedType.Indifferent);
-            }
-            else
-            {
-                string message = ReplaceTextSymbols(otherFailureMessage, pet, 0);
-                ShowPetMessage(pet, message, PetNeedType.Indifferent);
-            }
+            case 0: // 成功
+                // 检查本次交互是否让宠物进入厌倦状态
+                bool becameBored = !wasBoredBefore && pet.IsBored;
+                
+                // 显示爱心获得提示
+                var heartManager = FindObjectOfType<HeartMessageManager>();
+                if (heartManager != null)
+                {
+                    Debug.Log("找到HeartMessageManager组件，准备显示爱心提示");
+                    heartManager.ShowHeartGainMessage(pet, heartReward);
+                }
+                else
+                {
+                    Debug.LogWarning("未找到HeartMessageManager组件，爱心提示将不会显示");
+                }
+                
+                if (becameBored)
+                {
+                    // 本次交互让宠物进入厌倦状态，但仍然显示成功的消息
+                    string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
+                    ShowPetMessage(pet, message, PetNeedType.Happy);
+                }
+                else
+                {
+                    // 宠物没有因本次交互进入厌倦状态，很开心
+                    string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
+                    ShowPetMessage(pet, message, PetNeedType.Happy);
+                }
+                break;
+                
+            case 1: // 厌倦状态
+                string boredMessage = ReplaceTextSymbols(cannotInteractMessage, pet, 0);
+                ShowPetMessage(pet, boredMessage, PetNeedType.Indifferent);
+                break;
+                
+            case 2: // 正在睡觉
+                string sleepingMessage = ReplaceTextSymbols(sleepingInteractionMessage, pet, 0);
+                ShowPetMessage(pet, sleepingMessage, PetNeedType.None);
+                break;
+                
+            case 3: // 正在吃饭
+                string eatingMessage = ReplaceTextSymbols(eatingInteractionMessage, pet, 0);
+                ShowPetMessage(pet, eatingMessage, PetNeedType.None);
+                break;
+                
+            default: // 其他失败情况
+                string failureMessage = ReplaceTextSymbols(otherFailureMessage, pet, 0);
+                ShowPetMessage(pet, failureMessage, PetNeedType.Indifferent);
+                break;
         }
         
         // 不再自动关闭工具使用界面，保持在玩具使用状态

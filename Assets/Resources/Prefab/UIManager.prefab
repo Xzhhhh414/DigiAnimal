@@ -66,6 +66,8 @@ MonoBehaviour:
   happyInteractionMessage: "{PetName}\u73A9\u7684\u975E\u5E38\u5F00\u5FC3~"
   boredInteractionMessage: "{PetName}\u914D\u5408\u4F60\u5728\u73A9\uFF0C\u4F3C\u4E4E\u6709\u70B9\u7D2F\u4E86"
   cannotInteractMessage: "{PetName}\u73A9\u817B\u4E86\uFF0C\u7B49\u4F1A\u513F\u518D\u73A9\u5427\u2026"
+  sleepingInteractionMessage: "{PetName}\u5728\u7761\u89C9\uFF0C\u73B0\u5728\u4E0D\u60F3\u73A9"
+  eatingInteractionMessage: "{PetName}\u5728\u5403\u996D\uFF0C\u73B0\u5728\u4E0D\u60F3\u73A9"
   otherFailureMessage: "\u6682\u65F6\u65E0\u6CD5\u4F7F\u7528\u73A9\u5177"
 --- !u!114 &3038366896281046046
 MonoBehaviour:
@@ -100,7 +102,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   heartMessagePrefab: {fileID: 1657893186496397824, guid: 0b94e961012680b478476140f373c0da, type: 3}
   targetCanvas: {fileID: 0}
-  messageTextReference: {fileID: 0}
   offsetFromPet: {x: 100, y: 50}
   displayDuration: 1
   fadeInDuration: 0.2

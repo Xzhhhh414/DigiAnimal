@@ -243,12 +243,12 @@ MonoBehaviour:
   preference: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
   isSelected: 0
   _IsMoving: 0
-  _Energy: 29
+  _Energy: 81
   energyDecreaseInterval: 1
   energyDecreaseValue: 1
-  energyRecoveryValue: 2
-  _Satiety: 28
-  satietyDecreaseInterval: 2
+  energyRecoveryValue: 3
+  _Satiety: 29
+  satietyDecreaseInterval: 1
   satietyDecreaseValue: 1
   _IsSleeping: 0
   _IsEating: 0
@@ -486,6 +486,10 @@ MonoBehaviour:
   indifferentIcon: {fileID: 21300000, guid: 3ce61be10fe87224cb140aa5f41a491e, type: 3}
   floatSpeed: 0.5
   floatAmount: 0.05
+  fadeInDuration: 0.4
+  fadeOutDuration: 0.4
+  scaleInDuration: 0.3
+  scaleOutDuration: 0.3
 --- !u!212 &3543993800503116240
 SpriteRenderer:
   m_ObjectHideFlags: 0

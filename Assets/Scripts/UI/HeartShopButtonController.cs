@@ -95,14 +95,16 @@ public class HeartShopButtonController : MonoBehaviour
         int currentCurrency = PlayerManager.Instance?.HeartCurrency ?? 0;
         Debug.Log("爱心商店按钮被点击！当前爱心货币: " + currentCurrency);
         
-        // TODO: 在这里添加打开商店界面的逻辑
-        // 例如：
-        // ShopManager.Instance.OpenShop();
-        // 或者触发事件：
-        // EventManager.Instance.TriggerEvent(CustomEventType.OpenShop);
-        
-        // 临时提示
-        Debug.Log("商店功能开发中...");
+        // 显示Toast提示
+        if (ToastManager.Instance != null)
+        {
+            ToastManager.Instance.ShowToast("爱心商店功能开发中，敬请期待~");
+        }
+        else
+        {
+            Debug.LogWarning("未找到ToastManager！");
+            Debug.Log("商店功能开发中...");
+        }
     }
     
     /// <summary>

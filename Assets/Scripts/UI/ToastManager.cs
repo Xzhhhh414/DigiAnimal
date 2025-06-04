@@ -10,8 +10,12 @@ using DG.Tweening;
 public class ToastManager : MonoBehaviour
 {
     [Header("Toast对象引用")]
-    [SerializeField] private GameObject toastMessageObject; // Canvas下的固定ToastMessage对象
-    [SerializeField] private Text toastText; // ToastMessage对象下的Text组件
+    [SerializeField] private GameObject toastMessagePrefab; // ToastMessage预制体
+    [SerializeField] private Canvas targetCanvas; // 目标Canvas
+    
+    // 运行时创建的对象
+    private GameObject currentToastObject; // 当前显示的Toast对象
+    private Text toastText; // 当前Toast对象的Text组件
     
     [Header("动画设置")]
     [SerializeField] private float toastDuration = 2f; // Toast显示时长
@@ -53,37 +57,24 @@ public class ToastManager : MonoBehaviour
             return;
         }
         
-        // 自动查找组件（如果没有在Inspector中设置）
-        if (toastMessageObject == null)
+        // 自动查找Canvas（如果没有在Inspector中设置）
+        if (targetCanvas == null)
         {
-            // 尝试在Canvas下查找名为ToastMessage的对象
-            Canvas canvas = FindObjectOfType<Canvas>();
-            if (canvas != null)
+            targetCanvas = FindObjectOfType<Canvas>();
+            if (targetCanvas == null)
             {
-                Transform toastTransform = canvas.transform.Find("ToastMessage");
-                if (toastTransform != null)
-                {
-                    toastMessageObject = toastTransform.gameObject;
-                }
+                Debug.LogError("ToastManager: 未找到Canvas！请确保场景中有Canvas组件。");
             }
         }
         
-        if (toastText == null && toastMessageObject != null)
+        // 如果没有设置prefab，尝试从Resources加载
+        if (toastMessagePrefab == null)
         {
-            toastText = toastMessageObject.GetComponentInChildren<Text>();
-        }
-        
-        // 获取或添加CanvasGroup组件
-        if (toastMessageObject != null)
-        {
-            canvasGroup = toastMessageObject.GetComponent<CanvasGroup>();
-            if (canvasGroup == null)
+            toastMessagePrefab = Resources.Load<GameObject>("UI/ToastMessage");
+            if (toastMessagePrefab == null)
             {
-                canvasGroup = toastMessageObject.AddComponent<CanvasGroup>();
+                Debug.LogWarning("ToastManager: 未找到ToastMessage预制体！请在Inspector中设置或确保Resources/UI/ToastMessage.prefab存在。");
             }
-            
-            // 初始状态隐藏
-            HideToastImmediate();
         }
     }
     
@@ -95,24 +86,32 @@ public class ToastManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(message)) return;
         
-        if (toastMessageObject == null || toastText == null)
+        if (toastMessagePrefab == null || targetCanvas == null)
         {
-            Debug.LogError("ToastManager: ToastMessage对象或Text组件未找到！请检查设置。");
+            Debug.LogError("ToastManager: ToastMessage预制体或Canvas未设置！请检查设置。");
             Debug.Log($"Toast (Fallback): {message}");
             return;
         }
         
-        // 如果正在显示其他Toast，先停止之前的动画
-        if (isShowing)
+        // 如果正在显示其他Toast，先隐藏之前的
+        if (isShowing && currentToastObject != null)
         {
             DOTween.Kill(canvasGroup);
+            DestroyCurrentToast();
+        }
+        
+        // 创建新的Toast对象
+        CreateToastObject();
+        
+        if (currentToastObject == null || toastText == null)
+        {
+            Debug.LogError("ToastManager: 创建Toast对象失败！");
+            Debug.Log($"Toast (Fallback): {message}");
+            return;
         }
         
         // 设置文本内容
         toastText.text = message;
-        
-        // 确保对象激活
-        toastMessageObject.SetActive(true);
         
         // 开始显示动画
         ShowToastAnimation();
@@ -139,33 +138,62 @@ public class ToastManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 创建Toast对象
+    /// </summary>
+    private void CreateToastObject()
+    {
+        if (toastMessagePrefab == null || targetCanvas == null) return;
+        
+        // 实例化Toast对象
+        currentToastObject = Instantiate(toastMessagePrefab, targetCanvas.transform);
+        
+        // 获取组件
+        toastText = currentToastObject.GetComponentInChildren<Text>();
+        if (toastText == null)
+        {
+            toastText = currentToastObject.GetComponent<Text>();
+        }
+        
+        // 获取或添加CanvasGroup组件
+        canvasGroup = currentToastObject.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = currentToastObject.AddComponent<CanvasGroup>();
+        }
+        
+        // 设置初始状态
+        canvasGroup.alpha = 0;
+        currentToastObject.SetActive(true);
+    }
+    
+    /// <summary>
+    /// 销毁当前Toast对象
+    /// </summary>
+    private void DestroyCurrentToast()
+    {
+        if (currentToastObject != null)
+        {
+            Destroy(currentToastObject);
+            currentToastObject = null;
+            toastText = null;
+            canvasGroup = null;
+        }
+        isShowing = false;
+    }
+    
+    /// <summary>
     /// 隐藏Toast动画
     /// </summary>
     private void HideToastAnimation()
     {
+        if (canvasGroup == null) return;
+        
         // 淡出动画
         canvasGroup.DOFade(0, fadeOutDuration)
             .OnComplete(() => {
-                // 动画完成后隐藏对象
-                toastMessageObject.SetActive(false);
-                isShowing = false;
+                // 动画完成后销毁对象
+                DestroyCurrentToast();
             });
-    }
-    
-    /// <summary>
-    /// 立即隐藏Toast（无动画）
-    /// </summary>
-    private void HideToastImmediate()
-    {
-        if (canvasGroup != null)
-        {
-            canvasGroup.alpha = 0;
-        }
-        if (toastMessageObject != null)
-        {
-            toastMessageObject.SetActive(false);
-        }
-        isShowing = false;
     }
     
     /// <summary>
@@ -173,7 +201,7 @@ public class ToastManager : MonoBehaviour
     /// </summary>
     public void HideToast()
     {
-        if (isShowing)
+        if (isShowing && canvasGroup != null)
         {
             DOTween.Kill(canvasGroup);
             HideToastAnimation();

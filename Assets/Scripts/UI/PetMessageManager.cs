@@ -210,6 +210,8 @@ public class PetMessageManager : MonoBehaviour
         if (isShowing)
         {
             // Debug.Log("停止之前的动画");
+            DOTween.Kill("PetMessageSequence"); // 使用ID杀死显示序列
+            DOTween.Kill("PetMessageHideSequence"); // 使用ID杀死隐藏序列
             DOTween.Kill(canvasGroup);
             DOTween.Kill(rectTransform);
             
@@ -277,6 +279,9 @@ public class PetMessageManager : MonoBehaviour
         // 显示完成后，等待一段时间再隐藏
         sequence.AppendInterval(messageDuration);
         sequence.AppendCallback(() => HideMessageAnimation());
+        
+        // 为序列设置ID，方便管理
+        sequence.SetId("PetMessageSequence");
     }
     
     /// <summary>
@@ -297,6 +302,9 @@ public class PetMessageManager : MonoBehaviour
         // 同时进行淡出和向上滑动
         sequence.Append(canvasGroup.DOFade(0, fadeOutDuration));
         sequence.Join(rectTransform.DOAnchorPos(originalPosition + Vector2.up * slideUpDistance, fadeOutDuration).SetEase(Ease.InBack));
+        
+        // 为隐藏序列设置ID
+        sequence.SetId("PetMessageHideSequence");
         
         // 动画完成后隐藏对象并重置状态
         sequence.OnComplete(() => {
@@ -346,6 +354,8 @@ public class PetMessageManager : MonoBehaviour
     {
         if (isShowing)
         {
+            DOTween.Kill("PetMessageSequence");
+            DOTween.Kill("PetMessageHideSequence");
             DOTween.Kill(canvasGroup);
             DOTween.Kill(rectTransform);
             HideMessageAnimation();
