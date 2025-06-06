@@ -66,11 +66,11 @@ public class SaveManager : MonoBehaviour
         // 启动时检查是否有存档
         if (HasSaveFile())
         {
-            Debug.Log($"发现存档文件: {SaveFilePath}");
+            // Debug.Log($"发现存档文件: {SaveFilePath}");
         }
         else
         {
-            Debug.Log("未发现存档文件，将创建新存档");
+            // Debug.Log("未发现存档文件，将创建新存档");
         }
     }
     
@@ -122,14 +122,14 @@ public class SaveManager : MonoBehaviour
     {
         if (!HasSaveFile())
         {
-            Debug.Log("没有存档文件，创建新存档");
+            // Debug.Log("没有存档文件，创建新存档");
             currentSaveData = CreateNewSave();
             return currentSaveData;
         }
         
         try
         {
-            Debug.Log($"开始加载存档: {SaveFilePath}");
+            // Debug.Log($"开始加载存档: {SaveFilePath}");
             string jsonContent = await File.ReadAllTextAsync(SaveFilePath);
             
             currentSaveData = JsonUtility.FromJson<SaveData>(jsonContent);
@@ -143,7 +143,7 @@ public class SaveManager : MonoBehaviour
             {
                 // 更新宠物ID计数器
                 UpdatePetIdCounter();
-                Debug.Log($"存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
+                // Debug.Log($"存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
             }
             
             OnSaveLoaded?.Invoke(currentSaveData);
@@ -164,14 +164,14 @@ public class SaveManager : MonoBehaviour
     {
         if (!HasSaveFile())
         {
-            Debug.Log("没有存档文件，创建新存档");
+            // Debug.Log("没有存档文件，创建新存档");
             currentSaveData = CreateNewSave();
             return currentSaveData;
         }
         
         try
         {
-            Debug.Log($"开始同步加载存档: {SaveFilePath}");
+            // Debug.Log($"开始同步加载存档: {SaveFilePath}");
             string jsonContent = File.ReadAllText(SaveFilePath);
             
             currentSaveData = JsonUtility.FromJson<SaveData>(jsonContent);
@@ -184,7 +184,7 @@ public class SaveManager : MonoBehaviour
             else
             {
                 UpdatePetIdCounter();
-                Debug.Log($"存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
+                // Debug.Log($"存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
             }
             
             OnSaveLoaded?.Invoke(currentSaveData);
@@ -217,7 +217,7 @@ public class SaveManager : MonoBehaviour
             string jsonContent = JsonUtility.ToJson(currentSaveData, true);
             await File.WriteAllTextAsync(SaveFilePath, jsonContent);
             
-            Debug.Log($"存档保存成功: {SaveFilePath}");
+            // Debug.Log($"存档保存成功: {SaveFilePath}");
             OnSaveOperation?.Invoke(true);
             return true;
         }
@@ -248,7 +248,7 @@ public class SaveManager : MonoBehaviour
             string jsonContent = JsonUtility.ToJson(currentSaveData, true);
             File.WriteAllText(SaveFilePath, jsonContent);
             
-            Debug.Log($"存档保存成功: {SaveFilePath}");
+            // Debug.Log($"存档保存成功: {SaveFilePath}");
             OnSaveOperation?.Invoke(true);
             return true;
         }
@@ -350,7 +350,7 @@ public class SaveManager : MonoBehaviour
         }
         
         nextPetIdCounter = maxId + 1;
-        Debug.Log($"更新宠物ID计数器: {nextPetIdCounter}");
+        // Debug.Log($"更新宠物ID计数器: {nextPetIdCounter}");
     }
     
     #endregion

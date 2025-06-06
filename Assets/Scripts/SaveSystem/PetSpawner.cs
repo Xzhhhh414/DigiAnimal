@@ -73,11 +73,11 @@ public class PetSpawner : MonoBehaviour
     {
         if (saveData?.petsData == null || saveData.petsData.Count == 0)
         {
-            Debug.Log("存档中没有宠物数据");
+            // Debug.Log("存档中没有宠物数据");
             return;
         }
         
-        Debug.Log($"开始生成 {saveData.petsData.Count} 只宠物");
+        // Debug.Log($"开始生成 {saveData.petsData.Count} 只宠物");
         
         List<Task> spawnTasks = new List<Task>();
         
@@ -89,7 +89,7 @@ public class PetSpawner : MonoBehaviour
         
         await Task.WhenAll(spawnTasks);
         
-        Debug.Log($"所有宠物生成完成，成功生成 {spawnedPets.Count} 只宠物");
+        // Debug.Log($"所有宠物生成完成，成功生成 {spawnedPets.Count} 只宠物");
     }
     
     /// <summary>
@@ -136,8 +136,8 @@ public class PetSpawner : MonoBehaviour
             spawnedPets[petData.petId] = petController;
             GameDataManager.Instance.RegisterPet(petData.petId, petController);
             
-            Debug.Log($"[宠物生成] 宠物 {petData.petId} 生成完成，最终位置: {petController.transform.position}");
-            Debug.Log($"宠物生成成功: {petData.petId} ({petData.displayName})");
+            // Debug.Log($"[宠物生成] 宠物 {petData.petId} 生成完成，最终位置: {petController.transform.position}");
+            // Debug.Log($"宠物生成成功: {petData.petId} ({petData.displayName})");
             return petController;
         }
         catch (System.Exception e)
@@ -274,7 +274,7 @@ public class PetSpawner : MonoBehaviour
         
         try
         {
-            Debug.Log($"开始加载宠物预制体: {resourcePath}");
+            // Debug.Log($"开始加载宠物预制体: {resourcePath}");
             
             // Resources.Load必须在主线程中调用，不能使用Task.Run
             // 使用Task.Yield()来保持异步方法的结构，但实际上是同步加载
@@ -285,7 +285,7 @@ public class PetSpawner : MonoBehaviour
             if (prefab != null)
             {
                 loadedPrefabs[resourcePath] = prefab;
-                Debug.Log($"宠物预制体加载成功: {resourcePath}");
+                // Debug.Log($"宠物预制体加载成功: {resourcePath}");
             }
             else
             {
@@ -313,7 +313,7 @@ public class PetSpawner : MonoBehaviour
         petController.Satiety = petData.satiety;
         
         // 调试：显示存档中的位置信息
-        Debug.Log($"[位置调试] 宠物 {petData.petId} 存档位置: {petData.position}");
+        // Debug.Log($"[位置调试] 宠物 {petData.petId} 存档位置: {petData.position}");
         
         // 设置位置 - 需要同时设置transform和NavMeshAgent
         Vector3 targetPosition = petData.position;
@@ -325,7 +325,7 @@ public class PetSpawner : MonoBehaviour
         {
             // 确保NavMeshAgent也移动到正确位置
             agent.Warp(targetPosition);
-            Debug.Log($"[位置调试] NavMeshAgent已设置到位置: {targetPosition}");
+            // Debug.Log($"[位置调试] NavMeshAgent已设置到位置: {targetPosition}");
         }
         
         // 设置Rigidbody2D位置
@@ -333,11 +333,11 @@ public class PetSpawner : MonoBehaviour
         if (rb != null)
         {
             rb.position = targetPosition;
-            Debug.Log($"[位置调试] Rigidbody2D已设置到位置: {targetPosition}");
+            // Debug.Log($"[位置调试] Rigidbody2D已设置到位置: {targetPosition}");
         }
         
         // 调试：显示实际设置后的位置
-        Debug.Log($"[位置调试] 宠物 {petData.petId} 实际位置: {petController.transform.position}");
+        // Debug.Log($"[位置调试] 宠物 {petData.petId} 实际位置: {petController.transform.position}");
         
         // 注意：不再从存档恢复当前状态（isSleeping、isEating）
         // 重新登录后，宠物会以默认状态（清醒、未进食）开始
@@ -351,7 +351,7 @@ public class PetSpawner : MonoBehaviour
             petController.LastBoredomTime = petData.lastBoredomTime;
         }
         
-        Debug.Log($"宠物数据应用完成: {petData.petId} - {petData.displayName}");
+        // Debug.Log($"宠物数据应用完成: {petData.petId} - {petData.displayName}");
     }
     
     #endregion

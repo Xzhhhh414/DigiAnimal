@@ -121,7 +121,7 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void OnStartGameClicked()
     {
-        Debug.Log("开始游戏按钮被点击");
+        //Debug.Log("开始游戏按钮被点击");
         
         // 禁用按钮防止重复点击
         if (startGameButton != null)
@@ -138,7 +138,7 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void OnDeleteSaveClicked()
     {
-        Debug.Log("删除存档按钮被点击");
+        //Debug.Log("删除存档按钮被点击");
         
         // 可以添加确认对话框
         if (ShowDeleteConfirmation())

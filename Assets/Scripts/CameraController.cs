@@ -131,15 +131,8 @@ public class CameraController : MonoBehaviour
             virtualCamera.m_Lens.OrthographicSize = defaultOrthoSize;
         }
         
-        // 设置初始相机位置 - 使用场景中心或预设位置
-        Vector3 initialPosition = new Vector3(0, 0, cameraTarget.position.z);
-        cameraTarget.position = initialPosition;
-        
-        // 如果有边界限制，确保初始位置在边界内
-        if (cameraBounds != null)
-        {
-            cameraBounds.EnforceBounds(cameraTarget);
-        }
+        // 启动协程设置初始相机位置到第一只宠物处
+        StartCoroutine(SetInitialCameraPositionToFirstPet());
     }
     
     
@@ -583,6 +576,106 @@ public class CameraController : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// 设置初始相机位置到第一只宠物处
+    /// </summary>
+    private IEnumerator SetInitialCameraPositionToFirstPet()
+    {
+        // 等待GameInitializer完成初始化
+        GameInitializer gameInitializer = FindObjectOfType<GameInitializer>();
+        while (gameInitializer == null || !gameInitializer.IsInitialized)
+        {
+            if (gameInitializer == null)
+            {
+                gameInitializer = FindObjectOfType<GameInitializer>();
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+        
+        // 等待宠物生成完成
+        yield return new WaitForSeconds(0.2f);
+        
+        // 获取第一只宠物的位置
+        Vector3 firstPetPosition = GetFirstPetPosition();
+        
+        if (firstPetPosition != Vector3.zero)
+        {
+            // 设置相机跟随点到第一只宠物的位置
+            Vector3 initialPosition = new Vector3(firstPetPosition.x, firstPetPosition.y, cameraTarget.position.z);
+            cameraTarget.position = initialPosition;
+            
+            if (debugMode)
+            {
+                //Debug.Log($"相机初始位置已设置到第一只宠物处: {initialPosition}");
+            }
+        }
+        else
+        {
+            // 如果没有宠物，使用默认位置（场景中心）
+            Vector3 initialPosition = new Vector3(0, 0, cameraTarget.position.z);
+            cameraTarget.position = initialPosition;
+            
+            if (debugMode)
+            {
+                Debug.Log("未找到宠物，使用默认相机位置: (0, 0)");
+            }
+        }
+        
+        // 如果有边界限制，确保初始位置在边界内
+        if (cameraBounds != null)
+        {
+            cameraBounds.EnforceBounds(cameraTarget);
+        }
+    }
+    
+    /// <summary>
+    /// 获取第一只宠物的位置
+    /// </summary>
+    private Vector3 GetFirstPetPosition()
+    {
+        // 方法1：从GameDataManager获取第一只活跃宠物
+        if (GameDataManager.Instance != null)
+        {
+            var activePets = GameDataManager.Instance.GetAllActivePets();
+            if (activePets != null && activePets.Count > 0)
+            {
+                foreach (var pet in activePets.Values)
+                {
+                    if (pet != null)
+                    {
+                        return pet.transform.position;
+                    }
+                }
+            }
+        }
+        
+        // 方法2：从PetSpawner获取第一只生成的宠物
+        if (PetSpawner.Instance != null)
+        {
+            var spawnedPets = PetSpawner.Instance.GetAllSpawnedPets();
+            if (spawnedPets != null && spawnedPets.Count > 0)
+            {
+                foreach (var pet in spawnedPets.Values)
+                {
+                    if (pet != null)
+                    {
+                        return pet.transform.position;
+                    }
+                }
+            }
+        }
+        
+        // 方法3：直接在场景中查找PetController2D
+        PetController2D[] petsInScene = FindObjectsOfType<PetController2D>();
+        if (petsInScene != null && petsInScene.Length > 0)
+        {
+            return petsInScene[0].transform.position;
+        }
+        
+        // 如果都没找到，返回零向量
+        return Vector3.zero;
+    }
+
     void OnDestroy()
     {
         // 清理自动创建的临时对象

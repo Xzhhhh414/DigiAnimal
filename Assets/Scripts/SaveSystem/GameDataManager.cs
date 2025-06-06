@@ -105,7 +105,7 @@ public class GameDataManager : MonoBehaviour
         }
         
         activePets[petId] = petController;
-        Debug.Log($"宠物已注册: {petId} -> {petController.name}");
+        //Debug.Log($"宠物已注册: {petId} -> {petController.name}");
     }
     
     /// <summary>
@@ -169,7 +169,7 @@ public class GameDataManager : MonoBehaviour
             await SaveManager.Instance.SaveAsync();
         }
         
-        Debug.Log("数据已同步到存档");
+        // Debug.Log("数据已同步到存档");
     }
     
     /// <summary>
@@ -248,25 +248,16 @@ public class GameDataManager : MonoBehaviour
             Vector3 currentPos = petController.transform.position;
             float distance = Vector3.Distance(petSaveData.position, currentPos);
             
-            Debug.Log($"[位置保存] 宠物 {petId}: 存档位置={petSaveData.position}, 当前位置={currentPos}, 距离={distance:F2}");
-            
             if (distance > 0.1f)
             {
-                Vector3 oldPos = petSaveData.position;
                 petSaveData.position = currentPos;
                 hasChanges = true;
-                Debug.Log($"[位置保存] 宠物 {petId} 位置已更新: {oldPos} -> {currentPos}");
             }
         }
         
         if (hasChanges)
         {
             await SaveManager.Instance.SaveAsync();
-            Debug.Log("[位置保存] 宠物位置已保存到文件");
-        }
-        else
-        {
-            Debug.Log("[位置保存] 无位置变化，跳过保存");
         }
     }
     

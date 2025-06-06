@@ -42,7 +42,7 @@ public class GameInitializer : MonoBehaviour
             yield break;
         }
         
-        DebugLog("开始初始化游戏...");
+        // DebugLog("开始初始化游戏...");
         
         bool initializationSuccess = false;
         string errorMessage = "";
@@ -61,7 +61,7 @@ public class GameInitializer : MonoBehaviour
         }
         else
         {
-            DebugLog($"存档加载成功，宠物数量: {saveData.petsData.Count}");
+            // DebugLog($"存档加载成功，宠物数量: {saveData.petsData.Count}");
             
             // 3. 同步玩家数据到PlayerManager
             yield return SyncPlayerData(saveData);
@@ -81,7 +81,7 @@ public class GameInitializer : MonoBehaviour
         if (initializationSuccess)
         {
             isInitialized = true;
-            DebugLog("游戏初始化完成！");
+            // DebugLog("游戏初始化完成！");
             OnInitializationComplete?.Invoke();
         }
         else
@@ -96,7 +96,7 @@ public class GameInitializer : MonoBehaviour
     /// </summary>
     private IEnumerator EnsureCoreManagers()
     {
-        DebugLog("检查核心管理器...");
+        // DebugLog("检查核心管理器...");
         
         // 确保SaveManager存在
         if (SaveManager.Instance == null)
@@ -122,7 +122,7 @@ public class GameInitializer : MonoBehaviour
             throw new System.Exception("PlayerManager初始化失败");
         }
         
-        DebugLog("所有核心管理器检查完成");
+        // DebugLog("所有核心管理器检查完成");
         yield return null;
     }
     
@@ -131,7 +131,7 @@ public class GameInitializer : MonoBehaviour
     /// </summary>
     private IEnumerator SyncPlayerData(SaveData saveData)
     {
-        DebugLog("同步玩家数据...");
+        // DebugLog("同步玩家数据...");
         
         if (PlayerManager.Instance != null && saveData.playerData != null)
         {
@@ -139,7 +139,7 @@ public class GameInitializer : MonoBehaviour
             int targetCurrency = saveData.playerData.heartCurrency;
             PlayerManager.Instance.SetHeartCurrencyDirect(targetCurrency);
             
-            DebugLog($"玩家数据同步完成，爱心货币: {targetCurrency}");
+            // DebugLog($"玩家数据同步完成，爱心货币: {targetCurrency}");
         }
         
         yield return null;
@@ -150,7 +150,7 @@ public class GameInitializer : MonoBehaviour
     /// </summary>
     private IEnumerator SpawnPets(SaveData saveData)
     {
-        DebugLog("开始生成宠物...");
+        // DebugLog("开始生成宠物...");
         
         if (saveData.petsData != null && saveData.petsData.Count > 0)
         {
@@ -162,11 +162,11 @@ public class GameInitializer : MonoBehaviour
                 throw spawnTask.Exception;
             }
             
-            DebugLog($"宠物生成完成，共生成 {saveData.petsData.Count} 只宠物");
+            // DebugLog($"宠物生成完成，共生成 {saveData.petsData.Count} 只宠物");
         }
         else
         {
-            DebugLog("存档中没有宠物数据");
+            // DebugLog("存档中没有宠物数据");
         }
     }
     
@@ -175,7 +175,7 @@ public class GameInitializer : MonoBehaviour
     /// </summary>
     private IEnumerator CreateDefaultPet()
     {
-        DebugLog($"创建默认宠物: {defaultPetPrefabName}");
+        // DebugLog($"创建默认宠物: {defaultPetPrefabName}");
         
         Task<PetController2D> createTask = PetSpawner.Instance.CreateNewPet(defaultPetPrefabName, Vector3.zero);
         yield return new WaitUntil(() => createTask.IsCompleted);
@@ -193,7 +193,7 @@ public class GameInitializer : MonoBehaviour
             newPet.PetDisplayName = "小可爱";
             newPet.PetIntroduction = "你的第一只宠物！";
             
-            DebugLog($"默认宠物创建成功: {newPet.name}");
+            // DebugLog($"默认宠物创建成功: {newPet.name}");
         }
         else
         {
