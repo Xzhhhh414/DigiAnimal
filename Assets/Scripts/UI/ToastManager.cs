@@ -69,10 +69,10 @@ public class ToastManager : MonoBehaviour
         
         // 如果没有设置prefab，尝试从Resources加载
         if (toastMessagePrefab == null)
-        {
+                {
             toastMessagePrefab = Resources.Load<GameObject>("UI/ToastMessage");
             if (toastMessagePrefab == null)
-            {
+        {
                 Debug.LogWarning("ToastManager: 未找到ToastMessage预制体！请在Inspector中设置或确保Resources/UI/ToastMessage.prefab存在。");
             }
         }

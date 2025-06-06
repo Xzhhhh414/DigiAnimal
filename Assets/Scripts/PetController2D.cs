@@ -17,7 +17,7 @@ public class PetController2D : MonoBehaviour
     [Header("宠物基本信息")]
     [SerializeField] private string petDisplayName;     // 宠物显示名称
     [SerializeField] private Sprite petProfileImage;    // 宠物头像图片
-    [SerializeField] private string preference;         // 宠物偏好
+    [SerializeField] private string petIntroduction;         // 宠物介绍
     
     [SerializeField]
     public bool isSelected = false;
@@ -78,14 +78,16 @@ public class PetController2D : MonoBehaviour
     private bool isShowingTiredBubble = false;
     
     // 玩具互动系统
-    [Header("玩具互动设置")]
-    [SerializeField] private bool canInteractWithToy = true; // 是否可以进行玩具互动
     
     [Header("厌倦状态设置")]
     [SerializeField] [Range(0f, 1f)] private float boredomChance = 0.3f; // 进入厌倦状态的几率 (0-1)
     [SerializeField] private float boredomRecoveryMinutes = 2f; // 厌倦状态恢复时间（分钟）
     private float lastBoredomTime = -1f; // 上次进入厌倦状态的时间
     private bool isBored = false; // 当前是否处于厌倦状态
+    
+    // 存档系统相关
+    [Header("存档设置")]
+    public string petId = ""; // 宠物唯一ID，由存档系统设置
     
     // 宠物名称属性
     public string PetDisplayName
@@ -127,11 +129,11 @@ public class PetController2D : MonoBehaviour
         set { petProfileImage = value; }
     }
     
-    // 宠物偏好属性
-    public string Preference
+    // 宠物介绍
+    public string PetIntroduction
     {
-        get { return preference; }
-        set { preference = value; }
+        get { return petIntroduction; }
+        set { petIntroduction = value; }
     }
     
     // 动画状态属性
@@ -187,8 +189,15 @@ public class PetController2D : MonoBehaviour
         get { return _Energy; }
         set 
         { 
+            int oldValue = _Energy;
             // 限制精力值在0-100范围内
             _Energy = Mathf.Clamp(value, 0, 100);
+            
+            // 如果值发生变化，通知存档系统
+            if (oldValue != _Energy && GameDataManager.Instance != null)
+            {
+                GameDataManager.Instance.OnPetDataChanged();
+            }
         }
     }
     
@@ -199,8 +208,15 @@ public class PetController2D : MonoBehaviour
         get { return _Satiety; }
         set
         {
+            int oldValue = _Satiety;
             // 限制饱腹度在0-100范围内
             _Satiety = Mathf.Clamp(value, 0, 100);
+            
+            // 如果值发生变化，通知存档系统
+            if (oldValue != _Satiety && GameDataManager.Instance != null)
+            {
+                GameDataManager.Instance.OnPetDataChanged();
+            }
         }
     }
     
@@ -267,7 +283,9 @@ public class PetController2D : MonoBehaviour
     
     void Start()
     {
-        currentPosition = rb.position;
+        // 同步currentPosition和targetPosition到当前实际位置
+        // 这样不会覆盖由存档系统设置的位置
+        currentPosition = transform.position;
         targetPosition = currentPosition;
         
         // 设置NavMeshAgent速度与moveSpeed匹配
@@ -582,6 +600,15 @@ public class PetController2D : MonoBehaviour
             float remaining = boredomRecoverySeconds - (Time.time - lastBoredomTime);
             return Mathf.Max(0f, remaining / 60f); // 转换为分钟
         }
+    }
+    
+    /// <summary>
+    /// 获取/设置上次厌倦时间（供存档系统使用）
+    /// </summary>
+    public float LastBoredomTime
+    {
+        get { return lastBoredomTime; }
+        set { lastBoredomTime = value; }
     }
     
     // 玩具互动相关属性和方法

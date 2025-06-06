@@ -105,6 +105,16 @@ public class PlayerManager : MonoBehaviour
         return HeartCurrency >= amount;
     }
     
+    /// <summary>
+    /// 直接设置爱心货币（用于存档加载，不触发事件）
+    /// </summary>
+    /// <param name="amount">要设置的数量</param>
+    public void SetHeartCurrencyDirect(int amount)
+    {
+        heartCurrency = Mathf.Max(0, amount);
+        // 不触发OnCurrencyChanged事件，避免立即保存
+    }
+    
     #endregion
     
     #region 工具管理

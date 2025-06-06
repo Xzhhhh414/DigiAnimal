@@ -1,0 +1,183 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 主存档数据结构
+/// </summary>
+[Serializable]
+public class SaveData
+{
+    public PlayerSaveData playerData;
+    public List<PetSaveData> petsData;
+    public WorldSaveData worldData;
+    
+    // 存档版本号，用于后续升级兼容
+    public int saveVersion = 1;
+    
+    // 最后保存时间
+    public string lastSaveTime;
+    
+    public SaveData()
+    {
+        playerData = new PlayerSaveData();
+        petsData = new List<PetSaveData>();
+        worldData = new WorldSaveData();
+        lastSaveTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    }
+}
+
+/// <summary>
+/// 玩家存档数据
+/// </summary>
+[Serializable]
+public class PlayerSaveData
+{
+    public int heartCurrency = 0;
+    
+    // 预留其他玩家数据扩展
+    public int playerLevel = 1;
+    public float playTime = 0f;
+    
+    public PlayerSaveData()
+    {
+        heartCurrency = 0;
+        playerLevel = 1;
+        playTime = 0f;
+    }
+}
+
+/// <summary>
+/// 宠物存档数据
+/// </summary>
+[Serializable]
+public class PetSaveData
+{
+    // 唯一标识
+    public string petId;
+    
+    // 预制体信息
+    public string prefabName;       // 例如："Pet_Cat", "Pet_Dog"
+    
+    // 动态属性
+    public string displayName;
+    public string introduction;
+    public int energy;
+    public int satiety;
+    
+    // 位置信息
+    public Vector3 position;
+    
+    // 注意：不保存当前状态（isSleeping、isEating）
+    // 重新登录后这些状态会重置为默认值
+    
+    // 厌倦系统相关
+    public bool isBored;
+    public float lastBoredomTime;
+    
+    // 预留扩展字段
+    public Dictionary<string, object> customProperties;
+    
+    public PetSaveData()
+    {
+        petId = GenerateNewPetId();
+        prefabName = "";
+        displayName = "";
+        introduction = "";
+        energy = 100;
+        satiety = 100;
+        position = Vector3.zero;
+        isBored = false;
+        lastBoredomTime = -1f;
+        customProperties = new Dictionary<string, object>();
+    }
+    
+    public PetSaveData(string prefab)
+    {
+        petId = GenerateNewPetId();
+        prefabName = prefab;
+        displayName = "";
+        introduction = "";
+        energy = 100;
+        satiety = 100;
+        position = Vector3.zero;
+        isBored = false;
+        lastBoredomTime = -1f;
+        customProperties = new Dictionary<string, object>();
+    }
+    
+    /// <summary>
+    /// 生成新的宠物ID
+    /// </summary>
+    private static string GenerateNewPetId()
+    {
+        // 获取当前最大ID并递增
+        int nextId = SaveManager.GetNextPetId();
+        return $"pet_{nextId:D3}";
+    }
+}
+
+/// <summary>
+/// 世界存档数据（为未来扩展准备）
+/// </summary>
+[Serializable]
+public class WorldSaveData
+{
+    // 玩具数据
+    public List<ToySaveData> toys;
+    
+    // 家具数据
+    public List<FurnitureSaveData> furniture;
+    
+    // 场景设置
+    public string currentScene;
+    
+    public WorldSaveData()
+    {
+        toys = new List<ToySaveData>();
+        furniture = new List<FurnitureSaveData>();
+        currentScene = "Gameplay";
+    }
+}
+
+/// <summary>
+/// 玩具存档数据（预留）
+/// </summary>
+[Serializable]
+public class ToySaveData
+{
+    public string toyId;
+    public string toyType;
+    public Vector3 position;
+    public Dictionary<string, object> properties;
+    
+    public ToySaveData()
+    {
+        toyId = "";
+        toyType = "";
+        position = Vector3.zero;
+        properties = new Dictionary<string, object>();
+    }
+}
+
+/// <summary>
+/// 家具存档数据（预留）
+/// </summary>
+[Serializable]
+public class FurnitureSaveData
+{
+    public string furnitureId;
+    public string furnitureType;
+    public Vector3 position;
+    public Vector3 rotation;
+    public Dictionary<string, object> properties;
+    
+    public FurnitureSaveData()
+    {
+        furnitureId = "";
+        furnitureType = "";
+        position = Vector3.zero;
+        rotation = Vector3.zero;
+        properties = new Dictionary<string, object>();
+    }
+} 

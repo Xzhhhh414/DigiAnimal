@@ -236,33 +236,33 @@ public class ToolInteractionManager : MonoBehaviour
         switch (interactionResult)
         {
             case 0: // 成功
-                // 检查本次交互是否让宠物进入厌倦状态
-                bool becameBored = !wasBoredBefore && pet.IsBored;
-                
-                // 显示爱心获得提示
-                var heartManager = FindObjectOfType<HeartMessageManager>();
-                if (heartManager != null)
-                {
-                    Debug.Log("找到HeartMessageManager组件，准备显示爱心提示");
-                    heartManager.ShowHeartGainMessage(pet, heartReward);
-                }
-                else
-                {
-                    Debug.LogWarning("未找到HeartMessageManager组件，爱心提示将不会显示");
-                }
-                
-                if (becameBored)
-                {
-                    // 本次交互让宠物进入厌倦状态，但仍然显示成功的消息
-                    string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
-                    ShowPetMessage(pet, message, PetNeedType.Happy);
-                }
-                else
-                {
-                    // 宠物没有因本次交互进入厌倦状态，很开心
-                    string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
-                    ShowPetMessage(pet, message, PetNeedType.Happy);
-                }
+            // 检查本次交互是否让宠物进入厌倦状态
+            bool becameBored = !wasBoredBefore && pet.IsBored;
+            
+            // 显示爱心获得提示
+            var heartManager = FindObjectOfType<HeartMessageManager>();
+            if (heartManager != null)
+            {
+                Debug.Log("找到HeartMessageManager组件，准备显示爱心提示");
+                heartManager.ShowHeartGainMessage(pet, heartReward);
+            }
+            else
+            {
+                Debug.LogWarning("未找到HeartMessageManager组件，爱心提示将不会显示");
+            }
+            
+            if (becameBored)
+            {
+                // 本次交互让宠物进入厌倦状态，但仍然显示成功的消息
+                string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
+                ShowPetMessage(pet, message, PetNeedType.Happy);
+            }
+            else
+            {
+                // 宠物没有因本次交互进入厌倦状态，很开心
+                string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
+                ShowPetMessage(pet, message, PetNeedType.Happy);
+            }
                 break;
                 
             case 1: // 厌倦状态

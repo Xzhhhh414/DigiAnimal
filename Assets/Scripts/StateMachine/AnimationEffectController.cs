@@ -10,6 +10,8 @@ public class AnimationEffectController : StateMachineBehaviour
     
     // 特效实例的引用
     private GameObject effectInstance;
+    private Transform attachPoint;
+    private bool needSetParent = false;
     
     // 进入状态时触发
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -18,15 +20,26 @@ public class AnimationEffectController : StateMachineBehaviour
             return;
             
         // 使用角色的根节点作为挂载点
-        Transform attachPoint = animator.transform;
+        attachPoint = animator.transform;
         
         // 实例化特效并设置位置和旋转
         effectInstance = Instantiate(effectPrefab, 
                                      attachPoint.position + attachPoint.TransformDirection(new Vector3(positionOffset.x, positionOffset.y, 0)), 
                                      attachPoint.rotation);
                                      
-        // 将特效设为挂载点的子物体，这样特效会跟随角色移动
-        effectInstance.transform.SetParent(attachPoint);
+        // 标记需要在下一帧设置父物体，避免在Awake阶段的SendMessage警告
+        needSetParent = true;
+    }
+    
+    // 每帧更新时触发
+    override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        // 在第一次Update时设置父物体，此时Awake已经完成
+        if (needSetParent && effectInstance != null && attachPoint != null)
+        {
+            effectInstance.transform.SetParent(attachPoint);
+            needSetParent = false;
+        }
     }
     
     // 退出状态时触发
@@ -39,4 +52,6 @@ public class AnimationEffectController : StateMachineBehaviour
             effectInstance = null;
         }
     }
+    
+
 } 

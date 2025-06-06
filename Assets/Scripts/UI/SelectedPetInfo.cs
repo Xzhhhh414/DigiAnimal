@@ -112,7 +112,7 @@ public class SelectedPetInfo : MonoBehaviour
         // 设置宠物偏好
         if (preferenceText != null)
         {
-            preferenceText.text = string.IsNullOrEmpty(currentPet.Preference) ? "无特殊偏好" : currentPet.Preference;
+            preferenceText.text = string.IsNullOrEmpty(currentPet.PetIntroduction) ? "无特殊偏好" : currentPet.PetIntroduction;
         }
     }
     

@@ -103,7 +103,7 @@ public class HeartShopButtonController : MonoBehaviour
         else
         {
             Debug.LogWarning("未找到ToastManager！");
-            Debug.Log("商店功能开发中...");
+        Debug.Log("商店功能开发中...");
         }
     }
     

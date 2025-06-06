@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 6067749836465757049}
   - component: {fileID: 8668713142048465174}
   m_Layer: 7
-  m_Name: Cat_Brown
+  m_Name: Pet_CatBrown
   m_TagString: Pet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -240,7 +240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   petDisplayName: "\u68D5\u8272\u732B\u732B"
   petProfileImage: {fileID: 21300000, guid: 7f5d026a77a7b3e4b93a3d71d6998878, type: 3}
-  preference: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
+  petIntroduction: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
   isSelected: 0
   _IsMoving: 0
   _Energy: 81
@@ -255,7 +255,7 @@ MonoBehaviour:
   needBubbleController: {fileID: 8385827696282192901}
   hungryThreshold: 5
   tiredThreshold: 5
-  canInteractWithToy: 0
+
   boredomChance: 0.3
   boredomRecoveryMinutes: 5
 --- !u!114 &8883347001294338108
