@@ -502,7 +502,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: f01f65650b8684244a745fd5371657dc, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a97d0e832fcc9b24aaed95cb2abf37d0, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -524,6 +524,7 @@ GameObject:
   - component: {fileID: 6304503615828671269}
   - component: {fileID: 8246712669771144064}
   - component: {fileID: 5291929568365565183}
+  - component: {fileID: 1192297925334119256}
   m_Layer: 5
   m_Name: House
   m_TagString: Untagged
@@ -632,6 +633,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1192297925334119256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7634248132854900736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2f4e379dd630924f824dced3ba085da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildButton: {fileID: 5291929568365565183}
+  toastMessage: "\u623F\u5C4B\u5EFA\u9020\u529F\u80FD\u6B63\u5728\u65BD\u5DE5\u4E2D\uFF0C\u5373\u5C06\u5F00\u653E\uFF01"
 --- !u!1 &7935582978587356193
 GameObject:
   m_ObjectHideFlags: 0
@@ -776,6 +791,7 @@ GameObject:
   - component: {fileID: 88341652712512967}
   - component: {fileID: 6309652070572775298}
   - component: {fileID: 2155082762215792837}
+  - component: {fileID: 6302277151121987620}
   m_Layer: 5
   m_Name: Setting
   m_TagString: Untagged
@@ -884,6 +900,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6302277151121987620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8172619602968465292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59821b0b9dd0d1041a9ad28ad4ad7af1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  settingsButton: {fileID: 2155082762215792837}
+  toastMessage: "\u7CFB\u7EDF\u8BBE\u7F6E\u529F\u80FD\u5F00\u53D1\u4E2D\uFF0C\u656C\u8BF7\u671F\u5F85\uFF01"
 --- !u!1 &8523251684610807307
 GameObject:
   m_ObjectHideFlags: 0

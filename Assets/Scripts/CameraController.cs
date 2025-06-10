@@ -204,8 +204,8 @@ public class CameraController : MonoBehaviour
         // 更新目标位置
         UpdateCameraTargetPosition(selectedPet);
         
-        // 只有在自由模式下才能拖动场景
-        if (currentState == CameraState.Free)
+        // 只有在自由模式下且游戏可以交互时才能拖动场景
+        if (currentState == CameraState.Free) // && GameState.CanCameraInteract)
         {
             HandleDragging();
             

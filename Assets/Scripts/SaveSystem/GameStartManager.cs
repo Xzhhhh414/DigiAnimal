@@ -27,8 +27,14 @@ public class GameStartManager : MonoBehaviour
     [SerializeField] private Object gameplayScene;            // 运行时使用Object类型
 #endif
     
+    [Header("过渡动画")]
+    [SerializeField] private GameObject transitionOverlayPrefab;  // 过渡动画预制体
+    
     [Header("文本设置")]
     [SerializeField] private string saveInfoFormat = "{0}";
+    
+    // 过渡动画控制器
+    // private TransitionController transitionController;
     
     private void Start()
     {
@@ -129,8 +135,8 @@ public class GameStartManager : MonoBehaviour
             startGameButton.interactable = false;
         }
         
-        // 加载游戏场景
-        LoadGameplayScene();
+        // 播放过渡动画并加载游戏场景
+        StartTransitionToGameplay();
     }
     
     /// <summary>
@@ -204,6 +210,52 @@ public class GameStartManager : MonoBehaviour
         {
             // 如果出现任何错误，优雅地处理
             Debug.LogWarning($"显示Toast消息时出错: {e.Message}，消息内容: {message}");
+        }
+    }
+    
+    /// <summary>
+    /// 开始过渡动画并加载游戏场景
+    /// </summary>
+    private void StartTransitionToGameplay()
+    {
+        if (transitionOverlayPrefab == null)
+        {
+            Debug.LogWarning("过渡动画预制体未配置，直接加载场景");
+            LoadGameplayScene();
+            return;
+        }
+        
+        try
+        {
+            // 实例化过渡动画
+            GameObject overlayInstance = Instantiate(transitionOverlayPrefab);
+            var controller = overlayInstance.GetComponent("TransitionController");
+            
+            if (controller != null)
+            {
+                // 设置立即开始进入动画（在Start之前调用）
+                controller.GetType().GetMethod("StartWithEnterAnimation").Invoke(controller, null);
+                
+                // 使用反射调用方法，避免编译时类型检查
+                var enterCompleteEvent = controller.GetType().GetField("OnEnterComplete").GetValue(controller) as UnityEngine.Events.UnityEvent;
+                if (enterCompleteEvent != null)
+                {
+                    enterCompleteEvent.AddListener(LoadGameplayScene);
+                }
+                
+                // Debug.Log("已设置过渡动画立即播放");
+            }
+            else
+            {
+                Debug.LogError("过渡动画预制体缺少TransitionController组件");
+                Destroy(overlayInstance);
+                LoadGameplayScene();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"创建过渡动画失败: {e.Message}");
+            LoadGameplayScene();
         }
     }
     
