@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e856fc47697dfda43869eee447cd358f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineColor: {r: 0.2830189, g: 0.2830189, b: 0.2830189, a: 1}
+  outlineColor: {r: 0.33962262, g: 0.33962262, b: 0.33962262, a: 1}
   outlineSize: 1
   alphaCutoff: 0.8
   pixelOutlineShader: {fileID: 4800000, guid: a0a484dc243dc624c874ea4b743ecfa9, type: 3}

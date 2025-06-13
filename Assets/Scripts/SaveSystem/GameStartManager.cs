@@ -105,7 +105,7 @@ public class GameStartManager : MonoBehaviour
             deleteSaveButton.interactable = true;
         }
         
-        Debug.Log($"存档信息已更新: 宠物数量={saveInfo.petCount}, 爱心货币={saveInfo.heartCurrency}");
+        // 存档信息已更新
     }
     
     /// <summary>
@@ -119,7 +119,7 @@ public class GameStartManager : MonoBehaviour
             saveInfoPanel.SetActive(false);
         }
         
-        Debug.Log("隐藏存档信息面板 - 无存档状态");
+        // 隐藏存档信息面板
     }
     
     /// <summary>
@@ -127,7 +127,7 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void OnStartGameClicked()
     {
-        //Debug.Log("开始游戏按钮被点击");
+        // 开始游戏按钮被点击
         
         // 禁用按钮防止重复点击
         if (startGameButton != null)
@@ -135,8 +135,59 @@ public class GameStartManager : MonoBehaviour
             startGameButton.interactable = false;
         }
         
-        // 播放过渡动画并加载游戏场景
-        StartTransitionToGameplay();
+        // 检查是否需要显示宠物选择界面
+        CheckForFirstTimeSelection();
+    }
+    
+    /// <summary>
+    /// 检查是否需要显示宠物选择界面
+    /// </summary>
+    private void CheckForFirstTimeSelection()
+    {
+        // 检查是否有存档
+        SaveFileInfo saveInfo = SaveManager.Instance.GetSaveFileInfo();
+        
+        if (saveInfo == null || !saveInfo.exists || saveInfo.petCount == 0)
+        {
+            // 没有存档或没有宠物，需要显示宠物选择界面
+            // 检测到首次游戏，显示宠物选择界面
+            
+            // 查找FirstTimePetSelectionManager并显示宠物选择界面
+            FirstTimePetSelectionManager petSelectionManager = FindObjectOfType<FirstTimePetSelectionManager>();
+            if (petSelectionManager != null)
+            {
+                petSelectionManager.ForceShowPetSelection();
+                // 宠物选择界面已激活
+                
+                // 重新启用开始游戏按钮，因为用户需要完成宠物选择
+                if (startGameButton != null)
+                {
+                    startGameButton.interactable = true;
+                }
+            }
+            else
+            {
+                Debug.LogError("未找到FirstTimePetSelectionManager组件！");
+                
+                // 重新启用按钮
+                if (startGameButton != null)
+                {
+                    startGameButton.interactable = true;
+                }
+                
+                ShowToastSafely("宠物选择系统未找到");
+            }
+        }
+        else
+        {
+            // 已有存档，直接进入游戏
+            // 检测到现有存档，直接进入游戏
+            
+            // 确保UIManager存在（只在真正进入游戏时创建）
+            EnsureUIManagerExists();
+            
+            StartTransitionToGameplay();
+        }
     }
     
     /// <summary>
@@ -144,7 +195,7 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void OnDeleteSaveClicked()
     {
-        //Debug.Log("删除存档按钮被点击");
+        // 删除存档按钮被点击
         
         // 可以添加确认对话框
         if (ShowDeleteConfirmation())
@@ -172,7 +223,7 @@ public class GameStartManager : MonoBehaviour
         
         if (success)
         {
-            Debug.Log("存档删除成功");
+            // 存档删除成功
             RefreshSaveInfo(); // 刷新界面
             
             // 尝试显示提示信息（在开始场景中可能没有ToastManager）
@@ -186,6 +237,35 @@ public class GameStartManager : MonoBehaviour
             ShowToastSafely("删除存档失败");
         }
     }
+    
+    /// <summary>
+    /// 确保UIManager存在
+    /// </summary>
+    private void EnsureUIManagerExists()
+    {
+        // 先检查场景中是否已经有UIManager
+        UIManager existingUIManager = FindObjectOfType<UIManager>();
+        if (existingUIManager != null)
+        {
+            // UIManager已存在
+            return;
+        }
+        
+        // 尝试从Resources加载UIManager预制体
+        GameObject uiManagerPrefab = Resources.Load<GameObject>("Prefab/Manager/UIManager");
+        if (uiManagerPrefab != null)
+        {
+            GameObject uiManagerInstance = Instantiate(uiManagerPrefab);
+            uiManagerInstance.name = "UIManager"; // 设置一个清晰的名称
+            // UIManager实例已创建
+        }
+        else
+        {
+            Debug.LogWarning("GameStartManager: 未找到UIManager预制体，请确保Resources/Prefab/Manager/UIManager.prefab存在");
+        }
+    }
+    
+
     
     /// <summary>
     /// 安全显示Toast消息（处理ToastManager不存在的情况）
@@ -203,7 +283,7 @@ public class GameStartManager : MonoBehaviour
             else
             {
                 // 如果没有ToastManager，只在控制台输出消息
-                Debug.Log($"[Toast消息] {message}");
+                // Toast消息显示
             }
         }
         catch (System.Exception e)
@@ -287,7 +367,11 @@ public class GameStartManager : MonoBehaviour
                 throw new Exception("无法获取场景名称");
             }
             
-            Debug.Log($"正在加载场景: {sceneName}");
+            // 正在加载场景
+            
+            // 在场景切换前清理当前场景的管理器对象
+            CleanupBeforeSceneTransition();
+            
             SceneManager.LoadScene(sceneName);
         }
         catch (Exception e)
@@ -326,6 +410,21 @@ public class GameStartManager : MonoBehaviour
 #else
         return gameplayScene.name;
 #endif
+    }
+    
+    /// <summary>
+    /// 场景切换前的清理工作
+    /// </summary>
+    private void CleanupBeforeSceneTransition()
+    {
+        // 清理场景切换前的对象
+        
+        // 确保GameStartManager对象不会跟随到下一个场景
+        // 由于GameStartManager没有使用DontDestroyOnLoad，理论上应该会被自动销毁
+        // 但为了确保，我们可以主动标记为待销毁
+        
+        // 注意：不要在这里直接Destroy(gameObject)，因为还需要完成场景切换
+        // Unity的SceneManager.LoadScene会自动清理当前场景的对象
     }
     
     /// <summary>

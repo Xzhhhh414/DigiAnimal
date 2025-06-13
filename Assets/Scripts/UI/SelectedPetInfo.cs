@@ -13,6 +13,7 @@ public class SelectedPetInfo : MonoBehaviour
     [SerializeField] private Slider energySlider;       // 精力值滑动条
     [SerializeField] private Slider satietySlider;      // 饱腹度滑动条
     [SerializeField] private Text preferenceText;       // 宠物偏好文本
+    [SerializeField] private Button nameChangeButton;   // 改名按钮
     
     [Header("动画设置")]
     [SerializeField] private float animationDuration = 0.3f; // 动画持续时间
@@ -41,6 +42,12 @@ public class SelectedPetInfo : MonoBehaviour
         
         // 初始状态隐藏面板
         HidePanel(false); // 不使用动画立即隐藏
+        
+        // 设置改名按钮事件
+        if (nameChangeButton != null)
+        {
+            nameChangeButton.onClick.AddListener(OnNameChangeButtonClicked);
+        }
         
         // 注册事件
         EventManager.Instance.AddListener<PetController2D>(CustomEventType.PetSelected, OnPetSelected);
@@ -209,5 +216,28 @@ public class SelectedPetInfo : MonoBehaviour
         
         // 播放动画
         currentAnimation.Play();
+    }
+    
+    /// <summary>
+    /// 改名按钮点击事件
+    /// </summary>
+    private void OnNameChangeButtonClicked()
+    {
+        if (currentPet == null)
+        {
+            Debug.LogError("当前没有选中的宠物");
+            return;
+        }
+        
+        // 暂时禁用改名功能，显示Toast提示
+        // TODO: 稍后实现详情界面的改名功能
+        if (ToastManager.Instance != null)
+        {
+            ToastManager.Instance.ShowToast("改名功能开发中，敬请期待！");
+        }
+        else
+        {
+            Debug.Log("改名功能暂未实现");
+        }
     }
 } 

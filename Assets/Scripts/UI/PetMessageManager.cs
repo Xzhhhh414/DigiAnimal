@@ -61,102 +61,108 @@ public class PetMessageManager : MonoBehaviour
             return;
         }
         
-        // Debug.Log("PetMessageManager Awake 开始初始化...");
+        // 延迟初始化，等待场景完全加载
+        StartCoroutine(DelayedInitialize());
+    }
+    
+    /// <summary>
+    /// 延迟初始化PetMessageManager
+    /// </summary>
+    private System.Collections.IEnumerator DelayedInitialize()
+    {
+        // 等待几帧，确保场景完全加载
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
         
         // 自动查找组件（如果没有在Inspector中设置）
         if (petMessageObject == null)
         {
-            // Debug.Log("petMessageObject为空，尝试自动查找...");
             // 尝试在Canvas下查找名为PetMessage的对象
             Canvas canvas = FindObjectOfType<Canvas>();
             if (canvas != null)
             {
-                // Debug.Log($"找到Canvas: {canvas.name}");
                 Transform petMessageTransform = canvas.transform.Find("PetMessage");
                 if (petMessageTransform != null)
                 {
                     petMessageObject = petMessageTransform.gameObject;
-                    // Debug.Log($"自动找到PetMessage对象: {petMessageObject.name}");
                 }
-                else
-                {
-                    Debug.LogError("Canvas下未找到名为'PetMessage'的对象！");
-                }
+                // 在GameStart场景中找不到是正常的，不输出日志
             }
-            else
-            {
-                Debug.LogError("未找到Canvas！");
-            }
-        }
-        else
-        {
-            // Debug.Log($"已手动设置petMessageObject: {petMessageObject.name}");
+            // 在GameStart场景中找不到Canvas是正常的，不输出日志
         }
         
         if (petMessageObject != null)
         {
-            // 自动查找子组件
+            InitializeComponents();
+        }
+        // 在GameStart场景中未找到对象是正常的，不输出日志
+    }
+    
+    /// <summary>
+    /// 初始化组件
+    /// </summary>
+    private void InitializeComponents()
+    {
+        // 自动查找子组件
+        if (petAvatarImage == null)
+        {
+            petAvatarImage = petMessageObject.GetComponentInChildren<Image>();
             if (petAvatarImage == null)
             {
-                petAvatarImage = petMessageObject.GetComponentInChildren<Image>();
-                if (petAvatarImage != null)
-                {
-                    // Debug.Log($"自动找到petAvatarImage: {petAvatarImage.name}");
-                }
-                else
-                {
-                    Debug.LogWarning("未找到Image组件！");
-                }
+                Debug.LogWarning("PetMessageManager: 未找到Image组件！");
             }
-            else
-            {
-                // Debug.Log($"已手动设置petAvatarImage: {petAvatarImage.name}");
-            }
-            
+        }
+        
+        if (messageText == null)
+        {
+            messageText = petMessageObject.GetComponentInChildren<Text>();
             if (messageText == null)
             {
-                messageText = petMessageObject.GetComponentInChildren<Text>();
-                if (messageText != null)
-                {
-                    // Debug.Log($"自动找到messageText: {messageText.name}");
-                }
-                else
-                {
-                    Debug.LogWarning("未找到Text组件！");
-                }
+                Debug.LogWarning("PetMessageManager: 未找到Text组件！");
             }
-            else
-            {
-                // Debug.Log($"已手动设置messageText: {messageText.name}");
-            }
-            
-            // 获取或添加CanvasGroup组件
-            canvasGroup = petMessageObject.GetComponent<CanvasGroup>();
-            if (canvasGroup == null)
-            {
-                canvasGroup = petMessageObject.AddComponent<CanvasGroup>();
-                // Debug.Log("自动添加CanvasGroup组件");
-            }
-            else
-            {
-                // Debug.Log("找到现有CanvasGroup组件");
-            }
-            
-            // 获取RectTransform
-            rectTransform = petMessageObject.GetComponent<RectTransform>();
-            if (rectTransform != null)
-            {
-                originalPosition = rectTransform.anchoredPosition;
-                // Debug.Log($"记录原始位置: {originalPosition}");
-            }
-            
-            // 初始状态隐藏
-            HideMessageImmediate();
-            // Debug.Log("PetMessageManager初始化完成");
         }
-        else
+        
+        // 获取或添加CanvasGroup组件
+        canvasGroup = petMessageObject.GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
         {
-            Debug.LogError("PetMessageManager初始化失败：petMessageObject为空！");
+            canvasGroup = petMessageObject.AddComponent<CanvasGroup>();
+        }
+        
+        // 获取RectTransform
+        rectTransform = petMessageObject.GetComponent<RectTransform>();
+        if (rectTransform != null)
+        {
+            originalPosition = rectTransform.anchoredPosition;
+        }
+        
+        // 初始状态隐藏
+        HideMessageImmediate();
+    }
+    
+    /// <summary>
+    /// 尝试重新初始化组件
+    /// </summary>
+    private void TryReinitialize()
+    {
+        // 重新查找PetMessage对象
+        if (petMessageObject == null)
+        {
+            Canvas canvas = FindObjectOfType<Canvas>();
+            if (canvas != null)
+            {
+                Transform petMessageTransform = canvas.transform.Find("PetMessage");
+                if (petMessageTransform != null)
+                {
+                    petMessageObject = petMessageTransform.gameObject;
+                }
+            }
+        }
+        
+        // 如果找到了PetMessage对象，初始化组件
+        if (petMessageObject != null)
+        {
+            InitializeComponents();
         }
     }
     
@@ -197,11 +203,17 @@ public class PetMessageManager : MonoBehaviour
             return;
         }
         
+        // 如果组件未初始化，尝试重新初始化
         if (petMessageObject == null || messageText == null)
         {
-            Debug.LogError("PetMessageManager: PetMessage对象或组件未找到！请检查设置。");
-            // Debug.Log($"PetMessage (Fallback): {message}");
-            return;
+            TryReinitialize();
+            
+            // 如果重新初始化后仍然失败，则输出警告并返回
+            if (petMessageObject == null || messageText == null)
+            {
+                Debug.LogWarning("PetMessageManager: PetMessage对象或组件未找到，可能当前场景不支持宠物消息显示。");
+                return;
+            }
         }
         
         // Debug.Log("开始显示宠物消息...");

@@ -37,7 +37,7 @@ public class AnimationEffectController : StateMachineBehaviour
         // 在第一次Update时设置父物体，此时Awake已经完成
         if (needSetParent && effectInstance != null && attachPoint != null)
         {
-            effectInstance.transform.SetParent(attachPoint);
+        effectInstance.transform.SetParent(attachPoint);
             needSetParent = false;
         }
     }

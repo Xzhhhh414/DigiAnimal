@@ -202,9 +202,7 @@ public class UIManager : MonoBehaviour
             return;
         }
         
-        // 初始化UI组件
-        InitializeUI();
-        
+        // 不在Awake中初始化UI组件，延迟到场景加载完成后
         //Debug.Log("UIManager: Awake执行完成");
     }
     
@@ -219,6 +217,21 @@ public class UIManager : MonoBehaviour
     {
         //Debug.Log("UIManager: Start开始执行");
         
+        // 延迟初始化UI组件，确保场景已经加载完成
+        StartCoroutine(DelayedInitializeUI());
+        
+        //Debug.Log("UIManager: Start执行完成");
+    }
+    
+    /// <summary>
+    /// 延迟初始化UI组件
+    /// </summary>
+    private System.Collections.IEnumerator DelayedInitializeUI()
+    {
+        // 等待几帧，确保场景完全加载
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+        
         // 确保GameCanvas存在
         if (gameCanvas == null)
         {
@@ -226,7 +239,8 @@ public class UIManager : MonoBehaviour
             gameCanvas = FindObjectOfType<Canvas>();
         }
         
-        //Debug.Log("UIManager: Start执行完成");
+        // 初始化UI组件
+        InitializeUI();
     }
     
     // 初始化UI组件
@@ -239,7 +253,7 @@ public class UIManager : MonoBehaviour
             
             if (selectedPetInfoPanel == null)
             {
-                Debug.LogWarning("UIManager: 未找到SelectedPetInfo面板，某些功能可能无法正常工作。");
+                // 在GameStart场景中找不到是正常的，不输出日志
             }
         }
         
@@ -250,7 +264,7 @@ public class UIManager : MonoBehaviour
             
             if (selectedFoodInfoPanel == null)
             {
-                Debug.LogWarning("UIManager: 未找到SelectedFoodInfo面板，某些功能可能无法正常工作。");
+                // 在GameStart场景中找不到是正常的，不输出日志
             }
         }
     }

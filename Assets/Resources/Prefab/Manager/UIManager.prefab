@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7036593405418518353}
   - component: {fileID: 3038366896281046046}
   - component: {fileID: 3740905442747075340}
+  - component: {fileID: 4872569764337698508}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -157,3 +158,20 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4872569764337698508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2057780504264212069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b23ec5872a8d36044971fb4cf200ceab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toastMessagePrefab: {fileID: 3026855039046255621, guid: 2335c0e36f1b8844f92d919dfc832c90, type: 3}
+  targetCanvas: {fileID: 0}
+  toastDuration: 2
+  fadeInDuration: 0.3
+  fadeOutDuration: 0.3
