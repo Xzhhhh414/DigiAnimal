@@ -17,6 +17,7 @@ public class BottomPanelController : MonoBehaviour
     
     [Header("功能按钮")]
     [SerializeField] private Button[] functionButtons; // 面板上的功能按钮数组
+    [SerializeField] private Button heartShopButton;   // 爱心商店按钮
     
     [Header("动画设置")]
     [SerializeField] private float animationDuration = 0.3f; // 动画持续时间
@@ -45,6 +46,9 @@ public class BottomPanelController : MonoBehaviour
         
         // 设置功能按钮初始状态为可点击
         SetFunctionButtonsInteractable(true);
+        
+        // 设置爱心商店按钮事件
+        SetupHeartShopButton();
     }
     
     // 按钮点击事件处理
@@ -199,5 +203,31 @@ public class BottomPanelController : MonoBehaviour
     public bool IsExpanded()
     {
         return isExpanded;
+    }
+    
+    /// <summary>
+    /// 设置爱心商店按钮事件
+    /// </summary>
+    private void SetupHeartShopButton()
+    {
+        if (heartShopButton != null)
+        {
+            heartShopButton.onClick.AddListener(OnHeartShopButtonClick);
+        }
+    }
+    
+    /// <summary>
+    /// 爱心商店按钮点击事件
+    /// </summary>
+    private void OnHeartShopButtonClick()
+    {
+        if (HeartShopController.Instance != null)
+        {
+            HeartShopController.Instance.OpenShop();
+        }
+        else
+        {
+            Debug.LogWarning("HeartShopController未找到！");
+        }
     }
 } 

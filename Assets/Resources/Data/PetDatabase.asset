@@ -20,8 +20,8 @@ MonoBehaviour:
     headIconImage: {fileID: 21300000, guid: 7f5d026a77a7b3e4b93a3d71d6998878, type: 3}
     petType: 0
     isStarterPet: 1
-    isShopPet: 0
-    heartCost: 0
+    isShopPet: 1
+    heartCost: 100
     baseEnergy: 90
     baseSatiety: 90
   - petId: Pet_CatBlack
@@ -31,8 +31,8 @@ MonoBehaviour:
     headIconImage: {fileID: 21300000, guid: 7472261bb21628a49ab3f7274508a855, type: 3}
     petType: 0
     isStarterPet: 1
-    isShopPet: 0
-    heartCost: 0
+    isShopPet: 1
+    heartCost: 100
     baseEnergy: 90
     baseSatiety: 90
   - petId: Pet_CatWhite
@@ -42,7 +42,7 @@ MonoBehaviour:
     headIconImage: {fileID: 21300000, guid: e27daf2c5547d6040b9bb39a8060bf77, type: 3}
     petType: 0
     isStarterPet: 1
-    isShopPet: 0
-    heartCost: 0
+    isShopPet: 1
+    heartCost: 100
     baseEnergy: 90
     baseSatiety: 90

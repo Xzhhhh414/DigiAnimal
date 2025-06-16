@@ -102,42 +102,42 @@ public class PetMessageManager : MonoBehaviour
     /// 初始化组件
     /// </summary>
     private void InitializeComponents()
-    {
-        // 自动查找子组件
-        if (petAvatarImage == null)
         {
-            petAvatarImage = petMessageObject.GetComponentInChildren<Image>();
+            // 自动查找子组件
             if (petAvatarImage == null)
             {
+                petAvatarImage = petMessageObject.GetComponentInChildren<Image>();
+            if (petAvatarImage == null)
+                {
                 Debug.LogWarning("PetMessageManager: 未找到Image组件！");
+                }
             }
-        }
-        
-        if (messageText == null)
-        {
-            messageText = petMessageObject.GetComponentInChildren<Text>();
+            
             if (messageText == null)
             {
+                messageText = petMessageObject.GetComponentInChildren<Text>();
+            if (messageText == null)
+                {
                 Debug.LogWarning("PetMessageManager: 未找到Text组件！");
+                }
             }
-        }
-        
-        // 获取或添加CanvasGroup组件
-        canvasGroup = petMessageObject.GetComponent<CanvasGroup>();
-        if (canvasGroup == null)
-        {
-            canvasGroup = petMessageObject.AddComponent<CanvasGroup>();
-        }
-        
-        // 获取RectTransform
-        rectTransform = petMessageObject.GetComponent<RectTransform>();
-        if (rectTransform != null)
-        {
-            originalPosition = rectTransform.anchoredPosition;
-        }
-        
-        // 初始状态隐藏
-        HideMessageImmediate();
+            
+            // 获取或添加CanvasGroup组件
+            canvasGroup = petMessageObject.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = petMessageObject.AddComponent<CanvasGroup>();
+            }
+            
+            // 获取RectTransform
+            rectTransform = petMessageObject.GetComponent<RectTransform>();
+            if (rectTransform != null)
+            {
+                originalPosition = rectTransform.anchoredPosition;
+            }
+            
+            // 初始状态隐藏
+            HideMessageImmediate();
     }
     
     /// <summary>
@@ -212,7 +212,7 @@ public class PetMessageManager : MonoBehaviour
             if (petMessageObject == null || messageText == null)
             {
                 Debug.LogWarning("PetMessageManager: PetMessage对象或组件未找到，可能当前场景不支持宠物消息显示。");
-                return;
+            return;
             }
         }
         
