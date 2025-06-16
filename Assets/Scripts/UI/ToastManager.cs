@@ -208,8 +208,6 @@ public class ToastManager : MonoBehaviour
         
         // 设置Toast根对象的大小
         toastRectTransform.sizeDelta = new Vector2(totalWidth, fixedHeight);
-        
-        Debug.Log($"Toast自适应大小: 文本宽度={preferredWidth}, 总宽度={totalWidth}, 内边距={paddingHorizontal}");
     }
     
     /// <summary>
