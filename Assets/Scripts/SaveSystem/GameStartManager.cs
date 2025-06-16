@@ -10,7 +10,7 @@ using UnityEditor;
 #pragma warning disable 0414 // 禁用"字段被赋值但从未使用"警告
 
 /// <summary>
-/// GameStart场景管理器 - 处理开始游戏界面和存档显示
+/// Start场景管理器 - 处理开始游戏界面和存档显示
 /// </summary>
 public class GameStartManager : MonoBehaviour
 {

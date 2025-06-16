@@ -316,7 +316,7 @@ GameObject:
   - component: {fileID: 907709217823925513}
   - component: {fileID: 1863029120485307312}
   m_Layer: 5
-  m_Name: NameChangeBtn
+  m_Name: InfoChangeBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -336,10 +336,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 6265977849367983483}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 620, y: -145}
-  m_SizeDelta: {x: 60, y: 60}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -130, y: -150}
+  m_SizeDelta: {x: 85, y: 85}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &53697494543844546
 CanvasRenderer:
@@ -1239,10 +1239,10 @@ RectTransform:
   - {fileID: 2780467726972223887}
   - {fileID: 2488359025605916943}
   - {fileID: 1273156507257594371}
-  - {fileID: 5079963760817931670}
   - {fileID: 6894579050185682667}
   - {fileID: 2589642701000047419}
   - {fileID: 3872959449276728019}
+  - {fileID: 5079963760817931670}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -1267,6 +1267,7 @@ MonoBehaviour:
   energySlider: {fileID: 7063435718724377167}
   satietySlider: {fileID: 6940519833634298742}
   preferenceText: {fileID: 5211006444780103027}
+  nameChangeButton: {fileID: 0}
   animationDuration: 0.3
   animationEase: 27
   hiddenPosition: {x: 0, y: 100}
@@ -1514,7 +1515,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3872959449276728019}
   m_Layer: 5
-  m_Name: Preference
+  m_Name: Desc
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -253,7 +253,7 @@ public class UIManager : MonoBehaviour
             
             if (selectedPetInfoPanel == null)
             {
-                // 在GameStart场景中找不到是正常的，不输出日志
+                // 在Start场景中找不到是正常的，不输出日志
             }
         }
         
@@ -264,7 +264,7 @@ public class UIManager : MonoBehaviour
             
             if (selectedFoodInfoPanel == null)
             {
-                // 在GameStart场景中找不到是正常的，不输出日志
+                // 在Start场景中找不到是正常的，不输出日志
             }
         }
     }

@@ -29,7 +29,9 @@ public class PetSpawner : MonoBehaviour
     
     [Header("生成设置")]
     [SerializeField] private Transform petContainer; // 宠物容器（用于组织层级）
-    [SerializeField] private Vector3 defaultSpawnPosition = Vector3.zero; // 默认生成位置
+    
+    // 默认生成位置（固定坐标，不需要在Inspector中配置）
+    private readonly Vector3 defaultSpawnPosition = new Vector3(2.5f, -2f, 0f);
     
     // 已加载的预制体缓存 (resourcePath -> GameObject)
     private Dictionary<string, GameObject> loadedPrefabs = new Dictionary<string, GameObject>();
@@ -317,6 +319,13 @@ public class PetSpawner : MonoBehaviour
         
         // 设置位置 - 需要同时设置transform和NavMeshAgent
         Vector3 targetPosition = petData.position;
+        
+        // 如果存档中的位置是零向量，使用默认生成位置
+        if (targetPosition == Vector3.zero)
+        {
+            targetPosition = defaultSpawnPosition;
+        }
+        
         petController.transform.position = targetPosition;
         
         // 获取NavMeshAgent并设置位置

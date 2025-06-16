@@ -86,16 +86,16 @@ public class PetMessageManager : MonoBehaviour
                 {
                     petMessageObject = petMessageTransform.gameObject;
                 }
-                // 在GameStart场景中找不到是正常的，不输出日志
+                // 在Start场景中找不到是正常的，不输出日志
             }
-            // 在GameStart场景中找不到Canvas是正常的，不输出日志
+            // 在Start场景中找不到Canvas是正常的，不输出日志
         }
         
         if (petMessageObject != null)
         {
             InitializeComponents();
         }
-        // 在GameStart场景中未找到对象是正常的，不输出日志
+                    // 在Start场景中未找到对象是正常的，不输出日志
     }
     
     /// <summary>

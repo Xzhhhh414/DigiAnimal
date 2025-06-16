@@ -9,7 +9,7 @@ using UnityEditor;
 
 /// <summary>
 /// 初次游戏宠物选择管理器 - 处理初次游戏时的宠物选择界面
-/// 挂载位置：GameStart场景 -> GameStartManager对象下
+/// 挂载位置：Start场景 -> GameStartManager对象下
 /// 功能：检测是否初次游戏，控制宠物选择界面的显示/隐藏，处理宠物创建和场景切换
 /// 配置要求：UI Canvas、宠物选择面板、3个宠物按钮、名字输入框、确认按钮、目标场景(SceneAsset)
 /// </summary>
@@ -457,7 +457,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             // 创建新宠物数据
             PetSaveData newPetData = new PetSaveData(petConfig.petPrefab?.name ?? "Unknown");
             newPetData.displayName = petName;
-            newPetData.position = Vector3.zero; // 默认位置，到Gameplay场景后会调整
+            newPetData.position = Vector3.zero; // 使用默认位置，由PetSpawner统一管理
             
             // 从配置设置初始属性
             newPetData.energy = (int)petConfig.baseEnergy;
