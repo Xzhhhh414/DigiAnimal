@@ -175,3 +175,7 @@ MonoBehaviour:
   toastDuration: 2
   fadeInDuration: 0.3
   fadeOutDuration: 0.3
+  minWidth: 400
+  maxWidth: 1000
+  paddingHorizontal: 75
+  fixedHeight: 175

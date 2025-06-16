@@ -22,8 +22,16 @@ public class ToastManager : MonoBehaviour
     [SerializeField] private float fadeInDuration = 0.3f; // 淡入时长
     [SerializeField] private float fadeOutDuration = 0.3f; // 淡出时长
     
+    [Header("自适应大小设置")]
+    [SerializeField] private float minWidth = 200f; // 最小宽度
+    [SerializeField] private float maxWidth = 800f; // 最大宽度
+    [SerializeField] private float paddingHorizontal = 50f; // 水平内边距（左右各一半）
+    [SerializeField] private float fixedHeight = 175f; // 固定高度
+    
     private CanvasGroup canvasGroup;
+    private RectTransform toastRectTransform; // Toast根对象的RectTransform
     private bool isShowing = false; // 当前是否正在显示Toast
+    private Tween hideDelayTweener; // 隐藏延迟动画的引用
     
     // 单例模式
     private static ToastManager _instance;
@@ -93,10 +101,16 @@ public class ToastManager : MonoBehaviour
             return;
         }
         
-        // 如果正在显示其他Toast，先隐藏之前的
+        // 如果正在显示其他Toast，先停止之前的动画
         if (isShowing && currentToastObject != null)
         {
+            // 停止所有相关的动画
             DOTween.Kill(canvasGroup);
+            if (hideDelayTweener != null && hideDelayTweener.IsActive())
+            {
+                hideDelayTweener.Kill();
+                hideDelayTweener = null;
+            }
             DestroyCurrentToast();
         }
         
@@ -112,6 +126,9 @@ public class ToastManager : MonoBehaviour
         
         // 设置文本内容
         toastText.text = message;
+        
+        // 根据文本长度调整Toast大小
+        AdjustToastSize(message);
         
         // 开始显示动画
         ShowToastAnimation();
@@ -130,8 +147,8 @@ public class ToastManager : MonoBehaviour
         // 淡入动画
         canvasGroup.DOFade(1, fadeInDuration)
             .OnComplete(() => {
-                // 显示完成后，等待一段时间再淡出
-                DOVirtual.DelayedCall(toastDuration, () => {
+                // 显示完成后，等待一段时间再淡出（重置计时器）
+                hideDelayTweener = DOVirtual.DelayedCall(toastDuration, () => {
                     HideToastAnimation();
                 });
             });
@@ -154,6 +171,9 @@ public class ToastManager : MonoBehaviour
             toastText = currentToastObject.GetComponent<Text>();
         }
         
+        // 获取Toast根对象的RectTransform
+        toastRectTransform = currentToastObject.GetComponent<RectTransform>();
+        
         // 获取或添加CanvasGroup组件
         canvasGroup = currentToastObject.GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -167,6 +187,32 @@ public class ToastManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 根据文本长度调整Toast大小
+    /// </summary>
+    /// <param name="message">要显示的文本</param>
+    private void AdjustToastSize(string message)
+    {
+        if (toastText == null || toastRectTransform == null) return;
+        
+        // 强制更新文本布局
+        Canvas.ForceUpdateCanvases();
+        
+        // 获取文本的首选宽度
+        float preferredWidth = toastText.preferredWidth;
+        
+        // 计算Toast的总宽度（文本宽度 + 水平内边距）
+        float totalWidth = preferredWidth + paddingHorizontal * 2;
+        
+        // 限制在最小和最大宽度之间
+        totalWidth = Mathf.Clamp(totalWidth, minWidth, maxWidth);
+        
+        // 设置Toast根对象的大小
+        toastRectTransform.sizeDelta = new Vector2(totalWidth, fixedHeight);
+        
+        Debug.Log($"Toast自适应大小: 文本宽度={preferredWidth}, 总宽度={totalWidth}, 内边距={paddingHorizontal}");
+    }
+    
+    /// <summary>
     /// 销毁当前Toast对象
     /// </summary>
     private void DestroyCurrentToast()
@@ -176,8 +222,16 @@ public class ToastManager : MonoBehaviour
             Destroy(currentToastObject);
             currentToastObject = null;
             toastText = null;
+            toastRectTransform = null;
             canvasGroup = null;
         }
+        
+        // 清理延迟动画引用
+        if (hideDelayTweener != null)
+        {
+            hideDelayTweener = null;
+        }
+        
         isShowing = false;
     }
     
@@ -203,7 +257,13 @@ public class ToastManager : MonoBehaviour
     {
         if (isShowing && canvasGroup != null)
         {
+            // 停止所有相关动画
             DOTween.Kill(canvasGroup);
+            if (hideDelayTweener != null && hideDelayTweener.IsActive())
+            {
+                hideDelayTweener.Kill();
+                hideDelayTweener = null;
+            }
             HideToastAnimation();
         }
     }

@@ -23,6 +23,13 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     [SerializeField] private Button confirmButton;                // 确认选择按钮
     [SerializeField] private GameObject petSelectionIndicator;    // 宠物选择指示器（类似工具包的选择框）
     
+    [Header("输入限制")]
+    [SerializeField] private int maxNameLength = 10;                  // 宠物名字最大显示长度（中文=2，英文=1）
+    
+    [Header("Toast提示文本")]
+    [SerializeField] private string emptyNameMessage = "宠物名字不能为空";
+    [SerializeField] private string nameTooLongMessage = "宠物名字过长，当前长度：{0}，最大长度：{1}";
+    
     [Header("场景切换")]
 #if UNITY_EDITOR
     [SerializeField] private UnityEditor.SceneAsset gameplayScene;   // 游戏场景引用
@@ -225,11 +232,10 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             confirmButton.interactable = false; // 初始不可点击
         }
         
-        // 设置输入框事件
+        // 设置输入框事件（不设置characterLimit，使用自定义长度验证）
         if (petNameInput != null)
         {
             petNameInput.onValueChanged.AddListener(OnNameInputChanged);
-            petNameInput.characterLimit = 10; // 限制名字长度
         }
         
         // 初始化选择指示器
@@ -300,25 +306,33 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             petSelectionPanel.SetActive(true);
         }
         
-        // 重置选择状态
-        selectedPetIndex = -1;
-        
-        // 隐藏选择指示器
-        if (petSelectionIndicator != null)
-        {
-            petSelectionIndicator.SetActive(false);
-        }
-        
-        UpdateButtonStates();
-        
-        // 清空名字输入框
-        if (petNameInput != null)
-        {
-            petNameInput.text = "";
-        }
-        
         // 更新宠物按钮头像
         UpdatePetButtonImages();
+        
+        // 默认选择第一个宠物
+        if (starterPets != null && starterPets.Count > 0)
+        {
+            OnPetButtonClicked(0); // 自动选择第一个宠物
+        }
+        else
+        {
+            // 如果没有宠物配置，重置选择状态
+            selectedPetIndex = -1;
+            
+            // 隐藏选择指示器
+            if (petSelectionIndicator != null)
+            {
+                petSelectionIndicator.SetActive(false);
+            }
+            
+            UpdateButtonStates();
+            
+            // 清空名字输入框
+            if (petNameInput != null)
+            {
+                petNameInput.text = "";
+            }
+        }
     }
     
     /// <summary>
@@ -380,24 +394,108 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 验证名字输入
+    /// 计算字符串的显示长度（中文字符=2，英文字符=1）
+    /// </summary>
+    /// <param name="text">要计算的字符串</param>
+    /// <returns>显示长度</returns>
+    private int GetDisplayLength(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return 0;
+            
+        int length = 0;
+        foreach (char c in text)
+        {
+            // 判断是否为中文字符（基本汉字范围）
+            if (c >= 0x4E00 && c <= 0x9FFF)
+            {
+                length += 2; // 中文字符占2个长度
+            }
+            else
+            {
+                length += 1; // 其他字符占1个长度
+            }
+        }
+        return length;
+    }
+    
+    /// <summary>
+    /// 验证名字输入（不再自动截断，允许用户继续输入）
     /// </summary>
     private void ValidateNameInput(string name)
     {
-        if (petNameInput == null) return;
-        
-        // 去除首尾空格
-        string trimmedName = name.Trim();
-        
-        // 检查长度限制
-        if (trimmedName.Length > 10)
-        {
-            // 截断超出的部分
-            petNameInput.text = trimmedName.Substring(0, 10);
-        }
+        // 现在不再自动截断输入，允许用户继续输入
+        // 验证将在确认时进行并显示Toast提示
         
         // 检查是否包含特殊字符（可选）
         // 这里可以添加更多验证逻辑
+    }
+    
+    /// <summary>
+    /// 截断字符串到指定的显示长度
+    /// </summary>
+    /// <param name="text">原始字符串</param>
+    /// <param name="maxDisplayLength">最大显示长度</param>
+    /// <returns>截断后的字符串</returns>
+    private string TruncateToDisplayLength(string text, int maxDisplayLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+            
+        int currentLength = 0;
+        int charIndex = 0;
+        
+        foreach (char c in text)
+        {
+            int charLength = (c >= 0x4E00 && c <= 0x9FFF) ? 2 : 1;
+            
+            if (currentLength + charLength > maxDisplayLength)
+            {
+                break;
+            }
+            
+            currentLength += charLength;
+            charIndex++;
+        }
+        
+        return text.Substring(0, charIndex);
+    }
+    
+    /// <summary>
+    /// 获取名字验证错误消息
+    /// </summary>
+    /// <param name="name">宠物名字</param>
+    /// <returns>错误消息，如果验证通过则返回null</returns>
+    private string GetNameValidationMessage(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return emptyNameMessage;
+        }
+        
+        int nameLength = GetDisplayLength(name);
+        if (nameLength > maxNameLength)
+        {
+            return string.Format(nameTooLongMessage, nameLength, maxNameLength);
+        }
+        
+        return null; // 验证通过
+    }
+    
+    /// <summary>
+    /// 显示Toast提示
+    /// </summary>
+    /// <param name="message">提示消息</param>
+    private void ShowToast(string message)
+    {
+        if (ToastManager.Instance != null)
+        {
+            ToastManager.Instance.ShowToast(message);
+        }
+        else
+        {
+            Debug.LogWarning($"未找到ToastManager，消息：{message}");
+        }
     }
     
     /// <summary>
@@ -415,6 +513,14 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         if (string.IsNullOrEmpty(petName))
         {
             petName = starterPets[selectedPetIndex].petName;
+        }
+        
+        // 验证名字长度并显示Toast提示
+        string validationMessage = GetNameValidationMessage(petName);
+        if (!string.IsNullOrEmpty(validationMessage))
+        {
+            ShowToast(validationMessage);
+            return;
         }
         
         // 禁用按钮防止重复点击
@@ -550,7 +656,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             if (canConfirm && petNameInput != null)
             {
                 string name = petNameInput.text.Trim();
-                canConfirm = !string.IsNullOrEmpty(name);
+                canConfirm = !string.IsNullOrEmpty(name); // 移除长度限制检查，允许点击确认
             }
             
             confirmButton.interactable = canConfirm;

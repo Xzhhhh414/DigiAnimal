@@ -12,8 +12,11 @@ public class SelectedPetInfo : MonoBehaviour
     [SerializeField] private Text petName;              // 宠物名字文本 (使用Legacy Text)
     [SerializeField] private Slider energySlider;       // 精力值滑动条
     [SerializeField] private Slider satietySlider;      // 饱腹度滑动条
-    [SerializeField] private Text preferenceText;       // 宠物偏好文本
-    [SerializeField] private Button nameChangeButton;   // 改名按钮
+    [SerializeField] private Text introductionText;     // 宠物简介文本
+    [SerializeField] private Button editInfoButton;     // 修改信息按钮
+    
+    [Header("弹窗引用")]
+    [SerializeField] private GameObject editDialogPrefab; // 编辑弹窗预制体引用（必需）
     
     [Header("动画设置")]
     [SerializeField] private float animationDuration = 0.3f; // 动画持续时间
@@ -43,10 +46,10 @@ public class SelectedPetInfo : MonoBehaviour
         // 初始状态隐藏面板
         HidePanel(false); // 不使用动画立即隐藏
         
-        // 设置改名按钮事件
-        if (nameChangeButton != null)
+        // 设置修改信息按钮事件
+        if (editInfoButton != null)
         {
-            nameChangeButton.onClick.AddListener(OnNameChangeButtonClicked);
+            editInfoButton.onClick.AddListener(OnEditInfoButtonClicked);
         }
         
         // 注册事件
@@ -116,10 +119,10 @@ public class SelectedPetInfo : MonoBehaviour
             satietySlider.value = currentPet.Satiety / 100f; // 饱腹度最大为100
         }
         
-        // 设置宠物偏好
-        if (preferenceText != null)
+        // 设置宠物简介
+        if (introductionText != null)
         {
-            preferenceText.text = string.IsNullOrEmpty(currentPet.PetIntroduction) ? "无特殊偏好" : currentPet.PetIntroduction;
+            introductionText.text = string.IsNullOrEmpty(currentPet.PetIntroduction) ? "暂无简介" : currentPet.PetIntroduction;
         }
     }
     
@@ -219,9 +222,9 @@ public class SelectedPetInfo : MonoBehaviour
     }
     
     /// <summary>
-    /// 改名按钮点击事件
+    /// 修改信息按钮点击事件
     /// </summary>
-    private void OnNameChangeButtonClicked()
+    private void OnEditInfoButtonClicked()
     {
         if (currentPet == null)
         {
@@ -229,15 +232,121 @@ public class SelectedPetInfo : MonoBehaviour
             return;
         }
         
-        // 暂时禁用改名功能，显示Toast提示
-        // TODO: 稍后实现详情界面的改名功能
-        if (ToastManager.Instance != null)
+        // 打开宠物信息编辑弹窗
+        OpenPetInfoEditDialog();
+    }
+    
+    /// <summary>
+    /// 打开宠物信息编辑弹窗
+    /// </summary>
+    private void OpenPetInfoEditDialog()
+    {
+        if (editDialogPrefab == null)
         {
-            ToastManager.Instance.ShowToast("改名功能开发中，敬请期待！");
+            Debug.LogError("editDialogPrefab未设置，请在Inspector中拖拽编辑弹窗预制体");
+            return;
+        }
+        
+        // 实例化弹窗预制体
+        GameObject dialogInstance = Instantiate(editDialogPrefab);
+        
+        // 确保弹窗在Canvas下
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas != null)
+        {
+            dialogInstance.transform.SetParent(canvas.transform, false);
+        }
+        
+        // 获取弹窗组件并打开（使用反射避免类型依赖）
+        var dialogComponent = dialogInstance.GetComponent("PetInfoEditDialog");
+        if (dialogComponent != null)
+        {
+            // 使用反射调用OpenDialog方法
+            var openDialogMethod = dialogComponent.GetType().GetMethod("OpenDialog");
+            if (openDialogMethod != null)
+            {
+                // 创建回调委托
+                System.Action<string, string> callback = OnPetInfoUpdated;
+                openDialogMethod.Invoke(dialogComponent, new object[] { currentPet, callback });
+            }
+            else
+            {
+                Debug.LogError("PetInfoEditDialog组件缺少OpenDialog方法");
+                Destroy(dialogInstance);
+            }
         }
         else
         {
-            Debug.Log("改名功能暂未实现");
+            Debug.LogError("PetInfoEditDialog预制体缺少PetInfoEditDialog组件");
+            Destroy(dialogInstance);
+        }
+    }
+    
+    /// <summary>
+    /// 宠物信息更新回调
+    /// </summary>
+    private void OnPetInfoUpdated(string newName, string newIntroduction)
+    {
+        if (currentPet == null) return;
+        
+        // 更新宠物信息
+        currentPet.PetDisplayName = newName;
+        currentPet.PetIntroduction = newIntroduction;
+        
+        // 刷新UI显示
+        UpdatePetInfo();
+        
+        // 保存到存档系统
+        SavePetInfoToSave();
+        
+        // 显示成功提示
+        if (ToastManager.Instance != null)
+        {
+            ToastManager.Instance.ShowToast("宠物信息修改成功！");
+        }
+    }
+    
+    /// <summary>
+    /// 保存宠物信息到存档系统
+    /// </summary>
+    private async void SavePetInfoToSave()
+    {
+        if (currentPet == null || SaveManager.Instance == null) return;
+        
+        try
+        {
+            // 获取当前存档数据
+            SaveData saveData = SaveManager.Instance.GetCurrentSaveData();
+            if (saveData != null)
+            {
+                // 查找对应的宠物存档数据
+                var petSaveData = saveData.petsData.Find(p => p.petId == currentPet.petId);
+                if (petSaveData != null)
+                {
+                    // 更新存档中的宠物信息
+                    petSaveData.displayName = currentPet.PetDisplayName;
+                    petSaveData.introduction = currentPet.PetIntroduction;
+                    
+                    // 异步保存存档
+                    bool saveSuccess = await SaveManager.Instance.SaveAsync();
+                    if (saveSuccess)
+                    {
+                        Debug.Log($"宠物信息已保存到存档: {currentPet.PetDisplayName}");
+                    }
+                    else
+                    {
+                        Debug.LogError("保存宠物信息失败");
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"未找到宠物ID为 {currentPet.petId} 的存档数据");
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"保存宠物信息时出错: {e.Message}");
         }
     }
 } 
