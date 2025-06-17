@@ -672,7 +672,7 @@ public class HeartShopController : MonoBehaviour
                 newPet.Energy = (int)pet.baseEnergy;
                 newPet.Satiety = (int)pet.baseSatiety;
                 
-                Debug.Log($"成功购买宠物: {pet.petName}");
+                // Debug.Log($"成功购买宠物: {pet.petName}");
                 return true;
             }
             else

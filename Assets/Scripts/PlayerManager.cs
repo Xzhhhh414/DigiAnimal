@@ -115,6 +115,14 @@ public class PlayerManager : MonoBehaviour
         // 不触发OnCurrencyChanged事件，避免立即保存
     }
     
+    /// <summary>
+    /// 触发货币变化事件（用于存档加载后同步UI）
+    /// </summary>
+    public void TriggerCurrencyChangeEvent()
+    {
+        OnCurrencyChanged?.Invoke(heartCurrency);
+    }
+    
     #endregion
     
     #region 工具管理

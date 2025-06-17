@@ -139,10 +139,16 @@ public class GameInitializer : MonoBehaviour
             int targetCurrency = saveData.playerData.heartCurrency;
             PlayerManager.Instance.SetHeartCurrencyDirect(targetCurrency);
             
+            // 等待一帧后触发货币变化事件，确保UI组件已经初始化
+            yield return null;
+            PlayerManager.Instance.TriggerCurrencyChangeEvent();
+            
             // DebugLog($"玩家数据同步完成，爱心货币: {targetCurrency}");
         }
-        
-        yield return null;
+        else
+        {
+            yield return null;
+        }
     }
     
     /// <summary>

@@ -371,12 +371,12 @@ public class BottomPanelController : MonoBehaviour
                 
             case FunctionType.House:
                 // TODO: 实现家装面板打开逻辑
-                Debug.Log("打开家装面板");
+                // Debug.Log("打开家装面板");
                 break;
                 
             case FunctionType.Settings:
                 // TODO: 实现设置面板打开逻辑
-                Debug.Log("打开设置面板");
+                // Debug.Log("打开设置面板");
                 break;
         }
     }
@@ -404,12 +404,12 @@ public class BottomPanelController : MonoBehaviour
                 
             case FunctionType.House:
                 // TODO: 实现家装面板关闭逻辑
-                Debug.Log("关闭家装面板");
+                // Debug.Log("关闭家装面板");
                 break;
                 
             case FunctionType.Settings:
                 // TODO: 实现设置面板关闭逻辑
-                Debug.Log("关闭设置面板");
+                // Debug.Log("关闭设置面板");
                 break;
         }
     }
