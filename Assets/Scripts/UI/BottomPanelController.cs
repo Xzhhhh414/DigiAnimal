@@ -16,8 +16,26 @@ public class BottomPanelController : MonoBehaviour
     [SerializeField] private float buttonCollapsedY = -20f; // 面板收起时按钮的Y位置
     
     [Header("功能按钮")]
-    [SerializeField] private Button[] functionButtons; // 面板上的功能按钮数组
     [SerializeField] private Button heartShopButton;   // 爱心商店按钮
+    [SerializeField] private Button toolsButton;       // 工具背包按钮
+    [SerializeField] private Button houseButton;       // 家装按钮
+    [SerializeField] private Button settingsButton;    // 设置按钮
+    
+    [Header("爱心商店按钮组件")]
+    [SerializeField] private Image heartShopBackgroundImage;    // 爱心商店按钮底图
+    [SerializeField] private Image heartShopIconImage;          // 爱心商店购物车图片
+    [SerializeField] private Sprite heartShopBgNormalSprite;    // 按钮底图正常状态
+    [SerializeField] private Sprite heartShopBgPressedSprite;   // 按钮底图按下状态
+    [SerializeField] private Sprite heartShopIconNormalSprite;  // 购物车图片正常状态
+    [SerializeField] private Sprite heartShopIconPressedSprite; // 购物车图片按下状态
+    
+    [Header("其他按钮状态图片")]
+    [SerializeField] private Sprite toolsNormalSprite;       // 工具正常状态
+    [SerializeField] private Sprite toolsPressedSprite;      // 工具按下状态
+    [SerializeField] private Sprite houseNormalSprite;       // 家装正常状态
+    [SerializeField] private Sprite housePressedSprite;      // 家装按下状态
+    [SerializeField] private Sprite settingsNormalSprite;    // 设置正常状态
+    [SerializeField] private Sprite settingsPressedSprite;   // 设置按下状态
     
     [Header("动画设置")]
     [SerializeField] private float animationDuration = 0.3f; // 动画持续时间
@@ -29,6 +47,18 @@ public class BottomPanelController : MonoBehaviour
     
     // 是否正在动画中
     private bool isAnimating = false;
+    
+    // 当前激活的功能类型
+    public enum FunctionType
+    {
+        None,
+        HeartShop,
+        Tools,
+        House,
+        Settings
+    }
+    
+    private FunctionType currentActiveFunction = FunctionType.None;
     
     private void Start()
     {
@@ -47,8 +77,11 @@ public class BottomPanelController : MonoBehaviour
         // 设置功能按钮初始状态为可点击
         SetFunctionButtonsInteractable(true);
         
-        // 设置爱心商店按钮事件
-        SetupHeartShopButton();
+        // 设置所有功能按钮事件
+        SetupFunctionButtons();
+        
+        // 初始化所有按钮状态
+        UpdateAllButtonStates();
     }
     
     // 按钮点击事件处理
@@ -134,15 +167,10 @@ public class BottomPanelController : MonoBehaviour
     // 设置功能按钮可交互性
     private void SetFunctionButtonsInteractable(bool interactable)
     {
-        if (functionButtons == null || functionButtons.Length == 0) return;
-        
-        foreach (Button button in functionButtons)
-        {
-            if (button != null)
-            {
-                button.interactable = interactable;
-            }
-        }
+        if (heartShopButton != null) heartShopButton.interactable = interactable;
+        if (toolsButton != null) toolsButton.interactable = interactable;
+        if (houseButton != null) houseButton.interactable = interactable;
+        if (settingsButton != null) settingsButton.interactable = interactable;
     }
     
     // 可选：强制展开面板（用于外部调用）
@@ -206,28 +234,219 @@ public class BottomPanelController : MonoBehaviour
     }
     
     /// <summary>
-    /// 设置爱心商店按钮事件
+    /// 设置所有功能按钮事件
     /// </summary>
-    private void SetupHeartShopButton()
+    private void SetupFunctionButtons()
     {
         if (heartShopButton != null)
         {
-            heartShopButton.onClick.AddListener(OnHeartShopButtonClick);
+            heartShopButton.onClick.AddListener(() => OnFunctionButtonClick(FunctionType.HeartShop));
+        }
+        
+        if (toolsButton != null)
+        {
+            toolsButton.onClick.AddListener(() => OnFunctionButtonClick(FunctionType.Tools));
+        }
+        
+        if (houseButton != null)
+        {
+            houseButton.onClick.AddListener(() => OnFunctionButtonClick(FunctionType.House));
+        }
+        
+        if (settingsButton != null)
+        {
+            settingsButton.onClick.AddListener(() => OnFunctionButtonClick(FunctionType.Settings));
         }
     }
     
     /// <summary>
-    /// 爱心商店按钮点击事件
+    /// 功能按钮点击事件
     /// </summary>
-    private void OnHeartShopButtonClick()
+    private void OnFunctionButtonClick(FunctionType functionType)
     {
-        if (HeartShopController.Instance != null)
+        // 如果点击的是当前激活的功能，则关闭它
+        if (currentActiveFunction == functionType)
         {
-            HeartShopController.Instance.OpenShop();
+            CloseFunctionPanel(functionType);
+            SetActiveFunction(FunctionType.None);
+            return;
         }
-        else
+        
+        // 关闭当前激活的功能（如果有）
+        if (currentActiveFunction != FunctionType.None)
         {
-            Debug.LogWarning("HeartShopController未找到！");
+            CloseFunctionPanel(currentActiveFunction);
         }
+        
+        // 打开新的功能
+        OpenFunctionPanel(functionType);
+        SetActiveFunction(functionType);
+    }
+    
+    /// <summary>
+    /// 设置当前激活的功能并更新按钮状态
+    /// </summary>
+    private void SetActiveFunction(FunctionType functionType)
+    {
+        currentActiveFunction = functionType;
+        UpdateAllButtonStates();
+    }
+    
+    /// <summary>
+    /// 更新所有按钮的状态
+    /// </summary>
+    private void UpdateAllButtonStates()
+    {
+        // 特殊处理爱心商店按钮（复合结构）
+        UpdateHeartShopButtonState(currentActiveFunction == FunctionType.HeartShop);
+        
+        // 处理其他简单按钮
+        UpdateButtonState(toolsButton, toolsNormalSprite, toolsPressedSprite, currentActiveFunction == FunctionType.Tools);
+        UpdateButtonState(houseButton, houseNormalSprite, housePressedSprite, currentActiveFunction == FunctionType.House);
+        UpdateButtonState(settingsButton, settingsNormalSprite, settingsPressedSprite, currentActiveFunction == FunctionType.Settings);
+    }
+    
+    /// <summary>
+    /// 更新爱心商店按钮的复合状态
+    /// </summary>
+    private void UpdateHeartShopButtonState(bool isPressed)
+    {
+        // 更新按钮底图
+        if (heartShopBackgroundImage != null && heartShopBgNormalSprite != null && heartShopBgPressedSprite != null)
+        {
+            heartShopBackgroundImage.sprite = isPressed ? heartShopBgPressedSprite : heartShopBgNormalSprite;
+        }
+        
+        // 更新购物车图片
+        if (heartShopIconImage != null && heartShopIconNormalSprite != null && heartShopIconPressedSprite != null)
+        {
+            heartShopIconImage.sprite = isPressed ? heartShopIconPressedSprite : heartShopIconNormalSprite;
+        }
+        
+        // 爱心货币数量文本不变，由其他系统管理
+    }
+    
+    /// <summary>
+    /// 更新单个按钮的状态
+    /// </summary>
+    private void UpdateButtonState(Button button, Sprite normalSprite, Sprite pressedSprite, bool isPressed)
+    {
+        if (button == null) return;
+        
+        Image buttonImage = button.GetComponent<Image>();
+        if (buttonImage != null && normalSprite != null && pressedSprite != null)
+        {
+            buttonImage.sprite = isPressed ? pressedSprite : normalSprite;
+        }
+    }
+    
+    /// <summary>
+    /// 打开指定功能面板
+    /// </summary>
+    private void OpenFunctionPanel(FunctionType functionType)
+    {
+        switch (functionType)
+        {
+            case FunctionType.HeartShop:
+                if (HeartShopController.Instance != null)
+                {
+                    HeartShopController.Instance.OpenShop();
+                }
+                else
+                {
+                    Debug.LogWarning("HeartShopController未找到！");
+                }
+                break;
+                
+            case FunctionType.Tools:
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.OpenToolkit();
+                }
+                else
+                {
+                    Debug.LogWarning("UIManager未找到！");
+                }
+                break;
+                
+            case FunctionType.House:
+                // TODO: 实现家装面板打开逻辑
+                Debug.Log("打开家装面板");
+                break;
+                
+            case FunctionType.Settings:
+                // TODO: 实现设置面板打开逻辑
+                Debug.Log("打开设置面板");
+                break;
+        }
+    }
+    
+    /// <summary>
+    /// 关闭指定功能面板
+    /// </summary>
+    private void CloseFunctionPanel(FunctionType functionType)
+    {
+        switch (functionType)
+        {
+            case FunctionType.HeartShop:
+                if (HeartShopController.Instance != null)
+                {
+                    HeartShopController.Instance.CloseShop();
+                }
+                break;
+                
+            case FunctionType.Tools:
+                if (UIManager.Instance != null)
+                {
+                    UIManager.Instance.CloseToolkit();
+                }
+                break;
+                
+            case FunctionType.House:
+                // TODO: 实现家装面板关闭逻辑
+                Debug.Log("关闭家装面板");
+                break;
+                
+            case FunctionType.Settings:
+                // TODO: 实现设置面板关闭逻辑
+                Debug.Log("关闭设置面板");
+                break;
+        }
+    }
+    
+    /// <summary>
+    /// 外部调用：通知某个功能面板被关闭
+    /// </summary>
+    public void OnFunctionPanelClosed(FunctionType functionType)
+    {
+        if (currentActiveFunction == functionType)
+        {
+            SetActiveFunction(FunctionType.None);
+        }
+    }
+    
+    /// <summary>
+    /// 获取当前激活的功能类型
+    /// </summary>
+    public FunctionType GetCurrentActiveFunction()
+    {
+        return currentActiveFunction;
+    }
+    
+    /// <summary>
+    /// 手动更新爱心商店按钮状态（供外部调用）
+    /// </summary>
+    /// <param name="isPressed">是否为按下状态</param>
+    public void ManualUpdateHeartShopButtonState(bool isPressed)
+    {
+        UpdateHeartShopButtonState(isPressed);
+    }
+    
+    /// <summary>
+    /// 获取爱心商店按钮的组件引用（供外部系统更新货币显示等）
+    /// </summary>
+    public Button GetHeartShopButton()
+    {
+        return heartShopButton;
     }
 } 

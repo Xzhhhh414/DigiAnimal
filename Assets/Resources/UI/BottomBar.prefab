@@ -138,11 +138,22 @@ MonoBehaviour:
   collapseSprite: {fileID: 21300000, guid: f5d0bc556ef58e44190cb50179643177, type: 3}
   buttonExpandedY: -10
   buttonCollapsedY: -5
-  functionButtons:
-  - {fileID: 5258632675399596658}
-  - {fileID: 4754322448218714706}
-  - {fileID: 5291929568365565183}
-  - {fileID: 2155082762215792837}
+  heartShopButton: {fileID: 5258632675399596658}
+  toolsButton: {fileID: 4754322448218714706}
+  houseButton: {fileID: 5291929568365565183}
+  settingsButton: {fileID: 2155082762215792837}
+  heartShopBackgroundImage: {fileID: 1815101232451650820}
+  heartShopIconImage: {fileID: 8025176512774709276}
+  heartShopBgNormalSprite: {fileID: 21300000, guid: 81d0d34f09b1c874e8acd04751a0efb0, type: 3}
+  heartShopBgPressedSprite: {fileID: 21300000, guid: 0433bf9319105e44cbad803921269596, type: 3}
+  heartShopIconNormalSprite: {fileID: 21300000, guid: ce25925a516f1fb42a8eee92c82c8561, type: 3}
+  heartShopIconPressedSprite: {fileID: 21300000, guid: ce25925a516f1fb42a8eee92c82c8561, type: 3}
+  toolsNormalSprite: {fileID: 21300000, guid: 247774dc3f748944b8887f60380b3ae8, type: 3}
+  toolsPressedSprite: {fileID: 21300000, guid: 62fa5039f5cb55149884918df70c0351, type: 3}
+  houseNormalSprite: {fileID: 21300000, guid: c2e3a2ded6e26bf44a60aeb845ae1095, type: 3}
+  housePressedSprite: {fileID: 21300000, guid: c2e3a2ded6e26bf44a60aeb845ae1095, type: 3}
+  settingsNormalSprite: {fileID: 21300000, guid: 0922521d8a36d1944983f1316ef03f8b, type: 3}
+  settingsPressedSprite: {fileID: 21300000, guid: 0922521d8a36d1944983f1316ef03f8b, type: 3}
   animationDuration: 0.3
   collapsedYPosition: -145
   expandedYPosition: 0
@@ -312,7 +323,6 @@ GameObject:
   - component: {fileID: 7498476881056133740}
   - component: {fileID: 6156333961642847521}
   - component: {fileID: 4754322448218714706}
-  - component: {fileID: 7691021922182184364}
   m_Layer: 5
   m_Name: Tools
   m_TagString: Untagged
@@ -421,22 +431,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7691021922182184364
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4421321787353661196}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f4fc3bdd90c3894691cf5a2ec9d2f05, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  toolkitButton: {fileID: 4754322448218714706}
-  buttonImage: {fileID: 6156333961642847521}
-  defaultSprite: {fileID: 21300000, guid: 247774dc3f748944b8887f60380b3ae8, type: 3}
-  activeSprite: {fileID: 21300000, guid: 62fa5039f5cb55149884918df70c0351, type: 3}
 --- !u!1 &5148010446380702569
 GameObject:
   m_ObjectHideFlags: 0

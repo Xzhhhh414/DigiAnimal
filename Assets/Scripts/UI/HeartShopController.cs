@@ -27,6 +27,7 @@ public class HeartShopController : MonoBehaviour
     [Header("动画设置")]
     [SerializeField] private float animationDuration = 0.3f;         // 动画持续时间
     [SerializeField] private Ease animationEase = Ease.OutBack;      // 动画缓动效果
+    [SerializeField] private Vector2 hiddenPosition = new Vector2(0, 50); // 隐藏时的位置偏移
     
     [Header("Toast提示文本")]
     [SerializeField] private string maxPetsMessage = "宠物数量已达上限（{0}/{1}），无法购买更多宠物";
@@ -36,9 +37,16 @@ public class HeartShopController : MonoBehaviour
     
     // 私有变量
     private List<PetConfigData> shopPets = new List<PetConfigData>();
-    private List<MonoBehaviour> shopItemInstances = new List<MonoBehaviour>(); // 动态生成的商品实例
+    private List<HeartShopItem> shopItemInstances = new List<HeartShopItem>(); // 动态生成的商品实例
     private PetConfigData selectedPetForPurchase;
+    private bool isShopOpen = false;                                 // 商店是否打开（内部状态）
     private const int MAX_PETS = 4;                                  // 最大宠物数量
+    
+    // 动画相关
+    private RectTransform shopPanelRect;
+    private CanvasGroup shopPanelCanvasGroup;
+    private Vector2 shownPosition;
+    private Sequence currentAnimation;
     
     // 单例模式
     private static HeartShopController _instance;
@@ -70,14 +78,9 @@ public class HeartShopController : MonoBehaviour
     
     private void Start()
     {
+        InitializeAnimationComponents();
         InitializeShop();
         SetupEventListeners();
-        
-        // 初始时隐藏商店面板
-        if (shopPanel != null)
-        {
-            shopPanel.SetActive(false);
-        }
         
         // 订阅货币变化事件
         if (PlayerManager.Instance != null)
@@ -92,6 +95,60 @@ public class HeartShopController : MonoBehaviour
         if (PlayerManager.Instance != null)
         {
             PlayerManager.Instance.OnCurrencyChanged -= OnCurrencyChanged;
+        }
+        
+        // 清理可能正在运行的动画
+        if (currentAnimation != null && currentAnimation.IsActive())
+        {
+            currentAnimation.Kill();
+            currentAnimation = null;
+        }
+    }
+    
+    /// <summary>
+    /// 初始化动画组件
+    /// </summary>
+    private void InitializeAnimationComponents()
+    {
+        // 获取商店面板的RectTransform
+        if (shopPanel != null)
+        {
+            shopPanelRect = shopPanel.GetComponent<RectTransform>();
+            if (shopPanelRect == null)
+            {
+                Debug.LogError("HeartShopController: 商店面板缺少RectTransform组件！");
+            }
+            
+            // 获取或添加CanvasGroup组件
+            shopPanelCanvasGroup = shopPanel.GetComponent<CanvasGroup>();
+            if (shopPanelCanvasGroup == null)
+            {
+                shopPanelCanvasGroup = shopPanel.AddComponent<CanvasGroup>();
+            }
+            
+            // 保存显示位置
+            if (shopPanelRect != null)
+            {
+                shownPosition = shopPanelRect.anchoredPosition;
+            }
+            
+            // 初始状态隐藏(但不禁用游戏对象，只使其不可见和不可交互)
+            if (shopPanelCanvasGroup != null && shopPanelRect != null)
+            {
+                shopPanelCanvasGroup.alpha = 0;
+                shopPanelCanvasGroup.interactable = false;
+                shopPanelCanvasGroup.blocksRaycasts = false;
+                shopPanelRect.anchoredPosition = shownPosition + hiddenPosition;
+            }
+            
+            // 确保面板激活但不可见
+            shopPanel.SetActive(true);
+        }
+        
+        // 设置滚动条初始位置到顶部
+        if (shopScrollRect != null)
+        {
+            shopScrollRect.verticalNormalizedPosition = 1f; // 1f = 顶部, 0f = 底部
         }
     }
     
@@ -146,7 +203,6 @@ public class HeartShopController : MonoBehaviour
         if (PetDatabaseManager.Instance != null && PetDatabaseManager.Instance.IsDatabaseLoaded())
         {
             shopPets = PetDatabaseManager.Instance.GetShopPets();
-            Debug.Log($"加载了{shopPets.Count}个商店宠物");
         }
         else
         {
@@ -197,31 +253,41 @@ public class HeartShopController : MonoBehaviour
         {
             // 实例化商品项
             GameObject itemObj = Instantiate(shopItemPrefab, shopItemContainer);
-                         var shopItem = itemObj.GetComponent<MonoBehaviour>();
+            var shopItem = itemObj.GetComponent<HeartShopItem>();
             
-                         if (shopItem != null)
-             {
-                 // 使用反射调用Initialize方法
-                 var initializeMethod = shopItem.GetType().GetMethod("Initialize");
-                 if (initializeMethod != null)
-                 {
-                     initializeMethod.Invoke(shopItem, new object[] { pet, (System.Action<PetConfigData>)OnShopItemClicked });
-                     shopItemInstances.Add(shopItem);
-                 }
-                 else
-                 {
-                     Debug.LogError("HeartShopItem组件缺少Initialize方法！");
-                     DestroyImmediate(itemObj);
-                 }
-             }
-             else
-             {
-                 Debug.LogError("HeartShopItem预制体缺少组件！");
-                 DestroyImmediate(itemObj);
-             }
+            if (shopItem != null)
+            {
+                // 直接调用Initialize方法
+                shopItem.Initialize(pet, OnShopItemClicked);
+                shopItemInstances.Add(shopItem);
+            }
+            else
+            {
+                Debug.LogError("HeartShopItem预制体缺少HeartShopItem组件！");
+                DestroyImmediate(itemObj);
+            }
         }
         
-        Debug.Log($"动态生成了{shopItemInstances.Count}个商品项");
+        // 生成商品后，确保滚动条在正确位置
+        if (shopScrollRect != null && shopPanel.activeSelf)
+        {
+            StartCoroutine(EnsureScrollPositionAfterGeneration());
+        }
+    }
+    
+    /// <summary>
+    /// 切换商店显示状态
+    /// </summary>
+    public void ToggleShop()
+    {
+        if (isShopOpen)
+        {
+            CloseShop();
+        }
+        else
+        {
+            OpenShop();
+        }
     }
     
     /// <summary>
@@ -229,19 +295,56 @@ public class HeartShopController : MonoBehaviour
     /// </summary>
     public void OpenShop()
     {
-        if (shopPanel == null) return;
+        if (shopPanel == null || isShopOpen) return;
         
-        // 刷新商店数据
-        LoadShopPets();
-        UpdateShopDisplay();
+        // 设置商店打开状态
+        isShopOpen = true;
         
-        // 显示商店面板
-        shopPanel.SetActive(true);
+        ShowShopPanel(true);
+    }
+    
+    /// <summary>
+    /// 在下一帧重置滚动条位置
+    /// </summary>
+    private IEnumerator ResetScrollPositionNextFrame()
+    {
+        // 等待一帧，让UI布局系统完成计算
+        yield return null;
         
-        // 播放打开动画
-        shopPanel.transform.localScale = Vector3.zero;
-        shopPanel.transform.DOScale(Vector3.one, animationDuration)
-            .SetEase(animationEase);
+        // 强制重建布局
+        if (shopScrollRect != null)
+        {
+            // 强制重建布局
+            UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(shopScrollRect.content);
+            
+            // 等待另一帧确保布局完全完成
+            yield return null;
+            
+            // 重置滚动条位置到顶部
+            shopScrollRect.verticalNormalizedPosition = 1f; // 1f = 顶部, 0f = 底部
+            
+            // 强制更新滚动条
+            shopScrollRect.Rebuild(UnityEngine.UI.CanvasUpdate.PostLayout);
+        }
+    }
+    
+    /// <summary>
+    /// 确保商品生成后滚动条位置正确
+    /// </summary>
+    private IEnumerator EnsureScrollPositionAfterGeneration()
+    {
+        // 等待两帧，确保所有UI元素都已正确布局
+        yield return null;
+        yield return null;
+        
+        if (shopScrollRect != null)
+        {
+            // 强制重建布局
+            UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(shopScrollRect.content);
+            
+            // 设置滚动条到顶部
+            shopScrollRect.verticalNormalizedPosition = 1f;
+        }
     }
     
     /// <summary>
@@ -249,20 +352,173 @@ public class HeartShopController : MonoBehaviour
     /// </summary>
     public void CloseShop()
     {
-        if (shopPanel == null) return;
+        if (shopPanel == null || !isShopOpen) return;
         
-        // 播放关闭动画
-        shopPanel.transform.DOScale(Vector3.zero, animationDuration)
-            .SetEase(Ease.InBack)
-            .OnComplete(() => {
-                shopPanel.SetActive(false);
-                
-                // 如果购买确认面板还在显示，也关闭它
-                if (purchaseConfirmPanel != null && purchaseConfirmPanel.activeSelf)
-                {
-                    HidePurchaseConfirm();
-                }
-            });
+        HideShopPanel(true);
+    }
+    
+    /// <summary>
+    /// 显示商店面板
+    /// </summary>
+    private void ShowShopPanel(bool animated = true)
+    {
+        // 停止当前可能正在运行的动画
+        if (currentAnimation != null && currentAnimation.IsActive())
+        {
+            currentAnimation.Kill();
+            currentAnimation = null;
+        }
+        
+        // 确保面板处于可交互状态
+        if (shopPanelCanvasGroup != null)
+        {
+            shopPanelCanvasGroup.interactable = true;
+            shopPanelCanvasGroup.blocksRaycasts = true;
+        }
+        
+        // 刷新商店数据
+        LoadShopPets();
+        UpdateShopDisplay();
+        
+        if (!animated)
+        {
+            // 不使用动画，直接设置最终状态
+            if (shopPanelCanvasGroup != null)
+            {
+                shopPanelCanvasGroup.alpha = 1;
+            }
+            if (shopPanelRect != null)
+            {
+                shopPanelRect.anchoredPosition = shownPosition;
+            }
+            // 等待一帧后重置滚动条位置
+            StartCoroutine(ResetScrollPositionNextFrame());
+            return;
+        }
+        
+        // 设置初始位置和透明度
+        if (shopPanelRect != null)
+        {
+            shopPanelRect.anchoredPosition = shownPosition + hiddenPosition;
+        }
+        if (shopPanelCanvasGroup != null)
+        {
+            shopPanelCanvasGroup.alpha = 0;
+        }
+        
+        // 创建动画序列
+        currentAnimation = DOTween.Sequence();
+        
+        // 添加移动和淡入动画
+        if (shopPanelRect != null)
+        {
+            currentAnimation.Join(shopPanelRect.DOAnchorPos(shownPosition, animationDuration).SetEase(animationEase));
+        }
+        if (shopPanelCanvasGroup != null)
+        {
+            currentAnimation.Join(shopPanelCanvasGroup.DOFade(1, animationDuration * 0.7f));
+        }
+        
+        // 动画完成后重置滚动条位置
+        currentAnimation.OnComplete(() => {
+            StartCoroutine(ResetScrollPositionNextFrame());
+        });
+        
+        // 播放动画
+        currentAnimation.Play();
+    }
+    
+    /// <summary>
+    /// 隐藏商店面板
+    /// </summary>
+    private void HideShopPanel(bool animated = true)
+    {
+        // 停止当前可能正在运行的动画
+        if (currentAnimation != null && currentAnimation.IsActive())
+        {
+            currentAnimation.Kill();
+            currentAnimation = null;
+        }
+        
+        // 在动画开始前立即清理动态生成的商品项
+        ClearShopItems();
+        
+        if (!animated)
+        {
+            // 不使用动画，直接设置最终状态
+            if (shopPanelCanvasGroup != null)
+            {
+                shopPanelCanvasGroup.alpha = 0;
+                shopPanelCanvasGroup.interactable = false;
+                shopPanelCanvasGroup.blocksRaycasts = false;
+            }
+            if (shopPanelRect != null)
+            {
+                shopPanelRect.anchoredPosition = shownPosition + hiddenPosition;
+            }
+            
+            // 重置商店状态
+            isShopOpen = false;
+            
+            // 如果购买确认面板还在显示，也关闭它
+            if (purchaseConfirmPanel != null && purchaseConfirmPanel.activeSelf)
+            {
+                HidePurchaseConfirm();
+            }
+            
+            // 通知底部面板控制器商店已关闭
+            NotifyBottomPanelClosed();
+            return;
+        }
+        
+        // 创建动画序列
+        currentAnimation = DOTween.Sequence();
+        
+        // 添加移动和淡出动画
+        if (shopPanelRect != null)
+        {
+            currentAnimation.Join(shopPanelRect.DOAnchorPos(shownPosition + hiddenPosition, animationDuration).SetEase(animationEase));
+        }
+        if (shopPanelCanvasGroup != null)
+        {
+            currentAnimation.Join(shopPanelCanvasGroup.DOFade(0, animationDuration * 0.7f));
+        }
+        
+        // 动画完成后设置交互状态
+        currentAnimation.OnComplete(() => {
+            if (shopPanelCanvasGroup != null)
+            {
+                shopPanelCanvasGroup.interactable = false;
+                shopPanelCanvasGroup.blocksRaycasts = false;
+            }
+            
+            // 重置商店状态
+            isShopOpen = false;
+            
+            // 如果购买确认面板还在显示，也关闭它
+            if (purchaseConfirmPanel != null && purchaseConfirmPanel.activeSelf)
+            {
+                HidePurchaseConfirm();
+            }
+            
+            // 通知底部面板控制器商店已关闭
+            NotifyBottomPanelClosed();
+        });
+        
+        // 播放动画
+        currentAnimation.Play();
+    }
+    
+    /// <summary>
+    /// 通知底部面板控制器商店已关闭
+    /// </summary>
+    private void NotifyBottomPanelClosed()
+    {
+        BottomPanelController bottomPanel = FindObjectOfType<BottomPanelController>();
+        if (bottomPanel != null)
+        {
+            bottomPanel.OnFunctionPanelClosed(BottomPanelController.FunctionType.HeartShop);
+        }
     }
     
     /// <summary>
@@ -354,6 +610,7 @@ public class HeartShopController : MonoBehaviour
         if (currentCurrency < requiredCurrency)
         {
             ShowToast(string.Format(insufficientFundsMessage, requiredCurrency, currentCurrency));
+            HidePurchaseConfirm(); // 关闭确认界面
             return;
         }
         
@@ -361,6 +618,7 @@ public class HeartShopController : MonoBehaviour
         if (!CanPurchaseMorePets())
         {
             ShowToast(string.Format(maxPetsMessage, GetCurrentPetCount(), MAX_PETS));
+            HidePurchaseConfirm(); // 关闭确认界面
             return;
         }
         
@@ -473,12 +731,8 @@ public class HeartShopController : MonoBehaviour
         {
             if (item != null)
             {
-                // 使用反射调用RefreshPriceDisplay方法
-                var refreshMethod = item.GetType().GetMethod("RefreshPriceDisplay");
-                if (refreshMethod != null)
-                {
-                    refreshMethod.Invoke(item, null);
-                }
+                // 直接调用RefreshPriceDisplay方法
+                item.RefreshPriceDisplay();
             }
         }
     }
@@ -489,5 +743,13 @@ public class HeartShopController : MonoBehaviour
     public int GetMaxPets()
     {
         return MAX_PETS;
+    }
+    
+    /// <summary>
+    /// 检查商店是否打开
+    /// </summary>
+    public bool IsShopOpen()
+    {
+        return isShopOpen;
     }
 } 

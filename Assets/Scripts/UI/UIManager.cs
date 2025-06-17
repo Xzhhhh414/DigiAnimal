@@ -155,13 +155,8 @@ public class UIManager : MonoBehaviour
             selectedFoodInfoPanel.gameObject.SetActive(false);
         }
         
-        // 隐藏工具包按钮
-        var toolkitButton = FindObjectOfType<ToolkitButtonController>();
-        if (toolkitButton != null)
-        {
-            hiddenUIStates[toolkitButton.gameObject] = toolkitButton.gameObject.activeSelf;
-            toolkitButton.gameObject.SetActive(false);
-        }
+        // 隐藏底部面板中的工具包按钮（已集成到BottomPanelController中）
+        // ToolkitButtonController已弃用，功能已合并到BottomPanelController
         
         // 可以在这里添加更多需要隐藏的UI组件
         // 例如：顶部状态栏、侧边栏等
