@@ -89,8 +89,14 @@ namespace NodeCanvas.Tasks.Actions
 
         protected override void OnPause() { OnStop(); }
         protected override void OnStop() {
-            if (agent.gameObject.activeSelf) {
-                agent.ResetPath();
+            // 安全地重置NavMeshAgent路径
+            if (agent != null && agent.gameObject != null && agent.gameObject.activeSelf && 
+                agent.enabled && agent.isOnNavMesh) {
+                try {
+                    agent.ResetPath();
+                } catch {
+                    // 忽略销毁时的NavMeshAgent错误
+                }
             }
         }
     }

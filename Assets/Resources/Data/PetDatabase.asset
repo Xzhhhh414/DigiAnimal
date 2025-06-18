@@ -16,7 +16,8 @@ MonoBehaviour:
   - petId: Pet_CatBrown
     petName: "\u68D5\u8272\u732B\u732B"
     petPrefab: {fileID: 5640147886649532383, guid: 7182d29eae8380b48b4387a4ae4ef592, type: 3}
-    description: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
+    previewPrefab: {fileID: 5640147886649532383, guid: d93db9ebcc2db834b92d14e2cf587d11, type: 3}
+    introduction: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
     headIconImage: {fileID: 21300000, guid: 7f5d026a77a7b3e4b93a3d71d6998878, type: 3}
     petType: 0
     isStarterPet: 1
@@ -27,7 +28,8 @@ MonoBehaviour:
   - petId: Pet_CatBlack
     petName: "\u9ED1\u8272\u732B\u732B"
     petPrefab: {fileID: 5640147886649532383, guid: 273334a4c08ee0543bf01ba99329eab0, type: 3}
-    description: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
+    previewPrefab: {fileID: 5640147886649532383, guid: 2c3d978c83255634997e85fd4d0cb807, type: 3}
+    introduction: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
     headIconImage: {fileID: 21300000, guid: 7472261bb21628a49ab3f7274508a855, type: 3}
     petType: 0
     isStarterPet: 1
@@ -38,7 +40,8 @@ MonoBehaviour:
   - petId: Pet_CatWhite
     petName: "\u767D\u8272\u732B\u732B"
     petPrefab: {fileID: 5640147886649532383, guid: ae617b790f64ae64e9f8e68cb62f19f3, type: 3}
-    description: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
+    previewPrefab: {fileID: 5640147886649532383, guid: 4a61c68313f75c840a4bef747217abba, type: 3}
+    introduction: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
     headIconImage: {fileID: 21300000, guid: e27daf2c5547d6040b9bb39a8060bf77, type: 3}
     petType: 0
     isStarterPet: 1

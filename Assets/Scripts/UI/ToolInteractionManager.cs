@@ -243,7 +243,6 @@ public class ToolInteractionManager : MonoBehaviour
             var heartManager = FindObjectOfType<HeartMessageManager>();
             if (heartManager != null)
             {
-                Debug.Log("找到HeartMessageManager组件，准备显示爱心提示");
                 heartManager.ShowHeartGainMessage(pet, heartReward);
             }
             else
@@ -302,7 +301,6 @@ public class ToolInteractionManager : MonoBehaviour
         }
         else
         {
-            // Debug.Log($"PetMessage: {message}");
             Debug.LogWarning("未找到PetMessageManager！请在场景中添加PetMessageManager组件以显示宠物消息。");
         }
     }
@@ -319,7 +317,6 @@ public class ToolInteractionManager : MonoBehaviour
         }
         else
         {
-            // Debug.Log($"PetMessage: {message}");
             Debug.LogWarning("未找到PetMessageManager！请在场景中添加PetMessageManager组件以显示宠物消息。");
         }
     }

@@ -150,6 +150,26 @@ public class PetDatabaseManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 根据预制体名称获取宠物配置
+    /// </summary>
+    public PetConfigData GetPetByPrefabName(string prefabName)
+    {
+        if (petDatabase == null || string.IsNullOrEmpty(prefabName))
+            return null;
+            
+        var allPets = petDatabase.GetAllPets();
+        foreach (var pet in allPets)
+        {
+            if (pet.petPrefab != null && pet.petPrefab.name == prefabName)
+            {
+                return pet;
+            }
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
     /// 根据类型获取宠物列表
     /// </summary>
     public List<PetConfigData> GetPetsByType(PetType petType)

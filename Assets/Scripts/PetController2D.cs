@@ -697,4 +697,25 @@ public class PetController2D : MonoBehaviour
             needBubbleController.HideNeed(emotionType);
         }
     }
+    
+    /// <summary>
+    /// 销毁时的清理工作
+    /// </summary>
+    private void OnDestroy()
+    {
+        // 安全地停止NavMeshAgent
+        if (agent != null && agent.gameObject != null && agent.gameObject.activeSelf && 
+            agent.enabled && agent.isOnNavMesh)
+        {
+            try
+            {
+                agent.ResetPath();
+                agent.enabled = false;
+            }
+            catch
+            {
+                // 忽略销毁时的NavMeshAgent错误
+            }
+        }
+    }
 } 

@@ -134,7 +134,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             petId = "cat_brown_001",
             petName = "小猫咪",
             petPrefab = Resources.Load<GameObject>("Pet/Pet_CatBrown"),
-            description = "一只可爱的棕色小猫咪",
+            introduction = "一只可爱的棕色小猫咪",
             petType = PetType.Cat,
             isStarterPet = true,
             baseEnergy = 80f,
@@ -146,7 +146,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             petId = "dog_001",
             petName = "小狗狗",
             petPrefab = Resources.Load<GameObject>("Pet/Pet_Dog"),
-            description = "一只忠诚的小狗狗",
+            introduction = "一只忠诚的小狗狗",
             petType = PetType.Dog,
             isStarterPet = true,
             baseEnergy = 85f,
@@ -158,7 +158,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             petId = "cat_white_001",
             petName = "小白猫",
             petPrefab = Resources.Load<GameObject>("Pet/Pet_CatWhite"),
-            description = "一只优雅的白色小猫咪",
+            introduction = "一只优雅的白色小猫咪",
             petType = PetType.Cat,
             isStarterPet = true,
             baseEnergy = 75f,
@@ -563,6 +563,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             // 创建新宠物数据
             PetSaveData newPetData = new PetSaveData(petConfig.petPrefab?.name ?? "Unknown");
             newPetData.displayName = petName;
+            newPetData.introduction = petConfig.introduction; // 设置宠物介绍
             newPetData.position = Vector3.zero; // 使用默认位置，由PetSpawner统一管理
             
             // 从配置设置初始属性

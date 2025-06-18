@@ -668,7 +668,7 @@ public class HeartShopController : MonoBehaviour
             {
                 // 设置宠物属性
                 newPet.PetDisplayName = pet.petName;
-                newPet.PetIntroduction = pet.description;
+                newPet.PetIntroduction = pet.introduction;
                 newPet.Energy = (int)pet.baseEnergy;
                 newPet.Satiety = (int)pet.baseSatiety;
                 

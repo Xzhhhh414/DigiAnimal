@@ -168,9 +168,15 @@ namespace NodeCanvas.Tasks.Actions
 
         protected override void OnPause() { OnStop(); }
         protected override void OnStop() {
-            if (navMeshAgent != null && navMeshAgent.gameObject.activeSelf) {
-                // Debug.Log($"[{petName}] 停止移动，重置路径");
-                navMeshAgent.ResetPath();
+            // 安全地重置NavMeshAgent路径
+            if (navMeshAgent != null && navMeshAgent.gameObject != null && navMeshAgent.gameObject.activeSelf && 
+                navMeshAgent.enabled && navMeshAgent.isOnNavMesh) {
+                try {
+                    // Debug.Log($"[{petName}] 停止移动，重置路径");
+                    navMeshAgent.ResetPath();
+                } catch {
+                    // 忽略销毁时的NavMeshAgent错误
+                }
             }
         }
 

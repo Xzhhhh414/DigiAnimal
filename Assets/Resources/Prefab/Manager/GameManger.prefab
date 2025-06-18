@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4720878334869674178}
   - component: {fileID: 8217037408411075934}
   - component: {fileID: 3045847506654479961}
+  - component: {fileID: 4651001465556447005}
   m_Layer: 0
   m_Name: GameManger
   m_TagString: Untagged
@@ -89,3 +90,16 @@ MonoBehaviour:
     toolDescription: "\u72EC\u7279\u7684\u9999\u6C14\uFF0C\u5927\u90E8\u5206\u732B\u732B\u90FD\u7231\u95FB"
     useInstruction: "\u70B9\u51FB\u60F3\u8981\u4E92\u52A8\u7684\u5BA0\u7269\uFF0C\u4E92\u52A8\u6210\u529F\u7231\u5FC3+3"
     heartReward: 3
+--- !u!114 &4651001465556447005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4353075851608123511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e8f739932da04b418d7fd8c55097116, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transitionOverlayPrefab: {fileID: 1884217224353576464, guid: 0e8dfdaf8c9243648990073aed5fa0b6, type: 3}

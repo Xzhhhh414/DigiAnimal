@@ -10,8 +10,10 @@ public class PetConfigData
     [Header("基础信息")]
     public string petId;                    // 宠物唯一ID
     public string petName;                  // 宠物名称
-    public GameObject petPrefab;            // 宠物预制体直接引用
-    public string description;              // 宠物描述
+    public GameObject petPrefab;            // 宠物预制体直接引用（游戏内使用）
+    public GameObject previewPrefab;        // 预览预制体（Start场景等预览使用）
+    [Tooltip("宠物介绍文本")]
+    public string introduction;             // 宠物介绍
     
     [Header("UI显示")]
     public Sprite headIconImage;            // 头像图标
@@ -134,4 +136,4 @@ public class PetDatabase : ScriptableObject
         }
         return true;
     }
-} 
+}

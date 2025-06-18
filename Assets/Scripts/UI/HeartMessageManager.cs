@@ -90,8 +90,6 @@ public class HeartMessageManager : MonoBehaviour
     /// <param name="heartAmount">获得的爱心数量</param>
     public void ShowHeartGainMessage(PetController2D pet, int heartAmount)
     {
-        Debug.Log($"ShowHeartGainMessage被调用: pet={pet?.name}, heartAmount={heartAmount}");
-        
         if (pet == null)
         {
             Debug.LogWarning("HeartMessageManager: 宠物对象为空");
@@ -106,24 +104,16 @@ public class HeartMessageManager : MonoBehaviour
         
         if (targetCanvas == null)
         {
-            Debug.LogWarning("HeartMessageManager: targetCanvas未设置，尝试自动查找...");
             targetCanvas = FindObjectOfType<Canvas>();
             if (targetCanvas == null)
             {
                 Debug.LogError("HeartMessageManager: 未找到Canvas！");
                 return;
             }
-            else
-            {
-                Debug.Log($"HeartMessageManager: 自动找到Canvas: {targetCanvas.name}");
-            }
         }
-        
-        Debug.Log("开始创建爱心消息实例...");
         
         // 创建爱心消息实例
         GameObject messageObj = Instantiate(heartMessagePrefab, targetCanvas.transform);
-        Debug.Log($"成功创建爱心消息对象: {messageObj.name}");
         
         // 获取组件
         RectTransform rectTransform = messageObj.GetComponent<RectTransform>();
@@ -146,7 +136,6 @@ public class HeartMessageManager : MonoBehaviour
         
         if (canvasGroup == null)
         {
-            Debug.Log("HeartMessage预制体缺少CanvasGroup组件，自动添加");
             canvasGroup = messageObj.AddComponent<CanvasGroup>();
         }
         
@@ -154,7 +143,6 @@ public class HeartMessageManager : MonoBehaviour
         if (messageText != null)
         {
             messageText.text = $"+{heartAmount}";
-            Debug.Log($"设置消息文本: +{heartAmount}");
         }
         else
         {
@@ -165,8 +153,6 @@ public class HeartMessageManager : MonoBehaviour
         Vector2 uiPosition = WorldToUIPosition(pet.transform.position);
         Vector2 targetPosition = uiPosition + offsetFromPet;
         rectTransform.anchoredPosition = targetPosition;
-        
-        Debug.Log($"设置爱心消息位置: 宠物世界坐标={pet.transform.position}, UI坐标={uiPosition}, 最终位置={targetPosition}");
         
         // 创建消息实例数据
         HeartMessageInstance messageInstance = new HeartMessageInstance
@@ -181,7 +167,6 @@ public class HeartMessageManager : MonoBehaviour
         
         // 添加到活跃列表
         activeMessages.Add(messageInstance);
-        Debug.Log($"爱心消息添加到活跃列表，当前活跃消息数量: {activeMessages.Count}");
         
         // 播放显示动画
         PlayShowAnimation(messageInstance);
