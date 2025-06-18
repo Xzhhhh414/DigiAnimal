@@ -272,8 +272,12 @@ public class GameDataManager : MonoBehaviour
     {
         OnDataChanged?.Invoke();
         
-        // 立即保存货币变化
-        SyncToSave(true);
+        // 只有在启用自动保存时才保存
+        if (enableAutoSave)
+        {
+            // 立即保存货币变化
+            SyncToSave(true);
+        }
     }
     
     /// <summary>
@@ -283,8 +287,25 @@ public class GameDataManager : MonoBehaviour
     {
         OnDataChanged?.Invoke();
         
-        // 异步保存宠物数据变化
-        SyncToSave(false);
+        // 只有在启用自动保存时才保存
+        if (enableAutoSave)
+        {
+            // 异步保存宠物数据变化
+            SyncToSave(false);
+        }
+    }
+    
+    /// <summary>
+    /// 检查自动保存是否启用
+    /// </summary>
+    public bool IsAutoSaveEnabled => enableAutoSave;
+    
+    /// <summary>
+    /// 设置自动保存状态
+    /// </summary>
+    public void SetAutoSaveEnabled(bool enabled)
+    {
+        enableAutoSave = enabled;
     }
     
     #endregion

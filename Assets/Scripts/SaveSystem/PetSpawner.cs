@@ -308,59 +308,71 @@ public class PetSpawner : MonoBehaviour
     /// </summary>
     private void ApplyPetData(PetController2D petController, PetSaveData petData)
     {
-        // 设置基本属性
-        petController.PetDisplayName = petData.displayName;
-        petController.PetIntroduction = petData.introduction;
-        petController.Energy = petData.energy;
-        petController.Satiety = petData.satiety;
+        // 临时禁用自动保存，避免在加载过程中触发保存冲突
+        bool wasAutoSaveEnabled = GameDataManager.Instance.IsAutoSaveEnabled;
+        GameDataManager.Instance.SetAutoSaveEnabled(false);
         
-        // 调试：显示存档中的位置信息
-        // Debug.Log($"[位置调试] 宠物 {petData.petId} 存档位置: {petData.position}");
-        
-        // 设置位置 - 需要同时设置transform和NavMeshAgent
-        Vector3 targetPosition = petData.position;
-        
-        // 如果存档中的位置是零向量，使用默认生成位置
-        if (targetPosition == Vector3.zero)
+        try
         {
-            targetPosition = defaultSpawnPosition;
+            // 设置基本属性
+            petController.PetDisplayName = petData.displayName;
+            petController.PetIntroduction = petData.introduction;
+            petController.Energy = petData.energy;
+            petController.Satiety = petData.satiety;
+            
+            // 调试：显示存档中的位置信息
+            // Debug.Log($"[位置调试] 宠物 {petData.petId} 存档位置: {petData.position}");
+            
+            // 设置位置 - 需要同时设置transform和NavMeshAgent
+            Vector3 targetPosition = petData.position;
+            
+            // 如果存档中的位置是零向量，使用默认生成位置
+            if (targetPosition == Vector3.zero)
+            {
+                targetPosition = defaultSpawnPosition;
+            }
+            
+            petController.transform.position = targetPosition;
+            
+            // 获取NavMeshAgent并设置位置
+            UnityEngine.AI.NavMeshAgent agent = petController.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null)
+            {
+                // 确保NavMeshAgent也移动到正确位置
+                agent.Warp(targetPosition);
+                // Debug.Log($"[位置调试] NavMeshAgent已设置到位置: {targetPosition}");
+            }
+            
+            // 设置Rigidbody2D位置
+            Rigidbody2D rb = petController.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.position = targetPosition;
+                // Debug.Log($"[位置调试] Rigidbody2D已设置到位置: {targetPosition}");
+            }
+            
+            // 调试：显示实际设置后的位置
+            // Debug.Log($"[位置调试] 宠物 {petData.petId} 实际位置: {petController.transform.position}");
+            
+            // 注意：不再从存档恢复当前状态（isSleeping、isEating）
+            // 重新登录后，宠物会以默认状态（清醒、未进食）开始
+            
+            // 设置宠物ID（用于存档系统）
+            petController.petId = petData.petId;
+            
+            // 如果需要恢复厌倦状态，设置厌倦时间
+            if (petData.isBored && petData.lastBoredomTime >= 0)
+            {
+                petController.LastBoredomTime = petData.lastBoredomTime;
+            }
+            
+            // Debug.Log($"宠物数据应用完成: {petData.petId} - {petData.displayName}");
         }
-        
-        petController.transform.position = targetPosition;
-        
-        // 获取NavMeshAgent并设置位置
-        UnityEngine.AI.NavMeshAgent agent = petController.GetComponent<UnityEngine.AI.NavMeshAgent>();
-        if (agent != null)
+        finally
         {
-            // 确保NavMeshAgent也移动到正确位置
-            agent.Warp(targetPosition);
-            // Debug.Log($"[位置调试] NavMeshAgent已设置到位置: {targetPosition}");
+            // 恢复自动保存设置
+            GameDataManager.Instance.SetAutoSaveEnabled(wasAutoSaveEnabled);
         }
-        
-        // 设置Rigidbody2D位置
-        Rigidbody2D rb = petController.GetComponent<Rigidbody2D>();
-        if (rb != null)
-        {
-            rb.position = targetPosition;
-            // Debug.Log($"[位置调试] Rigidbody2D已设置到位置: {targetPosition}");
-        }
-        
-        // 调试：显示实际设置后的位置
-        // Debug.Log($"[位置调试] 宠物 {petData.petId} 实际位置: {petController.transform.position}");
-        
-        // 注意：不再从存档恢复当前状态（isSleeping、isEating）
-        // 重新登录后，宠物会以默认状态（清醒、未进食）开始
-        
-        // 设置宠物ID（用于存档系统）
-        petController.petId = petData.petId;
-        
-        // 如果需要恢复厌倦状态，设置厌倦时间
-        if (petData.isBored && petData.lastBoredomTime >= 0)
-        {
-            petController.LastBoredomTime = petData.lastBoredomTime;
-        }
-        
-        // Debug.Log($"宠物数据应用完成: {petData.petId} - {petData.displayName}");
     }
     
     #endregion
