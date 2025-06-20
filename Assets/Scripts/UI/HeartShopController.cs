@@ -531,7 +531,7 @@ public class HeartShopController : MonoBehaviour
         // 检查宠物数量限制
         if (!CanPurchaseMorePets())
         {
-            ShowToast(string.Format(maxPetsMessage, GetCurrentPetCount(), MAX_PETS));
+            ShowToast(maxPetsMessage.Replace("{0}", GetCurrentPetCount().ToString()).Replace("{1}", MAX_PETS.ToString()));
             return;
         }
         
@@ -609,7 +609,7 @@ public class HeartShopController : MonoBehaviour
         
         if (currentCurrency < requiredCurrency)
         {
-            ShowToast(string.Format(insufficientFundsMessage, requiredCurrency, currentCurrency));
+            ShowToast(insufficientFundsMessage.Replace("{0}", requiredCurrency.ToString()).Replace("{1}", currentCurrency.ToString()));
             HidePurchaseConfirm(); // 关闭确认界面
             return;
         }
@@ -617,7 +617,7 @@ public class HeartShopController : MonoBehaviour
         // 再次检查宠物数量限制
         if (!CanPurchaseMorePets())
         {
-            ShowToast(string.Format(maxPetsMessage, GetCurrentPetCount(), MAX_PETS));
+            ShowToast(maxPetsMessage.Replace("{0}", GetCurrentPetCount().ToString()).Replace("{1}", MAX_PETS.ToString()));
             HidePurchaseConfirm(); // 关闭确认界面
             return;
         }
@@ -627,7 +627,7 @@ public class HeartShopController : MonoBehaviour
         
         if (purchaseSuccess)
         {
-            ShowToast(string.Format(purchaseSuccessMessage, selectedPetForPurchase.petName));
+            ShowToast(purchaseSuccessMessage.Replace("{0}", selectedPetForPurchase.petName ?? "未知宠物"));
         }
         else
         {
