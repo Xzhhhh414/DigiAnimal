@@ -131,12 +131,32 @@ public class StartScenePetDisplay : MonoBehaviour
     }
     
     /// <summary>
+    /// 刷新宠物显示（强制重新加载）
+    /// </summary>
+    public void RefreshPetDisplay()
+    {
+        // Debug.Log("[StartScenePetDisplay] 强制刷新宠物显示");
+        
+        // 重置显示状态
+        isDisplayed = false;
+        
+        // 清理现有宠物
+        ClearDisplayedPets();
+        
+        // 重新显示宠物
+        DisplayPetsFromSave();
+    }
+    
+    /// <summary>
     /// 根据存档信息显示宠物
     /// </summary>
     public void DisplayPetsFromSave()
     {
+        // Debug.Log($"[StartScenePetDisplay] DisplayPetsFromSave 开始，isDisplayed={isDisplayed}");
+        
         if (isDisplayed) 
         {
+            // Debug.Log("[StartScenePetDisplay] 宠物已显示，跳过");
             return;
         }
         
@@ -148,6 +168,7 @@ public class StartScenePetDisplay : MonoBehaviour
         if (saveData == null)
         {
             Debug.LogError("[StartScenePetDisplay] 没有找到存档数据");
+            Debug.LogError($"[StartScenePetDisplay] SaveManager.Instance: {SaveManager.Instance != null}");
             return;
         }
         
@@ -160,8 +181,11 @@ public class StartScenePetDisplay : MonoBehaviour
         List<PetSaveData> petsData = saveData.petsData;
         int petCount = petsData.Count;
         
+        // Debug.Log($"[StartScenePetDisplay] 找到 {petCount} 只宠物");
+        
         if (petCount == 0)
         {
+            // Debug.Log("[StartScenePetDisplay] 没有宠物数据，设置为已显示");
             isDisplayed = true;
             return;
         }
@@ -173,16 +197,33 @@ public class StartScenePetDisplay : MonoBehaviour
             return;
         }
         
+        if (!PetDatabaseManager.Instance.IsDatabaseLoaded())
+        {
+            Debug.LogError("[StartScenePetDisplay] PetDatabaseManager 数据库未加载！");
+            return;
+        }
+        
+        // 检查petContainer
+        if (petContainer == null)
+        {
+            Debug.LogError("[StartScenePetDisplay] petContainer 未配置！");
+            return;
+        }
+        
+        // Debug.Log($"[StartScenePetDisplay] 开始生成 {petCount} 只宠物");
+        
         // 计算宠物位置
         Vector3[] petPositions = CalculatePetPositions(petCount);
         
         // 生成宠物
         for (int i = 0; i < petCount; i++)
         {
+            // Debug.Log($"[StartScenePetDisplay] 生成第 {i + 1}/{petCount} 只宠物");
             SpawnPetAtPosition(petsData[i], petPositions[i]);
         }
         
         isDisplayed = true;
+        // Debug.Log($"[StartScenePetDisplay] 宠物显示完成，共生成 {spawnedPets.Count} 只宠物");
     }
     
     /// <summary>
@@ -240,18 +281,33 @@ public class StartScenePetDisplay : MonoBehaviour
     /// <param name="position">生成位置</param>
     private void SpawnPetAtPosition(PetSaveData petSaveData, Vector3 position)
     {
+        // Debug.Log($"[StartScenePetDisplay] 开始生成宠物: {petSaveData.prefabName} (ID: {petSaveData.petId})");
+        
+        // 检查PetDatabaseManager
+        if (PetDatabaseManager.Instance == null)
+        {
+            Debug.LogError("[StartScenePetDisplay] PetDatabaseManager.Instance为空！");
+            return;
+        }
+        
         // 根据预制体名称获取配置
-        PetConfigData petConfig = PetDatabaseManager.Instance?.GetPetByPrefabName(petSaveData.prefabName);
+        PetConfigData petConfig = PetDatabaseManager.Instance.GetPetByPrefabName(petSaveData.prefabName);
         if (petConfig == null)
         {
             Debug.LogError($"[StartScenePetDisplay] 无法找到宠物配置，PrefabName: {petSaveData.prefabName}");
+            
+            // 尝试列出所有可用的宠物配置用于调试
+            var allPets = PetDatabaseManager.Instance.GetAllPets();
+            // Debug.Log($"[StartScenePetDisplay] 数据库中的宠物配置: {string.Join(", ", allPets.ConvertAll(p => $"{p.petId}({p.petPrefab?.name})"))}");
             return;
         }
+        
+        // Debug.Log($"[StartScenePetDisplay] 找到宠物配置: {petConfig.petName}, 预览预制体: {petConfig.previewPrefab?.name}");
         
         // 只使用预览prefab
         if (petConfig.previewPrefab == null)
         {
-            Debug.LogError($"[StartScenePetDisplay] 宠物配置中预览预制体为空，PrefabName: {petSaveData.prefabName}");
+            Debug.LogError($"[StartScenePetDisplay] 宠物配置中预览预制体为空，PetConfig: {petConfig.petName}");
             return;
         }
         
@@ -263,6 +319,22 @@ public class StartScenePetDisplay : MonoBehaviour
             // 设置宠物显示名称为预制体名称加序号ID
             petObj.name = $"{petSaveData.prefabName}_{petSaveData.petId}";
             spawnedPets.Add(petObj);
+            
+            // 确保Preview宠物显示正确的默认状态
+            ResetPetPreviewState(petObj, petConfig);
+            
+            // Debug.Log($"[StartScenePetDisplay] 成功生成宠物: {petObj.name} 在位置 {position}");
+            
+            // 检查生成的宠物的SpriteRenderer
+            SpriteRenderer spriteRenderer = petObj.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                // Debug.Log($"[StartScenePetDisplay] 宠物Sprite: {spriteRenderer.sprite?.name}");
+            }
+            else
+            {
+                Debug.LogWarning($"[StartScenePetDisplay] 宠物预制体没有SpriteRenderer组件: {petObj.name}");
+            }
         }
         else
         {
@@ -270,7 +342,66 @@ public class StartScenePetDisplay : MonoBehaviour
         }
     }
     
-
+    /// <summary>
+    /// 重置宠物预览状态，确保显示正确的默认外观
+    /// </summary>
+    private void ResetPetPreviewState(GameObject petObj, PetConfigData petConfig)
+    {
+        // 禁用可能影响显示的组件
+        PetController2D petController = petObj.GetComponent<PetController2D>();
+        if (petController != null)
+        {
+            // 禁用PetController2D，避免其逻辑影响显示
+            petController.enabled = false;
+            // Debug.Log($"[StartScenePetDisplay] 已禁用PetController2D组件: {petObj.name}");
+        }
+        
+        // 禁用Animator组件，确保显示静态的默认状态
+        Animator animator = petObj.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.enabled = false;
+            // Debug.Log($"[StartScenePetDisplay] 已禁用Animator组件: {petObj.name}");
+        }
+        
+        // 禁用NavMeshAgent等移动相关组件
+        UnityEngine.AI.NavMeshAgent navAgent = petObj.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null)
+        {
+            navAgent.enabled = false;
+            // Debug.Log($"[StartScenePetDisplay] 已禁用NavMeshAgent组件: {petObj.name}");
+        }
+        
+        // 禁用所有Collider，避免物理交互
+        Collider2D[] colliders = petObj.GetComponents<Collider2D>();
+        foreach (var collider in colliders)
+        {
+            collider.enabled = false;
+        }
+        
+        Collider[] colliders3D = petObj.GetComponents<Collider>();
+        foreach (var collider in colliders3D)
+        {
+            collider.enabled = false;
+        }
+        
+        // 确保SpriteRenderer显示正确的默认Sprite
+        SpriteRenderer spriteRenderer = petObj.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            // 如果PreviewPrefab本身的SpriteRenderer没有正确的Sprite，尝试从配置中获取
+            if (spriteRenderer.sprite == null)
+            {
+                Debug.LogWarning($"[StartScenePetDisplay] Preview Prefab的SpriteRenderer没有Sprite，宠物: {petConfig.petName}");
+            }
+            
+            // 确保显示层级正确 - Preview宠物应该在Pet层
+            spriteRenderer.sortingLayerName = "Pet";
+            spriteRenderer.sortingOrder = 0;
+        }
+        
+        // Debug.Log($"[StartScenePetDisplay] 宠物预览状态重置完成: {petObj.name}");
+    }
     
     /// <summary>
     /// 清理已显示的宠物
@@ -281,20 +412,12 @@ public class StartScenePetDisplay : MonoBehaviour
         {
             if (pet != null)
             {
-                DestroyImmediate(pet);
+                // 使用Destroy而不是DestroyImmediate，避免影响同GameObject上的其他组件
+                Destroy(pet);
             }
         }
         spawnedPets.Clear();
         isDisplayed = false;
-    }
-    
-    /// <summary>
-    /// 刷新宠物显示
-    /// </summary>
-    public void RefreshPetDisplay()
-    {
-        isDisplayed = false;
-        DisplayPetsFromSave();
     }
     
     /// <summary>
@@ -374,6 +497,61 @@ public class StartScenePetDisplay : MonoBehaviour
         {
             Debug.LogWarning("只能在运行时强制显示宠物");
         }
+    }
+    
+    [ContextMenu("诊断宠物显示问题")]
+    public void DiagnosePetDisplay()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("只能在运行时诊断宠物显示问题");
+            return;
+        }
+        
+        // Debug.Log("=== 宠物显示诊断开始 ===");
+        
+        // 1. 检查基础组件
+        // Debug.Log($"petContainer: {petContainer != null}");
+        // Debug.Log($"isDisplayed: {isDisplayed}");
+        // Debug.Log($"spawnedPets.Count: {spawnedPets.Count}");
+        
+        // 2. 检查管理器
+        // Debug.Log($"SaveManager.Instance: {SaveManager.Instance != null}");
+        // Debug.Log($"PetDatabaseManager.Instance: {PetDatabaseManager.Instance != null}");
+        
+        if (PetDatabaseManager.Instance != null)
+        {
+            // Debug.Log($"Database loaded: {PetDatabaseManager.Instance.IsDatabaseLoaded()}");
+            var allPets = PetDatabaseManager.Instance.GetAllPets();
+            // Debug.Log($"Database pets count: {allPets.Count}");
+            foreach (var pet in allPets)
+            {
+                // Debug.Log($"  - {pet.petId}: petPrefab={pet.petPrefab?.name}, previewPrefab={pet.previewPrefab?.name}");
+            }
+        }
+        
+        // 3. 检查存档数据
+        if (SaveManager.Instance != null)
+        {
+            var saveData = SaveManager.Instance.GetCurrentSaveData();
+            if (saveData != null)
+            {
+                // Debug.Log($"Save data pets count: {saveData.petsData?.Count ?? 0}");
+                if (saveData.petsData != null)
+                {
+                    foreach (var petData in saveData.petsData)
+                    {
+                        // Debug.Log($"  - {petData.petId}: prefabName={petData.prefabName}, displayName={petData.displayName}");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError("Save data is null");
+            }
+        }
+        
+        // Debug.Log("=== 宠物显示诊断结束 ===");
     }
     
     #endregion

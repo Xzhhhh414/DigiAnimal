@@ -573,6 +573,17 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             // 添加到存档
             saveData.petsData.Add(newPetData);
             
+            // 设置新玩家的默认系统设置
+            if (saveData.petsData.Count == 1) // 如果这是第一个宠物
+            {
+                saveData.playerData.dynamicIslandEnabled = true; // 默认开启灵动岛
+                saveData.playerData.selectedDynamicIslandPetId = newPetData.petId; // 默认选择第一个宠物
+                saveData.playerData.lockScreenWidgetEnabled = false; // 锁屏小组件默认关闭
+                saveData.playerData.selectedLockScreenPetId = newPetData.petId; // 默认选择第一个宠物
+                
+                // Debug.Log($"[FirstTimePetSelectionManager] 设置新玩家默认系统设置: 灵动岛=开启, 选中宠物={newPetData.petId}");
+            }
+            
             // 保存存档
             bool saveSuccess = SaveManager.Instance.Save();
             

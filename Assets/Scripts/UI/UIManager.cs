@@ -181,24 +181,50 @@ public class UIManager : MonoBehaviour
     
     private void Awake()
     {
-        //Debug.Log("UIManager: Awake开始执行");
+        Debug.Log($"[UIManager] Awake开始执行 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
         
-        // 单例模式初始化
+        // 强制场景隔离的单例模式
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-            //Debug.Log("UIManager: 单例初始化完成");
+            Debug.Log($"[UIManager] 单例初始化完成（场景特定） - Scene: {gameObject.scene.name}");
         }
         else if (Instance != this)
         {
-            //Debug.Log("UIManager: 销毁重复实例");
-            Destroy(gameObject);
-            return;
+            // 检查现有实例是否来自不同场景
+            if (Instance.gameObject.scene != this.gameObject.scene)
+            {
+                Debug.Log($"[UIManager] 检测到跨场景实例冲突，替换为当前场景实例 - 旧场景: {Instance.gameObject.scene.name}, 新场景: {gameObject.scene.name}");
+                // 清理旧实例的引用
+                var oldInstance = Instance;
+                Instance = this;
+                // 销毁旧实例
+                if (oldInstance != null)
+                {
+                    Destroy(oldInstance.gameObject);
+                }
+            }
+            else
+            {
+                Debug.Log($"[UIManager] 销毁同场景重复实例 - Scene: {gameObject.scene.name}");
+                Destroy(gameObject);
+                return;
+            }
         }
         
-        // 不在Awake中初始化UI组件，延迟到场景加载完成后
-        //Debug.Log("UIManager: Awake执行完成");
+        Debug.Log($"[UIManager] Awake执行完成 - Scene: {gameObject.scene.name}");
+    }
+    
+    private void OnDestroy()
+    {
+        Debug.Log($"[UIManager] OnDestroy被调用 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        
+        // 只有当前实例是静态引用时才清除
+        if (Instance == this)
+        {
+            Debug.Log($"[UIManager] 清除静态引用 - Scene: {gameObject.scene.name}");
+            Instance = null;
+        }
     }
     
     // 在编辑器中验证组件设置

@@ -50,19 +50,53 @@ public class PetMessageManager : MonoBehaviour
     
     private void Awake()
     {
-        // 单例初始化
+        Debug.Log($"[PetMessageManager] Awake开始执行 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        
+        // 场景特定的单例初始化
         if (_instance == null)
         {
             _instance = this;
+            Debug.Log($"[PetMessageManager] 单例初始化完成（场景特定） - Scene: {gameObject.scene.name}");
         }
         else if (_instance != this)
         {
-            Destroy(gameObject);
-            return;
+            // 检查现有实例是否来自不同场景
+            if (_instance.gameObject.scene != this.gameObject.scene)
+            {
+                Debug.Log($"[PetMessageManager] 检测到跨场景实例冲突，替换为当前场景实例 - 旧场景: {_instance.gameObject.scene.name}, 新场景: {gameObject.scene.name}");
+                // 清理旧实例的引用
+                var oldInstance = _instance;
+                _instance = this;
+                // 销毁旧实例
+                if (oldInstance != null)
+                {
+                    Destroy(oldInstance.gameObject);
+                }
+            }
+            else
+            {
+                Debug.Log($"[PetMessageManager] 销毁同场景重复实例 - Scene: {gameObject.scene.name}");
+                Destroy(gameObject);
+                return;
+            }
         }
         
         // 延迟初始化，等待场景完全加载
         StartCoroutine(DelayedInitialize());
+        
+        Debug.Log($"[PetMessageManager] Awake执行完成 - Scene: {gameObject.scene.name}");
+    }
+    
+    private void OnDestroy()
+    {
+        Debug.Log($"[PetMessageManager] OnDestroy被调用 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        
+        // 只有当前实例是静态引用时才清除
+        if (_instance == this)
+        {
+            Debug.Log($"[PetMessageManager] 清除静态引用 - Scene: {gameObject.scene.name}");
+            _instance = null;
+        }
     }
     
     /// <summary>

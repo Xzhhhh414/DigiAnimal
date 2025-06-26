@@ -153,7 +153,7 @@ MonoBehaviour:
   houseNormalSprite: {fileID: 21300000, guid: c2e3a2ded6e26bf44a60aeb845ae1095, type: 3}
   housePressedSprite: {fileID: 21300000, guid: c2e3a2ded6e26bf44a60aeb845ae1095, type: 3}
   settingsNormalSprite: {fileID: 21300000, guid: 0922521d8a36d1944983f1316ef03f8b, type: 3}
-  settingsPressedSprite: {fileID: 21300000, guid: 0922521d8a36d1944983f1316ef03f8b, type: 3}
+  settingsPressedSprite: {fileID: 21300000, guid: 5954c0c48763885409c4758ffb713ba8, type: 3}
   animationDuration: 0.3
   collapsedYPosition: -145
   expandedYPosition: 0
@@ -785,7 +785,6 @@ GameObject:
   - component: {fileID: 88341652712512967}
   - component: {fileID: 6309652070572775298}
   - component: {fileID: 2155082762215792837}
-  - component: {fileID: 6302277151121987620}
   m_Layer: 5
   m_Name: Setting
   m_TagString: Untagged
@@ -894,20 +893,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6302277151121987620
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8172619602968465292}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59821b0b9dd0d1041a9ad28ad4ad7af1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  settingsButton: {fileID: 2155082762215792837}
-  toastMessage: "\u7CFB\u7EDF\u8BBE\u7F6E\u529F\u80FD\u5F00\u53D1\u4E2D\uFF0C\u656C\u8BF7\u671F\u5F85\uFF01"
 --- !u!1 &8523251684610807307
 GameObject:
   m_ObjectHideFlags: 0

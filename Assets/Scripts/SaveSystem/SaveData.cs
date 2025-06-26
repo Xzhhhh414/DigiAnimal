@@ -39,11 +39,21 @@ public class PlayerSaveData
     public int playerLevel = 1;
     public float playTime = 0f;
     
+    // 系统设置相关
+    public bool dynamicIslandEnabled = true;        // 灵动岛是否开启（默认开启）
+    public string selectedDynamicIslandPetId = "";  // 选中的灵动岛宠物ID
+    public bool lockScreenWidgetEnabled = false;    // 锁屏小组件是否开启
+    public string selectedLockScreenPetId = "";     // 选中的锁屏小组件宠物ID
+    
     public PlayerSaveData()
     {
         heartCurrency = 0;
         playerLevel = 1;
         playTime = 0f;
+        dynamicIslandEnabled = true;
+        selectedDynamicIslandPetId = "";
+        lockScreenWidgetEnabled = false;
+        selectedLockScreenPetId = "";
     }
 }
 

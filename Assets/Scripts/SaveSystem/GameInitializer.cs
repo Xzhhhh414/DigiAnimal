@@ -50,7 +50,18 @@ public class GameInitializer : MonoBehaviour
         // 1. 确保核心管理器存在
         yield return EnsureCoreManagers();
         
-        // 2. 加载存档数据
+        // 2. 清理旧的宠物引用
+        if (GameDataManager.Instance != null)
+        {
+            GameDataManager.Instance.ClearAllPets();
+        }
+        
+        if (PetSpawner.Instance != null)
+        {
+            PetSpawner.Instance.ClearAllPets();
+        }
+        
+        // 3. 加载存档数据
         Task<SaveData> loadTask = SaveManager.Instance.LoadSaveAsync();
         yield return new WaitUntil(() => loadTask.IsCompleted);
         
@@ -63,13 +74,13 @@ public class GameInitializer : MonoBehaviour
         {
             // DebugLog($"存档加载成功，宠物数量: {saveData.petsData.Count}");
             
-            // 3. 同步玩家数据到PlayerManager
+            // 4. 同步玩家数据到PlayerManager
             yield return SyncPlayerData(saveData);
             
-            // 4. 生成宠物
+            // 5. 生成宠物
             yield return SpawnPets(saveData);
             
-            // 5. 如果没有宠物且启用了默认宠物创建，创建默认宠物
+            // 6. 如果没有宠物且启用了默认宠物创建，创建默认宠物
             if (saveData.petsData.Count == 0 && createDefaultPetIfEmpty)
             {
                 yield return CreateDefaultPet();
@@ -248,6 +259,11 @@ public class GameInitializer : MonoBehaviour
         DebugLog("重置游戏状态...");
         
         // 清理现有宠物
+        if (GameDataManager.Instance != null)
+        {
+            GameDataManager.Instance.ClearAllPets();
+        }
+        
         if (PetSpawner.Instance != null)
         {
             PetSpawner.Instance.ClearAllPets();

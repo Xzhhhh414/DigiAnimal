@@ -160,12 +160,26 @@ public class PetDatabaseManager : MonoBehaviour
         var allPets = petDatabase.GetAllPets();
         foreach (var pet in allPets)
         {
+            // 首先尝试通过petId匹配（最准确）
+            if (pet.petId == prefabName)
+            {
+                return pet;
+            }
+            
+            // 然后尝试通过petPrefab.name匹配
             if (pet.petPrefab != null && pet.petPrefab.name == prefabName)
+            {
+                return pet;
+            }
+            
+            // 最后尝试通过previewPrefab.name匹配
+            if (pet.previewPrefab != null && pet.previewPrefab.name == prefabName)
             {
                 return pet;
             }
         }
         
+        Debug.LogWarning($"[PetDatabaseManager] 无法找到预制体名称为 '{prefabName}' 的宠物配置");
         return null;
     }
     

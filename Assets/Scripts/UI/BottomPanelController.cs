@@ -60,6 +60,9 @@ public class BottomPanelController : MonoBehaviour
     
     private FunctionType currentActiveFunction = FunctionType.None;
     
+    // 缓存的系统设置面板实例
+    private SystemSettingsPanel cachedSystemSettingsPanel;
+    
     private void Start()
     {
         // 确保面板初始状态为展开
@@ -82,6 +85,9 @@ public class BottomPanelController : MonoBehaviour
         
         // 初始化所有按钮状态
         UpdateAllButtonStates();
+        
+        // 确保系统设置面板初始状态为关闭
+        InitializeSystemSettingsPanel();
     }
     
     // 按钮点击事件处理
@@ -375,8 +381,7 @@ public class BottomPanelController : MonoBehaviour
                 break;
                 
             case FunctionType.Settings:
-                // TODO: 实现设置面板打开逻辑
-                // Debug.Log("打开设置面板");
+                OpenSystemSettingsPanel();
                 break;
         }
     }
@@ -408,10 +413,75 @@ public class BottomPanelController : MonoBehaviour
                 break;
                 
             case FunctionType.Settings:
-                // TODO: 实现设置面板关闭逻辑
-                // Debug.Log("关闭设置面板");
+                CloseSystemSettingsPanel();
                 break;
         }
+    }
+    
+    /// <summary>
+    /// 确保系统设置面板初始状态为关闭
+    /// </summary>
+    private void InitializeSystemSettingsPanel()
+    {
+        cachedSystemSettingsPanel = FindObjectOfType<SystemSettingsPanel>();
+        if (cachedSystemSettingsPanel != null)
+        {
+            // 等待SystemSettingsPanel完成自己的初始化
+            StartCoroutine(InitializeSystemSettingsPanelDelayed());
+        }
+        else
+        {
+            Debug.LogError("场景中未找到SystemSettingsPanel！请确保场景中存在SystemSettingsPanel组件。");
+        }
+    }
+    
+    /// <summary>
+    /// 延迟初始化系统设置面板状态
+    /// </summary>
+    private System.Collections.IEnumerator InitializeSystemSettingsPanelDelayed()
+    {
+        // 等待一帧，确保SystemSettingsPanel的Start方法已执行完成
+        yield return null;
+        
+        if (cachedSystemSettingsPanel != null)
+        {
+            // 调用面板的HidePanel方法设置正确的隐藏状态
+            cachedSystemSettingsPanel.HidePanel(false); // 不使用动画，立即设置为隐藏状态
+            cachedSystemSettingsPanel.gameObject.SetActive(false);
+            // Debug.Log("系统设置面板已初始化为关闭状态");
+        }
+    }
+    
+    /// <summary>
+    /// 打开系统设置面板
+    /// </summary>
+    private void OpenSystemSettingsPanel()
+    {
+        if (cachedSystemSettingsPanel == null)
+        {
+            Debug.LogError("系统设置面板未找到！请确保场景中存在SystemSettingsPanel组件。");
+            return;
+        }
+        
+        // 激活面板并播放进入动画
+        cachedSystemSettingsPanel.gameObject.SetActive(true);
+        cachedSystemSettingsPanel.ShowPanel(true);
+        // Debug.Log("系统设置面板已打开");
+    }
+    
+    /// <summary>
+    /// 关闭系统设置面板
+    /// </summary>
+    private void CloseSystemSettingsPanel()
+    {
+        if (cachedSystemSettingsPanel == null)
+        {
+            Debug.LogError("系统设置面板未找到！");
+            return;
+        }
+        
+        cachedSystemSettingsPanel.HidePanel(true);
+        // Debug.Log("系统设置面板已关闭");
     }
     
     /// <summary>

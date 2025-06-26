@@ -21,24 +21,18 @@ public class PlayerManager : MonoBehaviour
     {
         get
         {
-            // 如果应用程序正在退出，不创建新实例
+            // 如果应用程序正在退出，不返回实例
             if (_applicationIsQuitting)
             {
                 return null;
             }
             
+            // 场景特定实现：只查找现有实例，不自动创建
             if (_instance == null)
             {
                 _instance = FindObjectOfType<PlayerManager>();
-                
-                if (_instance == null)
-                {
-                    // 如果场景中没有PlayerManager，创建一个
-                    GameObject playerManagerObj = new GameObject("PlayerManager");
-                    _instance = playerManagerObj.AddComponent<PlayerManager>();
-                    DontDestroyOnLoad(playerManagerObj);
-                }
             }
+            
             return _instance;
         }
     }
@@ -224,16 +218,35 @@ public class PlayerManager : MonoBehaviour
     
     private void Awake()
     {
-        // 单例初始化
+        Debug.Log($"[PlayerManager] Awake开始执行 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        
+        // 强制场景隔离的单例模式
         if (_instance == null)
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject);
+            Debug.Log($"[PlayerManager] 单例初始化完成（场景特定） - Scene: {gameObject.scene.name}");
         }
         else if (_instance != this)
         {
-            Destroy(gameObject);
-            return;
+            // 检查现有实例是否来自不同场景
+            if (_instance.gameObject.scene != this.gameObject.scene)
+            {
+                Debug.Log($"[PlayerManager] 检测到跨场景实例冲突，替换为当前场景实例 - 旧场景: {_instance.gameObject.scene.name}, 新场景: {gameObject.scene.name}");
+                // 清理旧实例的引用
+                var oldInstance = _instance;
+                _instance = this;
+                // 销毁旧实例
+                if (oldInstance != null)
+                {
+                    Destroy(oldInstance.gameObject);
+                }
+            }
+            else
+            {
+                Debug.Log($"[PlayerManager] 销毁同场景重复实例 - Scene: {gameObject.scene.name}");
+                Destroy(gameObject);
+                return;
+            }
         }
         
         // 初始化工具数组（如果为空）
@@ -241,12 +254,46 @@ public class PlayerManager : MonoBehaviour
         {
             tools = new ToolInfo[0];
         }
+        
+        //Debug.Log($"[PlayerManager] Awake执行完成 - Scene: {gameObject.scene.name}");
     }
     
     private void Start()
     {
+        // 从存档系统加载玩家数据
+        LoadPlayerDataFromSave();
+        
         // 验证工具配置
         ValidateToolConfiguration();
+    }
+    
+    /// <summary>
+    /// 从存档系统加载玩家数据
+    /// </summary>
+    private void LoadPlayerDataFromSave()
+    {
+        if (SaveManager.Instance != null)
+        {
+            var saveData = SaveManager.Instance.GetCurrentSaveData();
+            if (saveData != null && saveData.playerData != null)
+            {
+                // 加载货币数据（不触发事件）
+                SetHeartCurrencyDirect(saveData.playerData.heartCurrency);
+                
+                // 触发UI更新事件
+                TriggerCurrencyChangeEvent();
+                
+                //Debug.Log($"PlayerManager: 从存档加载玩家数据，爱心货币: {heartCurrency}");
+            }
+            else
+            {
+                Debug.LogWarning("PlayerManager: 没有找到存档数据，使用默认值");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("PlayerManager: SaveManager未初始化，无法加载玩家数据");
+        }
     }
     
     private void OnApplicationPause(bool pauseStatus)
@@ -254,7 +301,8 @@ public class PlayerManager : MonoBehaviour
         // 当应用程序暂停时的处理（移动平台）
         if (pauseStatus)
         {
-            // 可以在这里添加保存数据的逻辑
+            // 触发数据同步到存档系统
+            SyncDataToSave();
         }
     }
     
@@ -263,7 +311,8 @@ public class PlayerManager : MonoBehaviour
         // 当应用程序失去/获得焦点时的处理
         if (!hasFocus)
         {
-            // 可以在这里添加保存数据的逻辑
+            // 触发数据同步到存档系统
+            SyncDataToSave();
         }
     }
     
@@ -276,10 +325,32 @@ public class PlayerManager : MonoBehaviour
     
     private void OnDestroy()
     {
-        // 对象被销毁时清理单例引用
+        Debug.Log($"[PlayerManager] OnDestroy被调用 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        
+        // 只有当前实例是静态引用时才清除
         if (_instance == this)
         {
+            Debug.Log($"[PlayerManager] 清除静态引用 - Scene: {gameObject.scene.name}");
             _instance = null;
+        }
+        
+        // 同步数据到存档系统
+        SyncDataToSave();
+    }
+    
+    /// <summary>
+    /// 同步数据到存档系统
+    /// </summary>
+    private void SyncDataToSave()
+    {
+        if (SaveManager.Instance != null && !_applicationIsQuitting)
+        {
+            var saveData = SaveManager.Instance.GetCurrentSaveData();
+            if (saveData != null && saveData.playerData != null)
+            {
+                saveData.playerData.heartCurrency = heartCurrency;
+                // 注意：这里不直接调用Save()，让GameDataManager统一管理保存时机
+            }
         }
     }
     

@@ -121,6 +121,16 @@ public class GameDataManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 清理所有注册的宠物引用
+    /// </summary>
+    public void ClearAllPets()
+    {
+        int count = activePets.Count;
+        activePets.Clear();
+        Debug.Log($"GameDataManager: 已清理所有宠物引用，共清理 {count} 个");
+    }
+    
+    /// <summary>
     /// 获取活跃的宠物
     /// </summary>
     public PetController2D GetActivePet(string petId)
