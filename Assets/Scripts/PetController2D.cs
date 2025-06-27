@@ -107,7 +107,17 @@ public class PetController2D : MonoBehaviour
             }
             return petDisplayName; 
         }
-        set { petDisplayName = value; }
+        set 
+        { 
+            string oldValue = petDisplayName;
+            petDisplayName = value;
+            
+            // 如果值发生变化，通知GameDataManager（用于更新系统设置面板等UI）
+            if (oldValue != petDisplayName && GameDataManager.Instance != null)
+            {
+                GameDataManager.Instance.OnPetDataChanged();
+            }
+        }
     }
     
     // 宠物头像属性

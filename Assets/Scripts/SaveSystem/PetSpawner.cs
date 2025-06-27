@@ -175,6 +175,13 @@ public class PetSpawner : MonoBehaviour
                 currentSave.petsData.Add(newPetData);
                 await SaveManager.Instance.SaveAsync();
                 Debug.Log($"新宠物已添加到存档: {newPetData.petId}");
+                
+                // 通知GameDataManager宠物数据发生变化
+                if (GameDataManager.Instance != null)
+                {
+                    GameDataManager.Instance.OnPetDataChanged();
+                    // Debug.Log($"[PetSpawner] 新宠物创建完成，已通知数据变化: {newPetData.petId}");
+                }
             }
         }
         
@@ -209,9 +216,16 @@ public class PetSpawner : MonoBehaviour
         {
             currentSave.petsData.RemoveAll(p => p.petId == petId);
             await SaveManager.Instance.SaveAsync();
+            
+            // 通知GameDataManager宠物数据发生变化
+            if (GameDataManager.Instance != null)
+            {
+                GameDataManager.Instance.OnPetDataChanged();
+                // Debug.Log($"[PetSpawner] 宠物移除完成，已通知数据变化: {petId}");
+            }
         }
         
-        Debug.Log($"宠物已移除: {petId}");
+        //Debug.Log($"宠物已移除: {petId}");
         return true;
     }
     
@@ -230,7 +244,7 @@ public class PetSpawner : MonoBehaviour
         }
         
         spawnedPets.Clear();
-        Debug.Log("所有宠物已清理");
+        //Debug.Log("所有宠物已清理");
     }
     
     /// <summary>

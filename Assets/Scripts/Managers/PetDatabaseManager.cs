@@ -39,6 +39,26 @@ public class PetDatabaseManager : MonoBehaviour
             // 如果这个PetDatabaseManager不是在专门的GameObject上，创建一个新的
             if (gameObject.name != "PetDatabaseManager")
             {
+                // 检查当前GameObject上是否还有其他重要组件
+                Component[] allComponents = gameObject.GetComponents<Component>();
+                bool hasOtherImportantComponents = false;
+                
+                foreach (Component comp in allComponents)
+                {
+                    if (comp != this && comp.GetType() != typeof(Transform))
+                    {
+                        // 检查是否是重要组件（不应该被销毁的）
+                        string componentName = comp.GetType().Name;
+                        if (componentName.Contains("Manager") || componentName.Contains("Controller") || 
+                            componentName.Contains("Button") || componentName.Contains("Canvas") ||
+                            componentName.Contains("UI") || componentName.Contains("Text"))
+                        {
+                            hasOtherImportantComponents = true;
+                            break;
+                        }
+                    }
+                }
+                
                 // 创建专门的GameObject来承载PetDatabaseManager
                 GameObject dedicatedGO = new GameObject("PetDatabaseManager");
                 PetDatabaseManager newManager = dedicatedGO.AddComponent<PetDatabaseManager>();
@@ -54,10 +74,18 @@ public class PetDatabaseManager : MonoBehaviour
                 // 让新的管理器初始化数据库
                 newManager.InitializeDatabase();
                 
-                Debug.Log($"PetDatabaseManager: 从 {gameObject.name} 迁移到专门的GameObject");
-                
-                // 销毁当前组件（但不影响挂载的GameObject）
-                Destroy(this);
+                if (hasOtherImportantComponents)
+                {
+                    //Debug.Log($"[PetDatabaseManager] 从 {gameObject.name} 迁移到专门的GameObject，只销毁组件（GameObject有其他重要组件）");
+                    // 只销毁组件，不销毁GameObject
+                    Destroy(this);
+                }
+                else
+                {
+                   //Debug.Log($"[PetDatabaseManager] 从 {gameObject.name} 迁移到专门的GameObject，销毁原GameObject");
+                    // 销毁整个GameObject
+                    Destroy(gameObject);
+                }
                 return;
             }
             
@@ -74,10 +102,22 @@ public class PetDatabaseManager : MonoBehaviour
             {
                 _instance.petDatabase = this.petDatabase;
                 _instance.InitializeDatabase();
-                Debug.Log("PetDatabaseManager: 更新了数据库配置");
+                Debug.Log("[PetDatabaseManager] 更新了数据库配置");
             }
             
-            Destroy(this); // 只销毁组件，不销毁整个GameObject
+            // 检查是否应该销毁整个GameObject还是只销毁组件
+            if (gameObject.name == "PetDatabaseManager" && gameObject.GetComponents<Component>().Length <= 2)
+            {
+                // 如果是专门的GameObject且只有Transform和PetDatabaseManager组件，销毁整个GameObject
+                //Debug.Log("[PetDatabaseManager] 销毁重复的专门GameObject");
+                Destroy(gameObject);
+            }
+            else
+            {
+                // 如果是挂载在其他GameObject上，只销毁组件
+                //Debug.Log("[PetDatabaseManager] 销毁重复的组件");
+                Destroy(this);
+            }
         }
     }
     
@@ -105,7 +145,7 @@ public class PetDatabaseManager : MonoBehaviour
         }
         else
         {
-            Debug.Log($"PetDatabaseManager: 成功加载 {petDatabase.GetAllPets().Count} 个宠物配置");
+            //Debug.Log($"PetDatabaseManager: 成功加载 {petDatabase.GetAllPets().Count} 个宠物配置");
         }
     }
     

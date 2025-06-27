@@ -52,20 +52,20 @@ public class HeartMessageManager : MonoBehaviour
     
     private void Awake()
     {
-        Debug.Log($"[HeartMessageManager] Awake开始执行 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        //Debug.Log($"[HeartMessageManager] Awake开始执行 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
         
         // 场景特定的单例初始化
         if (_instance == null)
         {
             _instance = this;
-            Debug.Log($"[HeartMessageManager] 单例初始化完成（场景特定） - Scene: {gameObject.scene.name}");
+            //Debug.Log($"[HeartMessageManager] 单例初始化完成（场景特定） - Scene: {gameObject.scene.name}");
         }
         else if (_instance != this)
         {
             // 检查现有实例是否来自不同场景
             if (_instance.gameObject.scene != this.gameObject.scene)
             {
-                Debug.Log($"[HeartMessageManager] 检测到跨场景实例冲突，替换为当前场景实例 - 旧场景: {_instance.gameObject.scene.name}, 新场景: {gameObject.scene.name}");
+                //Debug.Log($"[HeartMessageManager] 检测到跨场景实例冲突，替换为当前场景实例 - 旧场景: {_instance.gameObject.scene.name}, 新场景: {gameObject.scene.name}");
                 // 清理旧实例的引用
                 var oldInstance = _instance;
                 _instance = this;
@@ -77,7 +77,7 @@ public class HeartMessageManager : MonoBehaviour
             }
             else
             {
-                Debug.Log($"[HeartMessageManager] 销毁同场景重复实例 - Scene: {gameObject.scene.name}");
+                //Debug.Log($"[HeartMessageManager] 销毁同场景重复实例 - Scene: {gameObject.scene.name}");
                 Destroy(gameObject);
                 return;
             }
@@ -103,17 +103,17 @@ public class HeartMessageManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"[HeartMessageManager] Awake执行完成 - Scene: {gameObject.scene.name}");
+        //Debug.Log($"[HeartMessageManager] Awake执行完成 - Scene: {gameObject.scene.name}");
     }
     
     private void OnDestroy()
     {
-        Debug.Log($"[HeartMessageManager] OnDestroy被调用 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        //Debug.Log($"[HeartMessageManager] OnDestroy被调用 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
         
         // 只有当前实例是静态引用时才清除
         if (_instance == this)
         {
-            Debug.Log($"[HeartMessageManager] 清除静态引用 - Scene: {gameObject.scene.name}");
+            //Debug.Log($"[HeartMessageManager] 清除静态引用 - Scene: {gameObject.scene.name}");
             _instance = null;
         }
     }

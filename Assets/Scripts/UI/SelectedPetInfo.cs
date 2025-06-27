@@ -299,6 +299,13 @@ public class SelectedPetInfo : MonoBehaviour
         // 保存到存档系统
         SavePetInfoToSave();
         
+        // 通知GameDataManager宠物数据发生变化（重要：用于更新系统设置面板等其他UI）
+        if (GameDataManager.Instance != null)
+        {
+            GameDataManager.Instance.OnPetDataChanged();
+            // Debug.Log($"[SelectedPetInfo] 宠物信息更新完成，已通知数据变化: {newName}");
+        }
+        
         // 显示成功提示
         if (ToastManager.Instance != null)
         {

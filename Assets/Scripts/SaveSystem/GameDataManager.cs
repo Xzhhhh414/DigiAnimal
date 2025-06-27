@@ -116,7 +116,7 @@ public class GameDataManager : MonoBehaviour
         if (activePets.ContainsKey(petId))
         {
             activePets.Remove(petId);
-            Debug.Log($"宠物已注销: {petId}");
+            //Debug.Log($"宠物已注销: {petId}");
         }
     }
     
@@ -127,7 +127,7 @@ public class GameDataManager : MonoBehaviour
     {
         int count = activePets.Count;
         activePets.Clear();
-        Debug.Log($"GameDataManager: 已清理所有宠物引用，共清理 {count} 个");
+        //Debug.Log($"GameDataManager: 已清理所有宠物引用，共清理 {count} 个");
     }
     
     /// <summary>

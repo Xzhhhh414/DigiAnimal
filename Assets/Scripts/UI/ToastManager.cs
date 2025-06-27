@@ -54,20 +54,20 @@ public class ToastManager : MonoBehaviour
     
     private void Awake()
     {
-        Debug.Log($"[ToastManager] Awake开始执行 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        //Debug.Log($"[ToastManager] Awake开始执行 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
         
         // 场景特定的单例初始化
         if (_instance == null)
         {
             _instance = this;
-            Debug.Log($"[ToastManager] 单例初始化完成（场景特定） - Scene: {gameObject.scene.name}");
+            //Debug.Log($"[ToastManager] 单例初始化完成（场景特定） - Scene: {gameObject.scene.name}");
         }
         else if (_instance != this)
         {
             // 检查现有实例是否来自不同场景
             if (_instance.gameObject.scene != this.gameObject.scene)
             {
-                Debug.Log($"[ToastManager] 检测到跨场景实例冲突，替换为当前场景实例 - 旧场景: {_instance.gameObject.scene.name}, 新场景: {gameObject.scene.name}");
+                //Debug.Log($"[ToastManager] 检测到跨场景实例冲突，替换为当前场景实例 - 旧场景: {_instance.gameObject.scene.name}, 新场景: {gameObject.scene.name}");
                 // 清理旧实例的引用
                 var oldInstance = _instance;
                 _instance = this;
@@ -79,7 +79,7 @@ public class ToastManager : MonoBehaviour
             }
             else
             {
-                Debug.Log($"[ToastManager] 销毁同场景重复实例 - Scene: {gameObject.scene.name}");
+                //Debug.Log($"[ToastManager] 销毁同场景重复实例 - Scene: {gameObject.scene.name}");
                 Destroy(gameObject);
                 return;
             }
@@ -105,17 +105,17 @@ public class ToastManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"[ToastManager] Awake执行完成 - Scene: {gameObject.scene.name}");
+        //Debug.Log($"[ToastManager] Awake执行完成 - Scene: {gameObject.scene.name}");
     }
     
     private void OnDestroy()
     {
-        Debug.Log($"[ToastManager] OnDestroy被调用 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
+        //Debug.Log($"[ToastManager] OnDestroy被调用 - GameObject: {gameObject.name}, Scene: {gameObject.scene.name}");
         
         // 只有当前实例是静态引用时才清除
         if (_instance == this)
         {
-            Debug.Log($"[ToastManager] 清除静态引用 - Scene: {gameObject.scene.name}");
+            //Debug.Log($"[ToastManager] 清除静态引用 - Scene: {gameObject.scene.name}");
             _instance = null;
         }
     }
@@ -131,7 +131,7 @@ public class ToastManager : MonoBehaviour
         if (toastMessagePrefab == null || targetCanvas == null)
         {
             Debug.LogError("ToastManager: ToastMessage预制体或Canvas未设置！请检查设置。");
-            Debug.Log($"Toast (Fallback): {message}");
+            //Debug.Log($"Toast (Fallback): {message}");
             return;
         }
         
@@ -154,7 +154,7 @@ public class ToastManager : MonoBehaviour
         if (currentToastObject == null || toastText == null)
         {
             Debug.LogError("ToastManager: 创建Toast对象失败！");
-            Debug.Log($"Toast (Fallback): {message}");
+            //Debug.Log($"Toast (Fallback): {message}");
             return;
         }
         

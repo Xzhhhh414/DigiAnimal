@@ -65,6 +65,9 @@ public class SystemSettingsPanel : MonoBehaviour
         
         // 延迟加载设置，确保SaveManager初始化完成
         StartCoroutine(LoadSettingsDelayed());
+        
+        // 移除全局数据变化事件监听，改为在面板显示时主动刷新
+        // SubscribeToDataChangeEvents();
     }
     
     /// <summary>
@@ -524,13 +527,16 @@ public class SystemSettingsPanel : MonoBehaviour
         // 如果settingsData为空，说明数据还没有加载完成，需要等待
         if (settingsData == null)
         {
-            Debug.LogWarning("[SystemSettingsPanel] ShowPanel被调用但settingsData为空，启动等待加载机制");
+            //Debug.LogWarning("[SystemSettingsPanel] ShowPanel被调用但settingsData为空，启动等待加载机制");
             StartCoroutine(WaitForDataAndShowPanel(animated));
             return;
         }
         
         // 数据已加载，直接显示面板
         ShowPanelInternal(animated);
+        
+        // 主动刷新宠物列表，确保显示最新数据
+        RefreshPetListOnShow();
     }
     
     /// <summary>
@@ -567,6 +573,9 @@ public class SystemSettingsPanel : MonoBehaviour
         
         // 现在可以安全地显示面板了
         ShowPanelInternal(animated);
+        
+        // 主动刷新宠物列表，确保显示最新数据
+        RefreshPetListOnShow();
     }
     
     /// <summary>
@@ -738,6 +747,58 @@ public class SystemSettingsPanel : MonoBehaviour
         currentAnimation.Play();
     }
     
+    /// <summary>
+    /// 面板显示时刷新宠物列表
+    /// </summary>
+    private void RefreshPetListOnShow()
+    {
+        //Debug.Log("[SystemSettingsPanel] 面板显示，主动刷新宠物列表");
+        
+        // 刷新宠物下拉菜单
+        PopulatePetDropdown();
+        
+        // 验证当前选中的宠物是否仍然存在
+        ValidateSelectedPet();
+    }
+    
+    /// <summary>
+    /// 验证当前选中的宠物是否仍然存在
+    /// </summary>
+    private void ValidateSelectedPet()
+    {
+        if (settingsData == null || string.IsNullOrEmpty(settingsData.selectedDynamicIslandPetId))
+            return;
+            
+        var saveData = SaveManager.Instance?.GetCurrentSaveData();
+        if (saveData?.petsData == null || saveData.petsData.Count == 0)
+            return;
+            
+        // 检查当前选中的宠物是否还存在
+        bool petExists = saveData.petsData.Exists(p => p.petId == settingsData.selectedDynamicIslandPetId);
+        
+        if (!petExists)
+        {
+            //Debug.Log($"[SystemSettingsPanel] 当前选中的宠物 {settingsData.selectedDynamicIslandPetId} 不再存在，自动选择第一个宠物");
+            
+            // 选择第一个可用的宠物
+            settingsData.selectedDynamicIslandPetId = saveData.petsData[0].petId;
+            
+            // 更新UI显示
+            UpdateSelectedPetDisplay();
+            
+            // 更新下拉菜单选择
+            if (petSelectionDropdown != null)
+            {
+                isUpdatingUI = true;
+                petSelectionDropdown.value = 0;
+                isUpdatingUI = false;
+            }
+            
+            // 保存设置
+            SaveSettings();
+        }
+    }
+    
     #region 事件处理
     
     /// <summary>
@@ -834,7 +895,7 @@ public class SystemSettingsPanel : MonoBehaviour
     /// </summary>
     private void LoadStartScene()
     {
-        Debug.Log("[SystemSettingsPanel] LoadStartScene() 开始执行");
+        //Debug.Log("[SystemSettingsPanel] LoadStartScene() 开始执行");
         
         if (startScene == null)
         {
@@ -843,7 +904,7 @@ public class SystemSettingsPanel : MonoBehaviour
             
             // 设置返回标志，让Start场景知道这是从Gameplay返回的
             GameState.IsReturningFromGameplay = true;
-            Debug.Log("[SystemSettingsPanel] 已设置 GameState.IsReturningFromGameplay = true (使用默认场景名)");
+            //Debug.Log("[SystemSettingsPanel] 已设置 GameState.IsReturningFromGameplay = true (使用默认场景名)");
             
             SceneManager.LoadScene("Start");
             return;
@@ -857,13 +918,13 @@ public class SystemSettingsPanel : MonoBehaviour
                 throw new System.Exception("无法获取场景名称");
             }
             
-            Debug.Log($"[SystemSettingsPanel] 准备加载开始菜单场景: {sceneName}");
+            //Debug.Log($"[SystemSettingsPanel] 准备加载开始菜单场景: {sceneName}");
             
             // 设置返回标志，让Start场景知道这是从Gameplay返回的
             GameState.IsReturningFromGameplay = true;
-            Debug.Log("[SystemSettingsPanel] 已设置 GameState.IsReturningFromGameplay = true");
+            //Debug.Log("[SystemSettingsPanel] 已设置 GameState.IsReturningFromGameplay = true");
             
-            Debug.Log($"[SystemSettingsPanel] 开始加载场景: {sceneName}");
+            //Debug.Log($"[SystemSettingsPanel] 开始加载场景: {sceneName}");
             SceneManager.LoadScene(sceneName);
         }
         catch (System.Exception e)
@@ -873,7 +934,7 @@ public class SystemSettingsPanel : MonoBehaviour
             
             // 设置返回标志，让Start场景知道这是从Gameplay返回的
             GameState.IsReturningFromGameplay = true;
-            Debug.Log("[SystemSettingsPanel] 已设置 GameState.IsReturningFromGameplay = true (异常情况)");
+            //Debug.Log("[SystemSettingsPanel] 已设置 GameState.IsReturningFromGameplay = true (异常情况)");
             
             SceneManager.LoadScene("Start");
         }
@@ -1074,7 +1135,7 @@ public class SystemSettingsPanel : MonoBehaviour
             return;
         }
         
-        Debug.Log("SaveManager.Instance 正常");
+        //Debug.Log("SaveManager.Instance 正常");
         
         // 检查当前存档数据
         var saveData = SaveManager.Instance.GetCurrentSaveData();
@@ -1084,7 +1145,7 @@ public class SystemSettingsPanel : MonoBehaviour
             return;
         }
         
-        Debug.Log("当前存档数据正常");
+        //Debug.Log("当前存档数据正常");
         
         // 检查玩家数据
         if (saveData.playerData == null)
@@ -1093,14 +1154,14 @@ public class SystemSettingsPanel : MonoBehaviour
             return;
         }
         
-        Debug.Log("玩家数据正常");
+        //Debug.Log("玩家数据正常");
         
         // 输出当前系统设置
         // Debug.Log($"当前系统设置:");
-        Debug.Log($"  - 灵动岛开启: {saveData.playerData.dynamicIslandEnabled}");
-        Debug.Log($"  - 选中宠物ID: '{saveData.playerData.selectedDynamicIslandPetId}'");
-        Debug.Log($"  - 锁屏小组件开启: {saveData.playerData.lockScreenWidgetEnabled}");
-        Debug.Log($"  - 锁屏小组件宠物ID: '{saveData.playerData.selectedLockScreenPetId}'");
+        //Debug.Log($"  - 灵动岛开启: {saveData.playerData.dynamicIslandEnabled}");
+        //Debug.Log($"  - 选中宠物ID: '{saveData.playerData.selectedDynamicIslandPetId}'");
+        //Debug.Log($"  - 锁屏小组件开启: {saveData.playerData.lockScreenWidgetEnabled}");
+        //Debug.Log($"  - 锁屏小组件宠物ID: '{saveData.playerData.selectedLockScreenPetId}'");
         
         // 检查宠物数据
         if (saveData.petsData != null && saveData.petsData.Count > 0)
