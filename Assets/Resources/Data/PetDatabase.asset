@@ -49,3 +49,15 @@ MonoBehaviour:
     heartCost: 2
     baseEnergy: 90
     baseSatiety: 90
+  - petId: Pet_CatGrey
+    petName: "\u7070\u8272\u732B\u732B"
+    petPrefab: {fileID: 5640147886649532383, guid: 82bd35c490e32754cb0b4ccf08e17f25, type: 3}
+    previewPrefab: {fileID: 5640147886649532383, guid: 0cfafc0483fcdb044b3fabf5e71d6c13, type: 3}
+    introduction: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
+    headIconImage: {fileID: 21300000, guid: a605dfa1fe016df4d87dde7187512035, type: 3}
+    petType: 0
+    isStarterPet: 0
+    isShopPet: 1
+    heartCost: 3
+    baseEnergy: 90
+    baseSatiety: 90

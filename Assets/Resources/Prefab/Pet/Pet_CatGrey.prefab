@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 6067749836465757049}
   - component: {fileID: 8668713142048465174}
   m_Layer: 7
-  m_Name: Pet_CatWhite
+  m_Name: Pet_CatGrey
   m_TagString: Pet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -136,7 +136,7 @@ Animator:
   m_GameObject: {fileID: 5640147886649532383}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 6dcfdcb2a48b41f48afed75e5cb99d12, type: 2}
+  m_Controller: {fileID: 9100000, guid: eb9bd75b7b750f647bb260d4066f5580, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
