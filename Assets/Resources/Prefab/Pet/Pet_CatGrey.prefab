@@ -188,7 +188,7 @@ SpriteRenderer:
   m_SortingLayerID: -2131475317
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: -1751663361, guid: 582d6d70fac8a2b4dad2627c3b13db57, type: 3}
+  m_Sprite: {fileID: 41023901, guid: c813b74b67bbdd141909cebbcfb5fdf9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -270,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e856fc47697dfda43869eee447cd358f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outlineColor: {r: 0.33962262, g: 0.33962262, b: 0.33962262, a: 1}
+  outlineColor: {r: 0.87058824, g: 0.87058824, b: 0.87058824, a: 1}
   outlineSize: 1
   alphaCutoff: 0.8
   pixelOutlineShader: {fileID: 4800000, guid: a0a484dc243dc624c874ea4b743ecfa9, type: 3}
