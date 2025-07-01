@@ -145,9 +145,13 @@ public class HeartShopController : MonoBehaviour
             shopPanel.SetActive(true);
         }
         
-        // 设置滚动条初始位置到顶部
+        // 配置滚动条只允许垂直滚动
         if (shopScrollRect != null)
         {
+            // 禁用水平滚动
+            shopScrollRect.horizontal = false;
+            
+            // 设置滚动条初始位置到顶部
             shopScrollRect.verticalNormalizedPosition = 1f; // 1f = 顶部, 0f = 底部
         }
     }
@@ -320,6 +324,9 @@ public class HeartShopController : MonoBehaviour
             // 等待另一帧确保布局完全完成
             yield return null;
             
+            // 检查是否需要滚动
+            CheckAndUpdateScrollability();
+            
             // 重置滚动条位置到顶部
             shopScrollRect.verticalNormalizedPosition = 1f; // 1f = 顶部, 0f = 底部
             
@@ -342,9 +349,34 @@ public class HeartShopController : MonoBehaviour
             // 强制重建布局
             UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(shopScrollRect.content);
             
+            // 检查是否需要滚动
+            CheckAndUpdateScrollability();
+            
             // 设置滚动条到顶部
             shopScrollRect.verticalNormalizedPosition = 1f;
         }
+    }
+    
+    /// <summary>
+    /// 检查内容是否需要滚动，动态启用/禁用垂直滚动
+    /// </summary>
+    private void CheckAndUpdateScrollability()
+    {
+        if (shopScrollRect == null || shopScrollRect.content == null) return;
+        
+        // 获取ScrollRect的视口高度
+        RectTransform viewport = shopScrollRect.viewport;
+        if (viewport == null) viewport = shopScrollRect.GetComponent<RectTransform>();
+        
+        float viewportHeight = viewport.rect.height;
+        float contentHeight = shopScrollRect.content.rect.height;
+        
+        // 如果内容高度小于等于视口高度，禁用垂直滚动
+        // 否则启用垂直滚动
+        bool needsScrolling = contentHeight > viewportHeight;
+        shopScrollRect.vertical = needsScrolling;
+        
+        // Debug.Log($"视口高度: {viewportHeight}, 内容高度: {contentHeight}, 需要滚动: {needsScrolling}");
     }
     
     /// <summary>
