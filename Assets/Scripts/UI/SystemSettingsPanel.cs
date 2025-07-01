@@ -43,11 +43,7 @@ public class SystemSettingsPanel : MonoBehaviour
     [SerializeField] private Vector2 hiddenPosition = new Vector2(0, 50); // 隐藏时的位置偏移
     
     [Header("场景切换设置")]
-#if UNITY_EDITOR
-    [SerializeField] private UnityEditor.SceneAsset startScene;        // Start场景资源（拖拽配置）
-#else
-    [SerializeField] private Object startScene;                       // 运行时使用Object类型
-#endif
+    [SerializeField] private string startSceneName = "Start";        // Start场景名称
     [SerializeField] private GameObject transitionOverlayPrefab;       // 过渡动画预制体
     
     // 设置数据
@@ -897,9 +893,9 @@ public class SystemSettingsPanel : MonoBehaviour
     {
         //Debug.Log("[SystemSettingsPanel] LoadStartScene() 开始执行");
         
-        if (startScene == null)
+        if (string.IsNullOrEmpty(startSceneName))
         {
-            Debug.LogError("[SystemSettingsPanel] Start场景未配置！请在Inspector中拖拽场景文件到startScene字段");
+            Debug.LogError("[SystemSettingsPanel] Start场景名称未配置！请在Inspector中设置startSceneName字段");
             Debug.LogWarning("[SystemSettingsPanel] 使用默认场景名称 'Start'");
             
             // 设置返回标志，让Start场景知道这是从Gameplay返回的
@@ -912,20 +908,14 @@ public class SystemSettingsPanel : MonoBehaviour
         
         try
         {
-            string sceneName = GetStartSceneName();
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                throw new System.Exception("无法获取场景名称");
-            }
-            
-            //Debug.Log($"[SystemSettingsPanel] 准备加载开始菜单场景: {sceneName}");
+            //Debug.Log($"[SystemSettingsPanel] 准备加载开始菜单场景: {startSceneName}");
             
             // 设置返回标志，让Start场景知道这是从Gameplay返回的
             GameState.IsReturningFromGameplay = true;
             //Debug.Log("[SystemSettingsPanel] 已设置 GameState.IsReturningFromGameplay = true");
             
-            //Debug.Log($"[SystemSettingsPanel] 开始加载场景: {sceneName}");
-            SceneManager.LoadScene(sceneName);
+            //Debug.Log($"[SystemSettingsPanel] 开始加载场景: {startSceneName}");
+            SceneManager.LoadScene(startSceneName);
         }
         catch (System.Exception e)
         {
@@ -945,13 +935,7 @@ public class SystemSettingsPanel : MonoBehaviour
     /// </summary>
     private string GetStartSceneName()
     {
-        if (startScene == null) return null;
-        
-#if UNITY_EDITOR
-        return startScene.name;
-#else
-        return startScene.name;
-#endif
+        return startSceneName;
     }
     
     /// <summary>
@@ -1200,15 +1184,15 @@ public class SystemSettingsPanel : MonoBehaviour
     private void OnValidate()
     {
 #if UNITY_EDITOR
-        if (startScene != null)
+        if (!string.IsNullOrEmpty(startSceneName))
         {
             // 检查场景是否在Build Settings中
-            string scenePath = AssetDatabase.GetAssetPath(startScene);
             bool sceneInBuildSettings = false;
             
             foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
             {
-                if (scene.path == scenePath && scene.enabled)
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scene.path);
+                if (sceneName == startSceneName && scene.enabled)
                 {
                     sceneInBuildSettings = true;
                     break;
@@ -1217,32 +1201,7 @@ public class SystemSettingsPanel : MonoBehaviour
             
             if (!sceneInBuildSettings)
             {
-                Debug.LogWarning($"[SystemSettingsPanel] 场景 '{startScene.name}' 未添加到Build Settings中，或已被禁用！正在自动修复...", this);
-                
-                // 自动添加场景到Build Settings
-                var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
-                
-                // 检查是否已存在但被禁用
-                bool sceneExists = false;
-                for (int i = 0; i < scenes.Count; i++)
-                {
-                    if (scenes[i].path == scenePath)
-                    {
-                        scenes[i] = new EditorBuildSettingsScene(scenePath, true);
-                        sceneExists = true;
-                        break;
-                    }
-                }
-                
-                // 如果场景不存在，添加到列表开头（作为第一个场景）
-                if (!sceneExists)
-                {
-                    scenes.Insert(0, new EditorBuildSettingsScene(scenePath, true));
-                }
-                
-                // 更新Build Settings
-                EditorBuildSettings.scenes = scenes.ToArray();
-                // Debug.Log($"[SystemSettingsPanel] 已自动将场景 '{startScene.name}' 添加到Build Settings中", this);
+                Debug.LogWarning($"[SystemSettingsPanel] 场景 '{startSceneName}' 未添加到Build Settings中，或已被禁用！", this);
             }
         }
 #endif

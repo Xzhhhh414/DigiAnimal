@@ -21,11 +21,7 @@ public class GameStartManager : MonoBehaviour
     [SerializeField] private Text saveInfoText;               // 存档信息显示文本（在存档信息面板内）
     
     [Header("场景设置")]
-#if UNITY_EDITOR
-    [SerializeField] private SceneAsset gameplayScene;        // Gameplay场景资源（拖拽配置）
-#else
-    [SerializeField] private Object gameplayScene;            // 运行时使用Object类型
-#endif
+    [SerializeField] private string gameplaySceneName = "Gameplay";        // Gameplay场景名称
     
     [Header("过渡动画")]
     [SerializeField] private GameObject transitionOverlayPrefab;  // 过渡动画预制体
@@ -344,9 +340,9 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void LoadGameplayScene()
     {
-        if (gameplayScene == null)
+        if (string.IsNullOrEmpty(gameplaySceneName))
         {
-            Debug.LogError("Gameplay场景未配置！请在Inspector中拖拽场景文件到gameplayScene字段");
+            Debug.LogError("Gameplay场景名称未配置！请在Inspector中设置gameplaySceneName字段");
             
             // 重新启用按钮
             if (startGameButton != null)
@@ -360,19 +356,13 @@ public class GameStartManager : MonoBehaviour
         }
         
         try
-        {
-            string sceneName = GetSceneName();
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                throw new Exception("无法获取场景名称");
-            }
-            
+        {            
             // 正在加载场景
             
             // 在场景切换前清理当前场景的管理器对象
             CleanupBeforeSceneTransition();
             
-            SceneManager.LoadScene(sceneName);
+            SceneManager.LoadScene(gameplaySceneName);
         }
         catch (Exception e)
         {
@@ -403,13 +393,7 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private string GetSceneName()
     {
-        if (gameplayScene == null) return null;
-        
-#if UNITY_EDITOR
-        return gameplayScene.name;
-#else
-        return gameplayScene.name;
-#endif
+        return gameplaySceneName;
     }
     
     /// <summary>
@@ -433,15 +417,15 @@ public class GameStartManager : MonoBehaviour
     private void OnValidate()
     {
 #if UNITY_EDITOR
-        if (gameplayScene != null)
+        if (!string.IsNullOrEmpty(gameplaySceneName))
         {
             // 检查场景是否在Build Settings中
-            string scenePath = AssetDatabase.GetAssetPath(gameplayScene);
             bool sceneInBuildSettings = false;
             
             foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
             {
-                if (scene.path == scenePath && scene.enabled)
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scene.path);
+                if (sceneName == gameplaySceneName && scene.enabled)
                 {
                     sceneInBuildSettings = true;
                     break;
@@ -450,7 +434,7 @@ public class GameStartManager : MonoBehaviour
             
             if (!sceneInBuildSettings)
             {
-                Debug.LogWarning($"场景 '{gameplayScene.name}' 未添加到Build Settings中，或已被禁用！", this);
+                Debug.LogWarning($"场景 '{gameplaySceneName}' 未添加到Build Settings中，或已被禁用！", this);
             }
         }
 #endif

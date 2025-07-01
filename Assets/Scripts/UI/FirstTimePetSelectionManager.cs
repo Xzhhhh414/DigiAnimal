@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 /// <summary>
 /// 初次游戏宠物选择管理器 - 处理初次游戏时的宠物选择界面
@@ -31,9 +28,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     [SerializeField] private string nameTooLongMessage = "宠物名字过长，当前长度：{0}，最大长度：{1}";
     
     [Header("场景切换")]
-#if UNITY_EDITOR
-    [SerializeField] private UnityEditor.SceneAsset gameplayScene;   // 游戏场景引用
-#endif
+    [SerializeField] private string gameplaySceneName = "Gameplay";   // 游戏场景名称
     
     // 当前选中的宠物索引
     private int selectedPetIndex = -1;
@@ -44,8 +39,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     // 从数据库加载的初始宠物配置
     private List<PetConfigData> starterPets = new List<PetConfigData>();
     
-    // 运行时场景名称（从SceneAsset获取）
-    private string gameplaySceneName;
+
     
     private void Start()
     {
@@ -56,8 +50,8 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             return;
         }
         
-        // 更新场景名称
-        UpdateSceneName();
+        // 验证场景名称
+        ValidateSceneName();
         
         // 加载宠物配置
         LoadPetConfigs();
@@ -70,26 +64,14 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 更新场景名称（从SceneAsset获取）
+    /// 验证场景名称
     /// </summary>
-    private void UpdateSceneName()
+    private void ValidateSceneName()
     {
-#if UNITY_EDITOR
-        if (gameplayScene != null)
-        {
-            string scenePath = UnityEditor.AssetDatabase.GetAssetPath(gameplayScene);
-            gameplaySceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
-        }
-#endif
-        
         if (string.IsNullOrEmpty(gameplaySceneName))
         {
             gameplaySceneName = "Gameplay"; // 默认值
-            Debug.LogWarning("FirstTimePetSelectionManager: 游戏场景未配置，使用默认值 'Gameplay'");
-        }
-        else
-        {
-            // 目标场景已设置
+            Debug.LogWarning("FirstTimePetSelectionManager: 游戏场景名称未配置，使用默认值 'Gameplay'");
         }
     }
     
