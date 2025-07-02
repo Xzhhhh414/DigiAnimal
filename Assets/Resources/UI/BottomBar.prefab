@@ -155,8 +155,8 @@ MonoBehaviour:
   settingsNormalSprite: {fileID: 21300000, guid: 0922521d8a36d1944983f1316ef03f8b, type: 3}
   settingsPressedSprite: {fileID: 21300000, guid: 5954c0c48763885409c4758ffb713ba8, type: 3}
   animationDuration: 0.3
-  collapsedYPosition: -145
-  expandedYPosition: 0
+  collapsedYPosition: -150
+  expandedYPosition: 20
 --- !u!1 &3762897659333075255
 GameObject:
   m_ObjectHideFlags: 0
@@ -676,8 +676,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -5, y: -10}
-  m_SizeDelta: {x: 60, y: 60}
+  m_AnchoredPosition: {x: -30, y: -10}
+  m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6667979358344224945
 CanvasRenderer:

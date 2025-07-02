@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 /// <summary>
 /// 过渡动画控制器 - 控制场景间的过渡动画效果
@@ -8,7 +9,10 @@ using UnityEngine.Events;
 public class TransitionController : MonoBehaviour
 {
     [Header("动画控制")]
-    [SerializeField] private Animator animator;
+    private Animator animator;
+    
+    [Header("自适应配置")]
+    [SerializeField] private RectTransform[] colorBlocks;  // 六个色块的RectTransform引用
     
     [Header("事件回调")]
     public UnityEvent OnEnterComplete;   // 进入动画完成
@@ -28,6 +32,11 @@ public class TransitionController : MonoBehaviour
     // 启动时的目标状态
     private string startupTargetState = null;
     
+    // 屏幕自适应相关
+    private Canvas canvas;
+    private CanvasScaler canvasScaler;
+    private Vector2 lastScreenSize;
+    
     private void Awake()
     {
         // 如果没有设置Animator，自动获取
@@ -40,10 +49,23 @@ public class TransitionController : MonoBehaviour
         {
             Debug.LogError("TransitionController: 未找到Animator组件！");
         }
+        
+        // 获取Canvas和CanvasScaler组件
+        canvas = GetComponentInChildren<Canvas>();
+        if (canvas != null)
+        {
+            canvasScaler = canvas.GetComponent<CanvasScaler>();
+        }
+        
+        // 初始化屏幕自适应
+        InitializeScreenAdaptation();
     }
     
     private void Start()
     {
+        // 应用屏幕自适应
+        ApplyScreenAdaptation();
+        
         // 如果有指定的启动状态，直接播放；否则设置为初始状态
         if (!string.IsNullOrEmpty(startupTargetState))
         {
@@ -63,6 +85,86 @@ public class TransitionController : MonoBehaviour
         }
     }
     
+    private void Update()
+    {
+        // 检查屏幕尺寸变化（用于编辑器测试和支持分辨率动态变化的平台）
+        Vector2 currentScreenSize = new Vector2(Screen.width, Screen.height);
+        if (lastScreenSize != currentScreenSize)
+        {
+            lastScreenSize = currentScreenSize;
+            ApplyScreenAdaptation();
+        }
+    }
+    
+    #region 屏幕自适应方法
+    
+    /// <summary>
+    /// 初始化屏幕自适应
+    /// </summary>
+    private void InitializeScreenAdaptation()
+    {
+        if (canvasScaler != null)
+        {
+            // 设置Canvas Scaler为适应屏幕尺寸
+            canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            canvasScaler.referenceResolution = new Vector2(1080, 1920);
+            canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            // 根据屏幕宽高比自动调整匹配模式
+            float aspectRatio = (float)Screen.width / Screen.height;
+            float referenceAspect = 1080f / 1920f;
+            canvasScaler.matchWidthOrHeight = aspectRatio > referenceAspect ? 1f : 0f;
+        }
+        
+        lastScreenSize = new Vector2(Screen.width, Screen.height);
+    }
+    
+    /// <summary>
+    /// 应用屏幕自适应
+    /// </summary>
+    private void ApplyScreenAdaptation()
+    {
+        if (colorBlocks == null || colorBlocks.Length == 0) return;
+        
+        // 获取Canvas的实际尺寸
+        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+        if (canvasRect == null) return;
+        
+        // 获取Canvas的实际高度
+        float canvasHeight = canvasRect.rect.height;
+        
+        // 计算每个色块应该的高度，6个色块平均分配屏幕高度
+        float blockHeight = canvasHeight / 6f;
+        
+        // 计算色块的Y位置，从上到下排列
+        // Canvas中心为(0,0)，向上为正，向下为负
+        // 第一个色块在最上方，最后一个在最下方
+        for (int i = 0; i < colorBlocks.Length; i++)
+        {
+            if (colorBlocks[i] != null)
+            {
+                // 设置色块高度
+                Vector2 sizeDelta = colorBlocks[i].sizeDelta;
+                sizeDelta.y = blockHeight;
+                colorBlocks[i].sizeDelta = sizeDelta;
+                
+                // 计算Y位置：从Canvas顶部开始，每个色块占用blockHeight的空间
+                // 第0个色块：canvasHeight/2 - blockHeight/2 (最上方)
+                // 第1个色块：canvasHeight/2 - blockHeight/2 - blockHeight
+                // ...
+                // 第5个色块：canvasHeight/2 - blockHeight/2 - 5*blockHeight (最下方)
+                float yPosition = (canvasHeight / 2f) - (blockHeight / 2f) - (i * blockHeight);
+                
+                Vector2 anchoredPosition = colorBlocks[i].anchoredPosition;
+                anchoredPosition.y = yPosition;
+                colorBlocks[i].anchoredPosition = anchoredPosition;
+            }
+        }
+        
+        // Debug.Log($"TransitionController: 已应用屏幕自适应，Canvas高度: {canvasHeight}, 色块高度: {blockHeight}");
+    }
+    
+    #endregion
+    
     #region 公共接口
     
     /// <summary>
@@ -75,6 +177,9 @@ public class TransitionController : MonoBehaviour
             Debug.LogWarning("TransitionController: 动画正在进行中，忽略新的动画请求");
             return;
         }
+        
+        // 在播放动画前确保屏幕适应是最新的
+        ApplyScreenAdaptation();
         
         // Debug.Log("TransitionController: 开始播放进入动画");
         isTransitioning = true;
@@ -95,6 +200,9 @@ public class TransitionController : MonoBehaviour
             return;
         }
         
+        // 在播放动画前确保屏幕适应是最新的
+        ApplyScreenAdaptation();
+        
         // Debug.Log("TransitionController: 开始播放退出动画");
         isTransitioning = true;
         animator.SetTrigger(TRIGGER_EXIT);
@@ -111,6 +219,9 @@ public class TransitionController : MonoBehaviour
         // Debug.Log("TransitionController: 设置为静止状态");
         isTransitioning = false;
         
+        // 确保屏幕适应是最新的
+        ApplyScreenAdaptation();
+        
         // 直接跳转到Full状态
         animator.Play(STATE_FULL);
     }
@@ -122,6 +233,9 @@ public class TransitionController : MonoBehaviour
     {
         // Debug.Log("TransitionController: 设置为初始状态");
         isTransitioning = false;
+        
+        // 确保屏幕适应是最新的
+        ApplyScreenAdaptation();
         
         // 直接跳转到Init状态
         animator.Play(STATE_INIT);
@@ -155,6 +269,14 @@ public class TransitionController : MonoBehaviour
     /// 检查是否正在进行动画
     /// </summary>
     public bool IsTransitioning => isTransitioning;
+    
+    /// <summary>
+    /// 手动刷新屏幕自适应（用于外部调用）
+    /// </summary>
+    public void RefreshScreenAdaptation()
+    {
+        ApplyScreenAdaptation();
+    }
     
     #endregion
     
@@ -231,4 +353,4 @@ public class TransitionController : MonoBehaviour
     }
     
     #endregion
-} 
+}

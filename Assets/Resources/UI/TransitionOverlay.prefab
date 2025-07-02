@@ -267,7 +267,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5600662894645821846}
   - component: {fileID: 879154637230661916}
-  - component: {fileID: 1853451329192344614}
+  - component: {fileID: -7190333112701941934}
   m_Layer: 5
   m_Name: TransitionOverlay
   m_TagString: Untagged
@@ -316,7 +316,7 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1853451329192344614
+--- !u!114 &-7190333112701941934
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -328,7 +328,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54823806b0c59a54bba19f25a935e7b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 879154637230661916}
+  animator: {fileID: 0}
+  colorBlocks:
+  - {fileID: 8795030450252585397}
+  - {fileID: 8923682303165659684}
+  - {fileID: 3128801213503626022}
+  - {fileID: 2037728027960935871}
+  - {fileID: 8408493013284865645}
+  - {fileID: 1597727045258464252}
   OnEnterComplete:
     m_PersistentCalls:
       m_Calls: []
