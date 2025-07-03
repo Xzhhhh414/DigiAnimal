@@ -19,6 +19,12 @@ public class CameraController : MonoBehaviour
     // 摄像机移动速度
     [SerializeField] private float panSpeed = 15f;
     
+    // 添加平台特定的灵敏度设置
+    [Header("拖动灵敏度设置")]
+    [SerializeField] [Tooltip("PC端（鼠标）拖动灵敏度")] private float pcPanSensitivity = 1f;
+    [SerializeField] [Tooltip("移动端（触摸）拖动灵敏度")] private float mobilePanSensitivity = 0.5f;
+    [SerializeField] [Tooltip("是否反转拖动方向")] private bool invertPanDirection = true;
+    
     // 宠物跟随速度
     [SerializeField] [Tooltip("控制相机初始选中宠物时的过渡时间，值越大过渡越快")] private float followSpeed = 2f;
     
@@ -477,9 +483,18 @@ public class CameraController : MonoBehaviour
     {
         if (framingTransposer != null)
         {
+            // 根据平台选择灵敏度（运行时检测）
+            float platformSensitivity = Application.isMobilePlatform ? mobilePanSensitivity : pcPanSensitivity;
+            
             // 计算适当的移动量
-            float scale = Time.deltaTime * panSpeed * 0.1f;
+            float scale = Time.deltaTime * panSpeed * 0.1f * platformSensitivity;
             dragDelta *= scale;
+            
+            // 根据设置反转拖动方向
+            if (invertPanDirection)
+            {
+                dragDelta = -dragDelta;
+            }
             
             // 移动目标而不是修改偏移
             Vector3 right = virtualCamera.transform.right;
