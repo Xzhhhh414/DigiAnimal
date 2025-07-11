@@ -88,6 +88,9 @@ public class BottomPanelController : MonoBehaviour
         
         // 确保系统设置面板初始状态为关闭
         InitializeSystemSettingsPanel();
+        
+        // 订阅UIManager的工具包状态变化事件
+        SubscribeToUIManagerEvents();
     }
     
     // 按钮点击事件处理
@@ -518,5 +521,46 @@ public class BottomPanelController : MonoBehaviour
     public Button GetHeartShopButton()
     {
         return heartShopButton;
+    }
+
+    /// <summary>
+    /// 订阅UIManager的事件
+    /// </summary>
+    private void SubscribeToUIManagerEvents()
+    {
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.OnToolkitStateChanged += OnToolkitStateChanged;
+        }
+    }
+
+    /// <summary>
+    /// 取消订阅UIManager的事件
+    /// </summary>
+    private void UnsubscribeFromUIManagerEvents()
+    {
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.OnToolkitStateChanged -= OnToolkitStateChanged;
+        }
+    }
+
+    /// <summary>
+    /// 响应工具包状态变化
+    /// </summary>
+    /// <param name="isOpen">工具包是否打开</param>
+    private void OnToolkitStateChanged(bool isOpen)
+    {
+        // 当工具包关闭时，如果当前激活的功能是Tools，则重置按钮状态
+        if (!isOpen && currentActiveFunction == FunctionType.Tools)
+        {
+            SetActiveFunction(FunctionType.None);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        // 取消订阅UIManager事件
+        UnsubscribeFromUIManagerEvents();
     }
 } 

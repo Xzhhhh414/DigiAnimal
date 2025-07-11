@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   petDisplayName: "\u7070\u8272\u732B\u732B"
-  petProfileImage: {fileID: 21300000, guid: a605dfa1fe016df4d87dde7187512035, type: 3}
+  petProfileImage: {fileID: 21300000, guid: e27daf2c5547d6040b9bb39a8060bf77, type: 3}
   petIntroduction: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
   isSelected: 0
   _IsMoving: 0
