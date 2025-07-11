@@ -8,3 +8,5 @@ Temp/
 .vs/
 .vs
 obj/Debug
+.vsconfig
+
