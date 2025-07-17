@@ -131,8 +131,8 @@ ScriptedImporter:
       x: 4
       y: 4
       width: 176
-      height: 96
-    spriteID: 781f464c80ddcfd429e92d56dc41fc7f
+      height: 176
+    spriteID: 9a1d68c485fa37249b71c7cb84e42f1f
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -157,8 +157,8 @@ ScriptedImporter:
         x: 0
         y: 0
         width: 176
-        height: 96
-      spriteId: 781f464c80ddcfd429e92d56dc41fc7f
+        height: 176
+      spriteId: 9a1d68c485fa37249b71c7cb84e42f1f
     linkedCells: []
     parentIndex: -1
   platformSettings:
@@ -177,4 +177,4 @@ ScriptedImporter:
   generatePhysicsShape: 0
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 176, y: 96}
+  canvasSize: {x: 176, y: 176}

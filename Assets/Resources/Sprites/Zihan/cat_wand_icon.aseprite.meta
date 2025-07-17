@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 07e7735f0de63a04188c00d5961d6495
+guid: 13de771981ad1cd448510c0cbbd940bd
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -121,18 +121,18 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: cat_wand
+  - name: cat_wand_icon
     originalName: 
-    pivot: {x: 0.5041322, y: -0.033195022}
+    pivot: {x: 0.5, y: 0}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     rect:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 121
-      height: 241
-    spriteID: d158ff7cfd4a57446ab98be831eff2bd
+      width: 16
+      height: 16
+    spriteID: 150da1663d082d541a5e7fcf48db2624
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -144,21 +144,21 @@ ScriptedImporter:
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
-    guid: -394973811
-    name: cat_wand
+    guid: -150685923
+    name: cat_wand_icon
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: cat_wand
+    - name: cat_wand_icon
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 3
-        y: 8
-        width: 121
-        height: 241
-      spriteId: d158ff7cfd4a57446ab98be831eff2bd
+        x: 0
+        y: 0
+        width: 16
+        height: 16
+      spriteId: 150da1663d082d541a5e7fcf48db2624
     linkedCells: []
     parentIndex: -1
   platformSettings:
@@ -177,4 +177,4 @@ ScriptedImporter:
   generatePhysicsShape: 0
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 128, y: 256}
+  canvasSize: {x: 16, y: 16}
