@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 13de771981ad1cd448510c0cbbd940bd
+guid: 180df48e22dda5a4f82302e72e6e8e77
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -121,7 +121,7 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: cat_wand_icon
+  - name: catwand_icon
     originalName: 
     pivot: {x: 0.5, y: 0}
     alignment: 9
@@ -132,7 +132,7 @@ ScriptedImporter:
       y: 4
       width: 16
       height: 16
-    spriteID: 150da1663d082d541a5e7fcf48db2624
+    spriteID: 692dc5f69cc86104199f3aa8641752b6
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -144,13 +144,13 @@ ScriptedImporter:
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
-    guid: -150685923
-    name: cat_wand_icon
+    guid: -1463689204
+    name: catwand_icon
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: cat_wand_icon
+    - name: catwand_icon
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
@@ -158,7 +158,7 @@ ScriptedImporter:
         y: 0
         width: 16
         height: 16
-      spriteId: 150da1663d082d541a5e7fcf48db2624
+      spriteId: 692dc5f69cc86104199f3aa8641752b6
     linkedCells: []
     parentIndex: -1
   platformSettings:
