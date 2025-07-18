@@ -123,15 +123,15 @@ ScriptedImporter:
   animatedSpriteImportData:
   - name: catwand_icon
     originalName: 
-    pivot: {x: 0.52, y: -0.15384616}
+    pivot: {x: 0.5416667, y: -0.21739131}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     rect:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 25
-      height: 26
+      width: 24
+      height: 23
     spriteID: f94b1a1a62f98154580f0fce21b269c4
     spriteBone: []
     spriteOutline: []
@@ -155,9 +155,9 @@ ScriptedImporter:
       additiveSortOrder: 0
       cellRect:
         x: 3
-        y: 4
-        width: 25
-        height: 26
+        y: 5
+        width: 24
+        height: 23
       spriteId: f94b1a1a62f98154580f0fce21b269c4
     linkedCells: []
     parentIndex: -1
