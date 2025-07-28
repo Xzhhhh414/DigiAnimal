@@ -133,6 +133,18 @@ public class GameInitializer : MonoBehaviour
             throw new System.Exception("PlayerManager初始化失败");
         }
         
+
+        
+        // 确保IOSDataBridge存在（用于iOS数据同步）
+        if (IOSDataBridge.Instance == null)
+        {
+            DebugLog("警告: IOSDataBridge初始化失败，iOS数据同步将不可用");
+        }
+        else
+        {
+            DebugLog("IOSDataBridge已初始化");
+        }
+        
         // DebugLog("所有核心管理器检查完成");
         yield return null;
     }

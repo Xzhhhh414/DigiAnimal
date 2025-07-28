@@ -303,6 +303,13 @@ public class GameDataManager : MonoBehaviour
             // 异步保存宠物数据变化
             SyncToSave(false);
         }
+        
+        // 同步数据到iOS（灵动岛和主屏幕Widget）
+        if (IOSDataBridge.Instance != null)
+        {
+            IOSDataBridge.Instance.ForceSyncNow();
+            Debug.Log("[GameDataManager] 宠物数据变化，已触发iOS数据同步");
+        }
     }
     
     /// <summary>

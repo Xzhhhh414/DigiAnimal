@@ -1072,6 +1072,12 @@ public class SystemSettingsPanel : MonoBehaviour
             if (saveSuccess)
             {
                 // Debug.Log($"[SystemSettingsPanel] 设置已成功保存到存档: 灵动岛={settingsData.dynamicIslandEnabled}, 选中宠物={settingsData.selectedDynamicIslandPetId}");
+                
+                // 同步数据到iOS
+                if (IOSDataBridge.Instance != null)
+                {
+                    IOSDataBridge.Instance.ForceSyncNow();
+                }
             }
             else
             {
