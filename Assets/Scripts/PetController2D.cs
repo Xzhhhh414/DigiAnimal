@@ -460,8 +460,8 @@ public class PetController2D : MonoBehaviour
     {
         if (needBubbleController == null) return;
         
-        // 如果宠物正在吃东西或睡觉，隐藏所有气泡
-        if (IsEating || IsSleeping)
+        // 如果宠物正在吃东西、睡觉或被摸摸，隐藏所有气泡
+        if (IsEating || IsSleeping || IsPatting)
         {
             // 如果当前有气泡显示，隐藏它
             if (isShowingHungryBubble || isShowingTiredBubble)
