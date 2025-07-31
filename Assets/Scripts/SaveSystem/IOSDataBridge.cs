@@ -116,7 +116,7 @@ public class IOSDataBridge : MonoBehaviour
             // 设置App Group标识符
             _IOSSetAppGroupIdentifier(appGroupIdentifier);
             
-            Debug.Log($"[IOSDataBridge] iOS桥接系统已初始化，App Group: {appGroupIdentifier}");
+            // Debug.Log($"[IOSDataBridge] iOS桥接系统已初始化，App Group: {appGroupIdentifier}");
             isInitialized = true;
             
             // 立即进行一次数据同步
@@ -127,7 +127,7 @@ public class IOSDataBridge : MonoBehaviour
             Debug.LogError($"[IOSDataBridge] 初始化失败: {e.Message}");
         }
 #else
-        Debug.Log($"[IOSDataBridge] 非iOS平台，跳过原生桥接初始化，App Group: {appGroupIdentifier}");
+        // Debug.Log($"[IOSDataBridge] 非iOS平台，跳过原生桥接初始化，App Group: {appGroupIdentifier}");
         isInitialized = true;
         
         // 在编辑器中也进行数据同步（用于测试）
@@ -181,7 +181,7 @@ public class IOSDataBridge : MonoBehaviour
                         if (!IsPetDataEqual(cachedData, currentPetData))
                         {
                             needUpdate = true;
-                            Debug.Log($"[IOSDataBridge] 宠物数据内容发生变化: {selectedPetId}");
+                            // Debug.Log($"[IOSDataBridge] 宠物数据内容发生变化: {selectedPetId}");
                         }
                     }
                     else
@@ -229,10 +229,10 @@ public class IOSDataBridge : MonoBehaviour
             PlayerPrefs.SetString("iOS_WidgetData", jsonData);
             PlayerPrefs.Save();
             
-            Debug.Log($"[IOSDataBridge] 数据已同步（编辑器模式）:\n{jsonData}");
+            // Debug.Log($"[IOSDataBridge] 数据已同步（编辑器模式）:\n{jsonData}");
 #endif
             
-            Debug.Log($"[IOSDataBridge] 数据同步完成 - 灵动岛:{dynamicIslandEnabled}, 宠物:{selectedPetId}");
+            // Debug.Log($"[IOSDataBridge] 数据同步完成 - 灵动岛:{dynamicIslandEnabled}, 宠物:{selectedPetId}");
         }
         catch (Exception e)
         {
@@ -286,7 +286,7 @@ public class IOSDataBridge : MonoBehaviour
     /// </summary>
     public void ForceSyncNow()
     {
-        Debug.Log("[IOSDataBridge] 强制同步数据");
+        // Debug.Log("[IOSDataBridge] 强制同步数据");
         SyncToIOS();
     }
     
@@ -298,7 +298,7 @@ public class IOSDataBridge : MonoBehaviour
 #if UNITY_IOS && !UNITY_EDITOR
         _IOSStartLiveActivity();
 #else
-        Debug.Log("[IOSDataBridge] 启动Live Activity（编辑器模式）");
+        // Debug.Log("[IOSDataBridge] 启动Live Activity（编辑器模式）");
 #endif
     }
     
@@ -310,7 +310,7 @@ public class IOSDataBridge : MonoBehaviour
 #if UNITY_IOS && !UNITY_EDITOR
         _IOSStopLiveActivity();
 #else
-        Debug.Log("[IOSDataBridge] 停止Live Activity（编辑器模式）");
+        // Debug.Log("[IOSDataBridge] 停止Live Activity（编辑器模式）");
 #endif
     }
     
@@ -322,7 +322,7 @@ public class IOSDataBridge : MonoBehaviour
 #if UNITY_IOS && !UNITY_EDITOR
         return _IOSIsLiveActivityActive();
 #else
-        Debug.Log("[IOSDataBridge] 检查Live Activity状态（编辑器模式）");
+        // Debug.Log("[IOSDataBridge] 检查Live Activity状态（编辑器模式）");
         return false;
 #endif
     }
@@ -437,8 +437,8 @@ public class IOSDataBridge : MonoBehaviour
         int count = cachedPetData.Count;
         cachedPetData.Clear();
         lastSyncedPetId = "";
-        Debug.Log($"[IOSDataBridge] 已清理宠物数据缓存，共清理 {count} 个缓存项");
-        Debug.Log("[IOSDataBridge] 下次调用SyncToIOS时将强制更新所有数据");
+        // Debug.Log($"[IOSDataBridge] 已清理宠物数据缓存，共清理 {count} 个缓存项");
+        // Debug.Log("[IOSDataBridge] 下次调用SyncToIOS时将强制更新所有数据");
     }
     
     private void OnDestroy()

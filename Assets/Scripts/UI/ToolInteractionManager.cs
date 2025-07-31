@@ -17,6 +17,7 @@ public class ToolInteractionManager : MonoBehaviour
     [SerializeField] private string cannotInteractMessage = "{PetName} 对玩具感到厌倦，需要休息一下";
     [SerializeField] private string sleepingInteractionMessage = "{PetName} 正在睡觉呢，别打扰ta的美梦~";
     [SerializeField] private string eatingInteractionMessage = "{PetName} 正在专心吃饭，现在可不想玩玩具";
+    [SerializeField] private string pattingInteractionMessage = "{PetName} 正在被摸摸呢，请等ta享受完再来";
     [SerializeField] private string otherFailureMessage = "{PetName} 现在无法进行玩具互动";
     
     //[Header("文本替换符号说明")]
@@ -283,17 +284,20 @@ public class ToolInteractionManager : MonoBehaviour
                 Debug.LogWarning("未找到HeartMessageManager组件，爱心提示将不会显示");
             }
             
+            // 启动具体的玩具互动表现
+            pet.StartToyInteraction(CurrentTool.toolName);
+            
             if (becameBored)
             {
                 // 本次交互让宠物进入厌倦状态，但仍然显示成功的消息
-                string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
-                ShowPetMessage(pet, message, PetNeedType.Happy);
+                // string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
+                // ShowPetMessage(pet, message, PetNeedType.Happy);
             }
             else
             {
                 // 宠物没有因本次交互进入厌倦状态，很开心
-                string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
-                ShowPetMessage(pet, message, PetNeedType.Happy);
+                // string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
+                // ShowPetMessage(pet, message, PetNeedType.Happy);
             }
                 break;
                 
@@ -310,6 +314,11 @@ public class ToolInteractionManager : MonoBehaviour
             case 3: // 正在吃饭
                 string eatingMessage = ReplaceTextSymbols(eatingInteractionMessage, pet, 0);
                 ShowPetMessage(pet, eatingMessage, PetNeedType.None);
+                break;
+                
+            case 4: // 正在被摸摸
+                string pattingMessage = ReplaceTextSymbols(pattingInteractionMessage, pet, 0);
+                ShowPetMessage(pet, pattingMessage, PetNeedType.None);
                 break;
                 
             default: // 其他失败情况

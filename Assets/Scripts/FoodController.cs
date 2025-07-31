@@ -161,6 +161,7 @@ public class FoodController : MonoBehaviour
     public void RefillFood()
     {
         IsEmpty = false;
+        _isUsing = false;
         
         // 触发填满动画
         if (animator != null)

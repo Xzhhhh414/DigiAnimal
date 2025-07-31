@@ -235,7 +235,7 @@ public class GameDataManager : MonoBehaviour
         SaveData saveData = SaveManager.Instance.GetCurrentSaveData();
         if (saveData == null) 
         {
-            Debug.LogWarning("[位置保存] 无法获取当前存档数据");
+            // Debug.LogWarning("[位置保存] 无法获取当前存档数据");
             return;
         }
         
@@ -251,7 +251,7 @@ public class GameDataManager : MonoBehaviour
             PetSaveData petSaveData = saveData.petsData.Find(p => p.petId == petId);
             if (petSaveData == null) 
             {
-                Debug.LogWarning($"[位置保存] 未找到宠物 {petId} 的存档数据");
+                // Debug.LogWarning($"[位置保存] 未找到宠物 {petId} 的存档数据");
                 continue;
             }
             
@@ -308,7 +308,7 @@ public class GameDataManager : MonoBehaviour
         if (IOSDataBridge.Instance != null)
         {
             IOSDataBridge.Instance.ForceSyncNow();
-            Debug.Log("[GameDataManager] 宠物数据变化，已触发iOS数据同步");
+            // Debug.Log("[GameDataManager] 宠物数据变化，已触发iOS数据同步");
         }
     }
     
@@ -351,7 +351,7 @@ public class GameDataManager : MonoBehaviour
     {
         // 应用退出时强制保存所有数据（包括位置）
         SyncToSave(true);
-        Debug.Log("应用退出，已保存所有数据");
+        // Debug.Log("应用退出，已保存所有数据");
     }
     
     #endregion

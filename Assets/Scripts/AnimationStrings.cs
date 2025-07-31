@@ -13,6 +13,9 @@ public static class AnimationStrings
     public static string isEating = "isEating";
     public static string startEatTrigger = "startEatTrigger";
     public static string finishEatTrigger = "finishEatTrigger";
+    public static string isPatting = "isPatting";
+    public static string startPatTrigger = "startPatTrigger";
+    public static string endPatTrigger = "endPatTrigger";
     // 可以在此处添加更多动画参数名称
 
 }

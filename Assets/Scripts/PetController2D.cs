@@ -66,6 +66,10 @@ public class PetController2D : MonoBehaviour
     [SerializeField]
     private bool _IsEating = false;
     
+    // 是否正在被摸摸
+    [SerializeField]
+    private bool _IsPatting = false;
+    
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
     
@@ -262,6 +266,23 @@ public class PetController2D : MonoBehaviour
         {
             _IsEating = value;
             animator.SetBool(AnimationStrings.isEating, value);
+        }
+    }
+    
+    // 摸摸互动状态属性
+    [Tooltip("宠物是否正在被摸摸")]
+    public bool IsPatting
+    {
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _IsPatting = animator.GetBool(AnimationStrings.isPatting);
+            return _IsPatting; 
+        }
+        set
+        {
+            _IsPatting = value;
+            animator.SetBool(AnimationStrings.isPatting, value);
         }
     }
     
@@ -639,7 +660,7 @@ public class PetController2D : MonoBehaviour
     /// 尝试与玩具互动
     /// </summary>
     /// <param name="heartReward">获得的爱心奖励数量</param>
-    /// <returns>互动结果：0=成功，1=厌倦状态，2=正在睡觉，3=正在吃饭</returns>
+    /// <returns>互动结果：0=成功，1=厌倦状态，2=正在睡觉，3=正在吃饭，4=正在被摸摸</returns>
     public int TryToyInteraction(float heartReward)
     {
         // 检查是否正在睡觉
@@ -652,6 +673,12 @@ public class PetController2D : MonoBehaviour
         if (IsEating)
         {
             return 3; // 正在吃饭
+        }
+        
+        // 检查是否正在被摸摸
+        if (IsPatting)
+        {
+            return 4; // 正在被摸摸
         }
         
         // 检查是否可以进行玩具互动（厌倦状态检查）
@@ -682,6 +709,61 @@ public class PetController2D : MonoBehaviour
         }
         
         return 0; // 成功
+    }
+    
+    /// <summary>
+    /// 启动特定类型的玩具互动
+    /// </summary>
+    /// <param name="toolName">工具名称</param>
+    public void StartToyInteraction(string toolName)
+    {
+        if (string.IsNullOrEmpty(toolName))
+        {
+            Debug.LogWarning("工具名称为空，无法启动互动");
+            return;
+        }
+        
+        // 根据工具类型设置对应的状态，让BT接管后续流程
+        switch (toolName)
+        {
+            case "摸摸":
+                IsPatting = true;
+                // Debug.Log($"{gameObject.name} 设置摸摸状态，等待BT接管");
+                break;
+            case "逗猫棒":
+                // TODO: 实现逗猫棒状态设置
+                // Debug.Log($"设置逗猫棒状态 - {gameObject.name}");
+                break;
+            case "玩具老鼠":
+                // TODO: 实现玩具老鼠状态设置
+                // Debug.Log($"设置玩具老鼠状态 - {gameObject.name}");
+                break;
+            default:
+                Debug.LogWarning($"未知的工具类型: {toolName}");
+                break;
+        }
+    }
+    
+    /// <summary>
+    /// 开始摸摸互动（只负责动画触发，由BT调用）
+    /// </summary>
+    public void StartPatting()
+    {
+        // 触发开始摸摸动画
+        animator.SetTrigger(AnimationStrings.startPatTrigger);
+        
+        // Debug.Log($"{gameObject.name} 触发开始摸摸动画");
+    }
+    
+    /// <summary>
+    /// 结束摸摸互动（只负责动画触发，由BT调用）
+    /// </summary>
+    public void EndPatting()
+    {
+        // 触发结束摸摸动画
+        animator.SetTrigger(AnimationStrings.endPatTrigger);
+        
+        // Debug.Log($"{gameObject.name} 触发结束摸摸动画");
     }
     
     /// <summary>

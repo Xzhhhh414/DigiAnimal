@@ -31,6 +31,11 @@ namespace NodeCanvas.Tasks.Conditions
                 return false; // 正在吃东西，不空闲
             }
 
+            if (agent.IsPatting)
+            {
+                return false; // 正在被摸摸，不空闲
+            }
+
             // 如果还有其他特殊行为，在此处添加检查
             // 例如: if (agent.IsPlayingWithToy) return false;
 
