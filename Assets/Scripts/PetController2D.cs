@@ -70,6 +70,14 @@ public class PetController2D : MonoBehaviour
     [SerializeField]
     private bool _IsPatting = false;
     
+    // 是否被逗猫棒吸引
+    [SerializeField]
+    private bool _IsAttracted = false;
+    
+    // 是否正在与逗猫棒互动
+    [SerializeField]
+    private bool _IsCatTeasering = false;
+    
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
     
@@ -286,6 +294,40 @@ public class PetController2D : MonoBehaviour
         }
     }
     
+    // 被逗猫棒吸引状态属性
+    [Tooltip("宠物是否被逗猫棒吸引")]
+    public bool IsAttracted
+    {
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _IsAttracted = animator.GetBool(AnimationStrings.isAttracted);
+            return _IsAttracted; 
+        }
+        set
+        {
+            _IsAttracted = value;
+            animator.SetBool(AnimationStrings.isAttracted, value);
+        }
+    }
+    
+    // 逗猫棒互动状态属性
+    [Tooltip("宠物是否正在与逗猫棒互动")]
+    public bool IsCatTeasering
+    {
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _IsCatTeasering = animator.GetBool(AnimationStrings.isCatTeasering);
+            return _IsCatTeasering; 
+        }
+        set
+        {
+            _IsCatTeasering = value;
+            animator.SetBool(AnimationStrings.isCatTeasering, value);
+        }
+    }
+    
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
     
@@ -460,8 +502,8 @@ public class PetController2D : MonoBehaviour
     {
         if (needBubbleController == null) return;
         
-        // 如果宠物正在吃东西、睡觉或被摸摸，隐藏所有气泡
-        if (IsEating || IsSleeping || IsPatting)
+        // 如果宠物正在吃东西、睡觉、被摸摸、被吸引或与逗猫棒互动，隐藏所有气泡
+        if (IsEating || IsSleeping || IsPatting || IsAttracted || IsCatTeasering)
         {
             // 如果当前有气泡显示，隐藏它
             if (isShowingHungryBubble || isShowingTiredBubble)
@@ -679,6 +721,18 @@ public class PetController2D : MonoBehaviour
         if (IsPatting)
         {
             return 4; // 正在被摸摸
+        }
+        
+        // 检查是否被逗猫棒吸引
+        if (IsAttracted)
+        {
+            return 5; // 被逗猫棒吸引
+        }
+        
+        // 检查是否正在与逗猫棒互动
+        if (IsCatTeasering)
+        {
+            return 6; // 正在与逗猫棒互动
         }
         
         // 检查是否可以进行玩具互动（厌倦状态检查）

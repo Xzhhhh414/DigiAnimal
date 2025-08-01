@@ -382,6 +382,12 @@ public class PlayerManager : MonoBehaviour
             {
                 Debug.LogWarning($"PlayerManager: 工具 '{tools[i].toolName}' 没有设置图标。");
             }
+            
+            // 检查可放置物体类型的工具是否配置了预制体
+            if (tools[i].toolType == ToolType.PlaceableObject && tools[i].toolPrefab == null)
+            {
+                Debug.LogError($"PlayerManager: 可放置物体类型的工具 '{tools[i].toolName}' 没有设置预制体！请在toolPrefab字段中配置预制体。");
+            }
         }
     }
 }
@@ -392,6 +398,9 @@ public class PlayerManager : MonoBehaviour
 [System.Serializable]
 public class ToolInfo
 {
+    [Header("工具设置")]
+    public ToolType toolType = ToolType.DirectInteraction; // 工具类型
+    public GameObject toolPrefab;        // 工具预制体（用于需要生成游戏物体的工具，如逗猫棒）
     public string toolName;              // 工具名称
     public Sprite toolIcon;              // 工具图标
     public string toolDescription;       // 工具描述（在工具背包面板中显示）
@@ -399,4 +408,17 @@ public class ToolInfo
     
     [Header("交互奖励")]
     public int heartReward = 1;          // 交互成功时获得的爱心数量
+    
+
+
+}
+
+/// <summary>
+/// 工具类型枚举
+/// </summary>
+[System.Serializable]
+public enum ToolType
+{
+    DirectInteraction,  // 直接交互类型（如摸摸）
+    PlaceableObject     // 可放置物体类型（如逗猫棒、玩具老鼠）
 } 

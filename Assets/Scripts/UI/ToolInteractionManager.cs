@@ -18,6 +18,10 @@ public class ToolInteractionManager : MonoBehaviour
     [SerializeField] private string sleepingInteractionMessage = "{PetName} 正在睡觉呢，别打扰ta的美梦~";
     [SerializeField] private string eatingInteractionMessage = "{PetName} 正在专心吃饭，现在可不想玩玩具";
     [SerializeField] private string pattingInteractionMessage = "{PetName} 正在被摸摸呢，请等ta享受完再来";
+    [SerializeField] private string attractedInteractionMessage = "{PetName} 被逗猫棒吸引了，无法进行其他互动";
+    [SerializeField] private string catTeaserInteractionMessage = "{PetName} 正在玩逗猫棒呢，请等ta玩完再来";
+    [SerializeField] private string cannotPlaceCatTeaserMessage = "这里无法放置逗猫棒，请选择空旷的地方";
+    [SerializeField] private string catTeaserExistsMessage = "已经有一个逗猫棒在使用中，请等它消失后再试";
     [SerializeField] private string otherFailureMessage = "{PetName} 现在无法进行玩具互动";
     
     //[Header("文本替换符号说明")]
@@ -54,6 +58,9 @@ public class ToolInteractionManager : MonoBehaviour
     // 交互间隔控制（防止过快连续点击）
     private float lastInteractionTime = 0f;
     private float interactionCooldown = 0.3f; // 0.3秒交互间隔
+    
+    [Header("可放置工具设置")]
+    [SerializeField] private float placeableObjectRadius = 1f; // 可放置物体的检测半径
     
     /// <summary>
     /// 获取工具信息数组（供其他脚本访问）
@@ -151,6 +158,10 @@ public class ToolInteractionManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
         
+        // 获取点击的世界坐标
+        Vector3 clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        clickPosition.z = 0; // 确保Z坐标为0
+        
         // 检查是否点击到宠物
         if (hit.collider != null)
         {
@@ -160,7 +171,14 @@ public class ToolInteractionManager : MonoBehaviour
             {
                 // 与宠物交互
                 InteractWithPet(pet);
+                return;
             }
+        }
+        
+        // 如果没有点击到宠物，检查是否是可放置物体类型的工具
+        if (CurrentTool != null && CurrentTool.toolType == ToolType.PlaceableObject)
+        {
+            TryPlaceObject(clickPosition);
         }
     }
     
@@ -321,6 +339,16 @@ public class ToolInteractionManager : MonoBehaviour
                 ShowPetMessage(pet, pattingMessage, PetNeedType.None);
                 break;
                 
+            case 5: // 被逗猫棒吸引
+                string attractedMessage = ReplaceTextSymbols(attractedInteractionMessage, pet, 0);
+                ShowPetMessage(pet, attractedMessage, PetNeedType.None);
+                break;
+                
+            case 6: // 正在与逗猫棒互动
+                string catTeaserMessage = ReplaceTextSymbols(catTeaserInteractionMessage, pet, 0);
+                ShowPetMessage(pet, catTeaserMessage, PetNeedType.None);
+                break;
+                
             default: // 其他失败情况
                 string failureMessage = ReplaceTextSymbols(otherFailureMessage, pet, 0);
                 ShowPetMessage(pet, failureMessage, PetNeedType.Indifferent);
@@ -390,5 +418,151 @@ public class ToolInteractionManager : MonoBehaviour
         result = result.Replace("{HeartReward}", heartReward.ToString());
         
         return result;
+    }
+    
+    /// <summary>
+    /// 尝试放置可放置物体类型的工具
+    /// </summary>
+    /// <param name="position">放置位置</param>
+    private void TryPlaceObject(Vector3 position)
+    {
+        if (CurrentTool == null) return;
+        
+        // 检查交互间隔
+        if (Time.time - lastInteractionTime < interactionCooldown)
+        {
+            return; // 还在冷却期内，忽略这次交互
+        }
+        
+        // 更新最后交互时间
+        lastInteractionTime = Time.time;
+        
+        // 根据工具类型进行特定检查
+        switch (CurrentTool.toolName)
+        {
+            case "逗猫棒":
+                if (CatTeaserController.HasActiveCatTeaser)
+                {
+                    ShowGeneralMessage(catTeaserExistsMessage);
+                    return;
+                }
+                
+                if (!CatTeaserController.CanPlaceAt(position, placeableObjectRadius))
+                {
+                    ShowGeneralMessage(cannotPlaceCatTeaserMessage);
+                    return;
+                }
+                break;
+                
+            case "玩具老鼠":
+                // TODO: 添加玩具老鼠的特定检查逻辑
+                // 可以检查是否已有玩具老鼠、位置是否合适等
+                break;
+                
+            default:
+                // 通用的可放置物体检查
+                if (!CanPlaceObjectAt(position, placeableObjectRadius))
+                {
+                    ShowGeneralMessage(cannotPlaceCatTeaserMessage); // 可以改为通用消息
+                    return;
+                }
+                break;
+        }
+        
+        // 放置物体
+        PlaceObject(position);
+    }
+    
+    /// <summary>
+    /// 在指定位置放置可放置物体
+    /// </summary>
+    /// <param name="position">放置位置</param>
+    private void PlaceObject(Vector3 position)
+    {
+        if (CurrentTool == null || CurrentTool.toolPrefab == null)
+        {
+            Debug.LogError($"工具 '{CurrentTool?.toolName}' 没有设置预制体！请在PlayerManager中配置toolPrefab字段。");
+            ShowGeneralMessage($"{CurrentTool?.toolName ?? "工具"}创建失败，请联系开发者");
+            return;
+        }
+        
+        // 使用工具配置中的预制体
+        GameObject placedObj = Instantiate(CurrentTool.toolPrefab, position, Quaternion.identity);
+        
+        // 根据工具类型添加特定组件或进行特定设置
+        switch (CurrentTool.toolName)
+        {
+            case "逗猫棒":
+                // 确保逗猫棒有正确的控制器组件
+                CatTeaserController catController = placedObj.GetComponent<CatTeaserController>();
+                if (catController == null)
+                {
+                    catController = placedObj.AddComponent<CatTeaserController>();
+                }
+                break;
+                
+            case "玩具老鼠":
+                // TODO: 为玩具老鼠添加对应的控制器组件
+                // ToyMouseController mouseController = placedObj.GetComponent<ToyMouseController>();
+                // if (mouseController == null)
+                // {
+                //     mouseController = placedObj.AddComponent<ToyMouseController>();
+                // }
+                break;
+        }
+        
+        // 获得爱心奖励
+        if (PlayerManager.Instance != null)
+        {
+            int heartReward = CurrentTool.heartReward;
+            PlayerManager.Instance.AddHeartCurrency(heartReward);
+            
+            // 可放置物体放置成功的爱心奖励不需要特定位置显示
+            // 爱心货币已在上方添加，UI会自动更新显示
+        }
+        
+        Debug.Log($"{CurrentTool.toolName}已放置在位置: {position}");
+    }
+    
+    /// <summary>
+    /// 通用的检查位置是否可以放置物体
+    /// </summary>
+    /// <param name="position">要检查的位置</param>
+    /// <param name="checkRadius">检测半径</param>
+    /// <returns>是否可以放置</returns>
+    private bool CanPlaceObjectAt(Vector3 position, float checkRadius)
+    {
+        // 检查位置是否有阻挡物
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(position, checkRadius);
+        
+        foreach (var collider in colliders)
+        {
+            // 检查是否有阻挡物（排除宠物和触发器）
+            if (collider.CompareTag("Obstacle") || collider.CompareTag("Wall"))
+            {
+                return false;
+            }
+            
+            // 如果有其他重要的游戏物体，也不能放置
+            if (collider.GetComponent<FoodController>() != null)
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /// <summary>
+    /// 显示通用消息（不需要宠物对象）
+    /// </summary>
+    /// <param name="message">要显示的消息</param>
+    private void ShowGeneralMessage(string message)
+    {
+        // 目前通过Debug.Log输出消息，后续可以扩展为UI Toast提示
+        Debug.Log("游戏提示: " + message);
+        
+        // TODO: 可以在此处添加UI Toast或通用消息显示功能
+        // 例如显示在屏幕顶部的横幅消息
     }
 } 

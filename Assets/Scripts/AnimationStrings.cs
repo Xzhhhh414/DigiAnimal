@@ -16,6 +16,14 @@ public static class AnimationStrings
     public static string isPatting = "isPatting";
     public static string startPatTrigger = "startPatTrigger";
     public static string endPatTrigger = "endPatTrigger";
+    
+    // 逗猫棒相关动画参数
+    public static string isAttracted = "isAttracted";
+    public static string isCatTeasering = "isCatTeasering";
+    public static string startCatTeaserTrigger = "startCatTeaserTrigger";
+    public static string endCatTeaserTrigger = "endCatTeaserTrigger";
+    public static string startWaveTrigger = "startWaveTrigger";
+    
     // 可以在此处添加更多动画参数名称
 
 }

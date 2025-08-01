@@ -75,18 +75,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   heartCurrency: 0
   tools:
-  - toolName: "\u6478\u6478"
-    toolIcon: {fileID: 21300000, guid: 1b023db7b4a496c45b65511bead5dade, type: 3}
+  - toolType: 0
+    toolPrefab: {fileID: 0}
+    toolName: "\u6478\u6478"
+    toolIcon: {fileID: 21300000, guid: 3984581ddc0f409468737aa33bb344bd, type: 3}
     toolDescription: "\u7528\u624B\u629A\u6478\u732B\u732B"
     useInstruction: "\u70B9\u51FB\u60F3\u8981\u629A\u6478\u7684\u732B\u732B"
     heartReward: 1
-  - toolName: "\u9017\u732B\u68D2"
-    toolIcon: {fileID: 21300000, guid: 7fc621a2eb0baeb48a0d73b088cdb14f, type: 3}
+  - toolType: 1
+    toolPrefab: {fileID: 847570557904668539, guid: 6e5fdbc121aea8e40a9746e97c4321a6, type: 3}
+    toolName: "\u9017\u732B\u68D2"
+    toolIcon: {fileID: 21300000, guid: fb23096a350d14d43bc817975bfb129d, type: 3}
     toolDescription: "\u6325\u52A8\u8D77\u6765\uFF0C\u5F15\u8BF1\u732B\u732B\u6765\u8FC7\u6765"
     useInstruction: "\u5728\u7A7A\u5730\u6325\u821E\u9017\u732B\u68D2"
     heartReward: 2
-  - toolName: "\u73A9\u5177\u8001\u9F20"
-    toolIcon: {fileID: 21300000, guid: b9ac49f1edcddd64aa646b0e4c64931a, type: 3}
+  - toolType: 1
+    toolPrefab: {fileID: 0}
+    toolName: "\u73A9\u5177\u8001\u9F20"
+    toolIcon: {fileID: 21300000, guid: 7fc621a2eb0baeb48a0d73b088cdb14f, type: 3}
     toolDescription: "\u732B\u732B\u6700\u559C\u6B22\u4F1A\u52A8\u7684\u8001\u9F20\u4E86\u2026"
     useInstruction: "\u5C06\u8001\u9F20\u653E\u7F6E\u5728\u7A7A\u5730"
     heartReward: 3
