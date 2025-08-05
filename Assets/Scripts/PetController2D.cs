@@ -95,7 +95,7 @@ public class PetController2D : MonoBehaviour
     [SerializeField] [Range(0f, 1f)] private float boredomChance = 0.3f; // 进入厌倦状态的几率 (0-1)
     [SerializeField] private float boredomRecoveryMinutes = 2f; // 厌倦状态恢复时间（分钟）
     private float lastBoredomTime = -1f; // 上次进入厌倦状态的时间
-    private bool isBored = false; // 当前是否处于厌倦状态
+    [SerializeField] private bool isBored = false; // 当前是否处于厌倦状态
     
     // 存档系统相关
     [Header("存档设置")]
@@ -684,6 +684,27 @@ public class PetController2D : MonoBehaviour
         set { lastBoredomTime = value; }
     }
     
+    /// <summary>
+    /// 获取厌倦几率（供外部系统使用）
+    /// </summary>
+    public float BoredomChance
+    {
+        get { return boredomChance; }
+    }
+    
+    /// <summary>
+    /// 设置厌倦状态（供外部系统使用）
+    /// </summary>
+    /// <param name="bored">是否厌倦</param>
+    public void SetBored(bool bored)
+    {
+        isBored = bored;
+        if (bored)
+        {
+            lastBoredomTime = Time.time;
+        }
+    }
+    
     // 玩具互动相关属性和方法
     
     /// <summary>
@@ -766,7 +787,7 @@ public class PetController2D : MonoBehaviour
     }
     
     /// <summary>
-    /// 启动特定类型的玩具互动
+    /// 启动直接互动类型的玩具互动（仅限DirectInteraction类型工具）
     /// </summary>
     /// <param name="toolName">工具名称</param>
     public void StartToyInteraction(string toolName)
@@ -777,23 +798,17 @@ public class PetController2D : MonoBehaviour
             return;
         }
         
-        // 根据工具类型设置对应的状态，让BT接管后续流程
+        // 根据直接互动工具类型设置对应的状态，让BT接管后续流程
         switch (toolName)
         {
             case "摸摸":
                 IsPatting = true;
                 // Debug.Log($"{gameObject.name} 设置摸摸状态，等待BT接管");
                 break;
-            case "逗猫棒":
-                // TODO: 实现逗猫棒状态设置
-                // Debug.Log($"设置逗猫棒状态 - {gameObject.name}");
-                break;
-            case "玩具老鼠":
-                // TODO: 实现玩具老鼠状态设置
-                // Debug.Log($"设置玩具老鼠状态 - {gameObject.name}");
-                break;
+            // 注意：逗猫棒、玩具老鼠等PlaceableObject类型工具不会走到这里
+            // 它们通过放置到场景中，然后宠物通过BT主动检测和互动
             default:
-                Debug.LogWarning($"未知的工具类型: {toolName}");
+                Debug.LogWarning($"未知的直接互动工具类型: {toolName}");
                 break;
         }
     }
@@ -819,7 +834,26 @@ public class PetController2D : MonoBehaviour
         
         // Debug.Log($"{gameObject.name} 触发结束摸摸动画");
     }
+
+      public void StartCatTeaser()
+    {
+        // 触发开始摸摸动画
+        animator.SetTrigger(AnimationStrings.startCatTeaserTrigger);
+        
+        // Debug.Log($"{gameObject.name} 触发开始摸摸动画");
+    }
     
+    /// <summary>
+    /// 结束摸摸互动（只负责动画触发，由BT调用）
+    /// </summary>
+    public void EndCatTeaser()
+    {
+        // 触发结束摸摸动画
+        animator.SetTrigger(AnimationStrings.endCatTeaserTrigger);
+        
+        // Debug.Log($"{gameObject.name} 触发结束摸摸动画");
+    }
+
     /// <summary>
     /// 显示情感气泡（供外部调用）
     /// </summary>

@@ -36,6 +36,15 @@ namespace NodeCanvas.Tasks.Conditions
                 return false; // 正在被摸摸，不空闲
             }
 
+            if (agent.IsCatTeasering)
+            {
+                return false; // 正在被逗猫棒吸引，不空闲
+            }
+            if (agent.IsAttracted)
+            {   
+                return false; // 被逗猫棒吸引，不空闲
+            }
+
             // 如果还有其他特殊行为，在此处添加检查
             // 例如: if (agent.IsPlayingWithToy) return false;
 

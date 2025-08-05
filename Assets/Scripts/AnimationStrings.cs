@@ -24,6 +24,9 @@ public static class AnimationStrings
     public static string endCatTeaserTrigger = "endCatTeaserTrigger";
     public static string startWaveTrigger = "startWaveTrigger";
     
+    // 移动相关触发器
+    public static string forceMoveTrigger = "forceMoveTrigger"; // 强制切换到移动状态的触发器
+    
     // 可以在此处添加更多动画参数名称
 
 }

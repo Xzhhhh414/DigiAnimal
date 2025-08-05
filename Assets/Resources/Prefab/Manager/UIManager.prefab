@@ -69,8 +69,13 @@ MonoBehaviour:
   cannotInteractMessage: "{PetName}\u73A9\u817B\u4E86\u2026"
   sleepingInteractionMessage: "{PetName}\u5728\u7761\u89C9\u5462"
   eatingInteractionMessage: "{PetName}\u5728\u5403\u996D\u5462"
-  pattingInteractionMessage: "{PetName} \u5728\u88AB\u6478\u6478\u5462"
+  pattingInteractionMessage: "{PetName}\u5728\u88AB\u6478\u6478\u5462"
+  attractedInteractionMessage: "{PetName}\u597D\u50CF\u88AB\u4EC0\u4E48\u4E1C\u897F\u5438\u5F15\u4E86"
+  catTeaserInteractionMessage: "{PetName}\u6B63\u5728\u73A9\u9017\u732B\u68D2\u5462"
+  cannotPlaceObjectMessage: "\u65E0\u6CD5\u653E\u7F6E{ToolName}\uFF0C\u8BF7\u9009\u62E9\u7A7A\u65F7\u5904"
+  catTeaserExistsMessage: "\u53EA\u80FD\u540C\u65F6\u653E\u7F6E\u4E00\u4E2A\u9017\u732B\u68D2"
   otherFailureMessage: "\u6682\u65F6\u65E0\u6CD5\u4E92\u52A8"
+  placeableObjectRadius: 1
 --- !u!114 &3038366896281046046
 MonoBehaviour:
   m_ObjectHideFlags: 0

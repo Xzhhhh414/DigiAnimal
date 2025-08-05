@@ -8,9 +8,14 @@ namespace NodeCanvas.Tasks.Conditions
     [Description("检测周围是否有逗猫棒，并有几率被吸引")]
     public class DetectCatTeaser : ConditionTask<PetController2D>
     {
-        [SerializeField] private BBParameter<float> detectionRadius = 5f;
-        [SerializeField] private BBParameter<float> attractionChance = 0.3f;
-        [SerializeField] private BBParameter<float> checkInterval = 2f;
+        [Name("检测半径")]
+        public BBParameter<float> detectionRadius = 5f;
+        
+        [Name("吸引几率")]
+        public BBParameter<float> attractionChance = 0.3f;
+        
+        [Name("检测间隔")]
+        public BBParameter<float> checkInterval = 2f;
         
         private float lastCheckTime = 0f;
         
@@ -32,14 +37,14 @@ namespace NodeCanvas.Tasks.Conditions
                 return false;
             }
             
-            // 如果宠物已经被吸引或正在与逗猫棒互动，不再检测
-            if (agent.IsAttracted || agent.IsCatTeasering)
+            // 如果宠物正在进行其他活动或厌倦，不检测逗猫棒
+            if (agent.IsSleeping || agent.IsEating || agent.IsPatting || agent.IsAttracted || agent.IsCatTeasering)
             {
                 return false;
             }
             
-            // 如果宠物正在进行其他活动，不检测逗猫棒
-            if (agent.IsSleeping || agent.IsEating || agent.IsPatting)
+            // 如果宠物处于厌倦状态，不会被逗猫棒吸引
+            if (agent.IsBored)
             {
                 return false;
             }

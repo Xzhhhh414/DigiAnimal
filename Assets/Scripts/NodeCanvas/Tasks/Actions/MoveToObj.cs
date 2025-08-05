@@ -47,6 +47,16 @@ namespace NodeCanvas.Tasks.Actions
                 // Debug.LogWarning($"[{petName}] 未找到PetController2D组件，动画可能无法正确更新");
             }
             
+            // 立即强制切换到移动状态，避免等待当前动画结束
+            Animator animator = agent.GetComponent<Animator>();
+            if (animator != null) {
+                // 设置移动状态为true
+                animator.SetBool(AnimationStrings.isMoving, true);
+                // 触发强制移动触发器，立即切换到移动状态
+                animator.SetTrigger(AnimationStrings.forceMoveTrigger);
+                // Debug.Log($"[{petName}] 强制触发移动状态切换");
+            }
+            
             if (target.value == null) {
                 // Debug.LogWarning($"[{petName}] 目标对象为空，无法移动");
                 return; // 不立即返回失败，等待目标被设置
@@ -178,6 +188,9 @@ namespace NodeCanvas.Tasks.Actions
                     // 忽略销毁时的NavMeshAgent错误
                 }
             }
+            
+            // 重置移动状态（让PetController2D的Update自然处理isMoving的设置）
+            // 这里不直接设置isMoving=false，因为PetController2D会根据NavMeshAgent速度自动处理
         }
 
         public override void OnDrawGizmosSelected() {

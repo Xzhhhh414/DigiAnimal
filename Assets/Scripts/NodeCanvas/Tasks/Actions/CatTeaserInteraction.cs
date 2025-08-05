@@ -1,7 +1,7 @@
 using NodeCanvas.Framework;
 using ParadoxNotion.Design;
+using ParadoxNotion;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace NodeCanvas.Tasks.Actions
 {
@@ -9,18 +9,20 @@ namespace NodeCanvas.Tasks.Actions
     [Description("宠物与逗猫棒互动的行为")]
     public class CatTeaserInteraction : ActionTask<PetController2D>
     {
-        [SerializeField] private BBParameter<float> interactionDuration = 5f;
-        [SerializeField] private BBParameter<float> arrivalThreshold = 0.5f; // 到达判定距离
+        [Name("互动持续时间")]
+        public BBParameter<float> interactionDuration = 5f;
         
         private float startTime;
         private bool hasStarted = false;
-        private bool hasArrived = false;
         private CatTeaserController targetCatTeaser;
-        private NavMeshAgent navAgent;
         
         protected override string info
         {
-            get { return string.Format("逗猫棒互动 (持续时间: {0}秒)", interactionDuration.value); }
+            get 
+            { 
+                int heartReward = GetCatTeaserHeartReward();
+                return string.Format("逗猫棒互动 (持续时间: {0}秒, 爱心: {1})", interactionDuration.value, heartReward); 
+            }
         }
         
         protected override void OnExecute()
@@ -40,7 +42,7 @@ namespace NodeCanvas.Tasks.Actions
             
             if (!hasStarted)
             {
-                Initialize();
+                StartInteraction();
             }
         }
         
@@ -52,13 +54,6 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
-            // 如果还没到达，检查是否到达
-            if (!hasArrived)
-            {
-                CheckArrival();
-                return;
-            }
-            
             // 检查是否到达互动持续时间
             if (Time.time - startTime >= interactionDuration.value)
             {
@@ -67,11 +62,11 @@ namespace NodeCanvas.Tasks.Actions
             }
         }
         
-        private void Initialize()
+        private void StartInteraction()
         {
             hasStarted = true;
+            startTime = Time.time;
             targetCatTeaser = CatTeaserController.CurrentInstance;
-            navAgent = agent.GetComponent<NavMeshAgent>();
             
             if (targetCatTeaser == null)
             {
@@ -79,47 +74,15 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
-            Debug.Log($"宠物 {agent.PetDisplayName} 开始逗猫棒互动流程");
-        }
-        
-        private void CheckArrival()
-        {
-            if (targetCatTeaser == null) return;
+            // 调用PetController2D的StartCatTeaser方法
+            agent.StartCatTeaser();
             
-            // 检查距离是否足够近
-            float distance = Vector3.Distance(agent.transform.position, targetCatTeaser.Position);
+            // 注意：宠物已在AttractedByCatTeaser阶段加入互动列表，这里不再重复加入
             
-            // 也检查NavMeshAgent是否已经停止移动
-            bool navStopped = (navAgent == null || navAgent.velocity.magnitude < 0.1f);
-            
-            if (distance <= arrivalThreshold.value || navStopped)
+            // 通知工具交互管理器更新为互动时的指令文本
+            if (ToolInteractionManager.Instance != null)
             {
-                StartInteraction();
-            }
-        }
-        
-        private void StartInteraction()
-        {
-            hasArrived = true;
-            startTime = Time.time;
-            
-            // 停止寻路
-            if (navAgent != null)
-            {
-                navAgent.ResetPath();
-            }
-            
-            // 触发开始互动动画
-            Animator animator = agent.GetComponent<Animator>();
-            if (animator != null)
-            {
-                animator.SetTrigger(AnimationStrings.startCatTeaserTrigger);
-            }
-            
-            // 通知逗猫棒开始互动
-            if (targetCatTeaser != null)
-            {
-                targetCatTeaser.OnPetStartInteraction(agent);
+                ToolInteractionManager.Instance.UpdateToInteractingInstructionText("逗猫棒");
             }
             
             Debug.Log($"宠物 {agent.PetDisplayName} 开始与逗猫棒互动，持续时间: {interactionDuration.value}秒");
@@ -127,19 +90,38 @@ namespace NodeCanvas.Tasks.Actions
         
         private void EndInteraction()
         {
+            // 获得爱心货币奖励（互动完成后发放）
+            int heartReward = GetCatTeaserHeartReward();
+            if (PlayerManager.Instance != null && heartReward > 0)
+            {
+                PlayerManager.Instance.AddHeartCurrency(heartReward);
+                
+                // 显示爱心获得提示
+                var heartManager = UnityEngine.Object.FindObjectOfType<HeartMessageManager>();
+                if (heartManager != null)
+                {
+                    heartManager.ShowHeartGainMessage(agent, heartReward);
+                }
+            }
+            
+            // 检查是否进入厌倦状态（类似TryToyInteraction的逻辑）
+            bool willBeBored = Random.Range(0f, 1f) < agent.BoredomChance;
+            if (willBeBored)
+            {
+                // 进入厌倦状态
+                agent.SetBored(true);
+                Debug.Log($"宠物 {agent.PetDisplayName} 在与逗猫棒互动后感到厌倦了，需要 {agent.BoredomRecoveryRemaining} 分钟恢复");
+            }
+            
             if (agent != null)
             {
-                // 触发结束互动动画
-                Animator animator = agent.GetComponent<Animator>();
-                if (animator != null)
-                {
-                    animator.SetTrigger(AnimationStrings.endCatTeaserTrigger);
-                }
+                // 调用PetController2D的EndCatTeaser方法
+                agent.EndCatTeaser();
                 
                 // 结束互动状态
                 agent.IsCatTeasering = false;
                 
-                Debug.Log($"宠物 {agent.PetDisplayName} 结束与逗猫棒互动");
+                Debug.Log($"宠物 {agent.PetDisplayName} 结束与逗猫棒互动，获得爱心: {heartReward}");
             }
             
             // 通知逗猫棒结束互动
@@ -157,12 +139,6 @@ namespace NodeCanvas.Tasks.Actions
             if (agent != null && hasStarted)
             {
                 agent.IsCatTeasering = false;
-                
-                // 停止寻路
-                if (navAgent != null)
-                {
-                    navAgent.ResetPath();
-                }
             }
             
             // 通知逗猫棒结束互动
@@ -172,12 +148,49 @@ namespace NodeCanvas.Tasks.Actions
             }
             
             hasStarted = false;
-            hasArrived = false;
         }
         
         protected override void OnPause()
         {
             // 暂停时不做特殊处理
+        }
+        
+        /// <summary>
+        /// 从PlayerManager中获取逗猫棒工具的爱心奖励数值
+        /// </summary>
+        /// <returns>爱心奖励数量</returns>
+        private int GetCatTeaserHeartReward()
+        {
+            // 在编辑器模式下（非运行时），直接返回默认值，避免警告
+            if (!Application.isPlaying)
+            {
+                return 0; // 编辑器显示用的默认值
+            }
+            
+            if (PlayerManager.Instance == null)
+            {
+             //   Debug.LogWarning("CatTeaserInteraction: PlayerManager.Instance为空，使用默认爱心奖励");
+                return 0; // 运行时默认奖励
+            }
+            
+            ToolInfo[] tools = PlayerManager.Instance.GetTools();
+            if (tools == null)
+            {
+                Debug.LogWarning("CatTeaserInteraction: 未找到工具配置，使用默认爱心奖励");
+                return 1; // 默认奖励
+            }
+            
+            // 查找逗猫棒工具
+            foreach (ToolInfo tool in tools)
+            {
+                if (tool != null && tool.toolName == "逗猫棒")
+                {
+                    return tool.heartReward;
+                }
+            }
+            
+            Debug.LogWarning("CatTeaserInteraction: 未找到逗猫棒工具配置，使用默认爱心奖励");
+            return 1; // 默认奖励
         }
     }
 }

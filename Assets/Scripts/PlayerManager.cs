@@ -383,10 +383,28 @@ public class PlayerManager : MonoBehaviour
                 Debug.LogWarning($"PlayerManager: 工具 '{tools[i].toolName}' 没有设置图标。");
             }
             
+            // 检查直接交互类型的工具是否配置了交互成功后的提示文本
+            if (tools[i].toolType == ToolType.DirectInteraction && string.IsNullOrEmpty(tools[i].interactedInstruction))
+            {
+                Debug.LogWarning($"PlayerManager: 直接交互类型的工具 '{tools[i].toolName}' 没有设置交互成功后的提示文本。建议在interactedInstruction字段中配置相关说明。");
+            }
+            
             // 检查可放置物体类型的工具是否配置了预制体
             if (tools[i].toolType == ToolType.PlaceableObject && tools[i].toolPrefab == null)
             {
                 Debug.LogError($"PlayerManager: 可放置物体类型的工具 '{tools[i].toolName}' 没有设置预制体！请在toolPrefab字段中配置预制体。");
+            }
+            
+            // 检查可放置物体类型的工具是否配置了放置后的提示文本
+            if (tools[i].toolType == ToolType.PlaceableObject && string.IsNullOrEmpty(tools[i].placedInstruction))
+            {
+                Debug.LogWarning($"PlayerManager: 可放置物体类型的工具 '{tools[i].toolName}' 没有设置放置后的提示文本。建议在placedInstruction字段中配置相关说明。");
+            }
+            
+            // 检查可放置物体类型的工具是否配置了互动时的提示文本
+            if (tools[i].toolType == ToolType.PlaceableObject && string.IsNullOrEmpty(tools[i].interactingInstruction))
+            {
+                Debug.LogWarning($"PlayerManager: 可放置物体类型的工具 '{tools[i].toolName}' 没有设置互动时的提示文本。建议在interactingInstruction字段中配置相关说明。");
             }
         }
     }
@@ -405,6 +423,13 @@ public class ToolInfo
     public Sprite toolIcon;              // 工具图标
     public string toolDescription;       // 工具描述（在工具背包面板中显示）
     public string useInstruction;        // 使用说明（在工具使用面板中显示）
+    
+    [Header("直接交互类工具专用")]
+    public string interactedInstruction; // 直接交互成功后的提示文本（仅用于DirectInteraction类型工具）
+    
+    [Header("放置类工具专用")]
+    public string placedInstruction;     // 放置成功后的提示文本（仅用于PlaceableObject类型工具）
+    public string interactingInstruction; // 宠物开始互动后的提示文本（仅用于PlaceableObject类型工具）
     
     [Header("交互奖励")]
     public int heartReward = 1;          // 交互成功时获得的爱心数量

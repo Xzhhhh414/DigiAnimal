@@ -9,7 +9,8 @@ public enum PetNeedType
     Hungry = 1,
     Tired = 2,
     Happy = 3,      // 开心状态
-    Indifferent = 4 // 无感状态
+    Indifferent = 4, // 无感状态
+    Curious = 5     // 好奇状态
     // 后续可添加更多需求类型
 }
 
@@ -24,6 +25,7 @@ public class NeedBubbleController : MonoBehaviour
     [SerializeField] private Sprite tiredIcon;
     [SerializeField] private Sprite happyIcon;        // 开心图标
     [SerializeField] private Sprite indifferentIcon;  // 无感图标
+    [SerializeField] private Sprite curiousIcon;      // 好奇图标
     // 其他状态图标...
     
     [Header("浮动效果设置")]
@@ -49,6 +51,7 @@ public class NeedBubbleController : MonoBehaviour
         { PetNeedType.Hungry, 100 },
         { PetNeedType.Tired, 90 },
         { PetNeedType.Happy, 80 },        // 开心状态优先级
+        { PetNeedType.Curious, 75 },      // 好奇状态优先级
         { PetNeedType.Indifferent, 70 },  // 无感状态优先级
         // 可添加更多需求类型及其优先级
     };
@@ -126,6 +129,9 @@ public class NeedBubbleController : MonoBehaviour
                     break;
                 case PetNeedType.Happy:
                     statusIconRenderer.sprite = happyIcon;
+                    break;
+                case PetNeedType.Curious:
+                    statusIconRenderer.sprite = curiousIcon;
                     break;
                 case PetNeedType.Indifferent:
                     statusIconRenderer.sprite = indifferentIcon;

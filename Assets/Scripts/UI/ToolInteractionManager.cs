@@ -12,15 +12,13 @@ public class ToolInteractionManager : MonoBehaviour
     [SerializeField] private ToolUsePanelController toolUsePanel;
     
     [Header("Toast消息配置")]
-    [SerializeField] private string happyInteractionMessage = "{PetName} 很开心地玩着玩具！\n获得爱心货币 +{HeartReward}";
-    [SerializeField] private string boredInteractionMessage = "{PetName} 获得了爱心货币 +{HeartReward}，但对玩具感到厌倦了";
     [SerializeField] private string cannotInteractMessage = "{PetName} 对玩具感到厌倦，需要休息一下";
     [SerializeField] private string sleepingInteractionMessage = "{PetName} 正在睡觉呢，别打扰ta的美梦~";
     [SerializeField] private string eatingInteractionMessage = "{PetName} 正在专心吃饭，现在可不想玩玩具";
     [SerializeField] private string pattingInteractionMessage = "{PetName} 正在被摸摸呢，请等ta享受完再来";
     [SerializeField] private string attractedInteractionMessage = "{PetName} 被逗猫棒吸引了，无法进行其他互动";
     [SerializeField] private string catTeaserInteractionMessage = "{PetName} 正在玩逗猫棒呢，请等ta玩完再来";
-    [SerializeField] private string cannotPlaceCatTeaserMessage = "这里无法放置逗猫棒，请选择空旷的地方";
+    [SerializeField] private string cannotPlaceObjectMessage = "无法放置{ToolName}，请选择空旷处";
     [SerializeField] private string catTeaserExistsMessage = "已经有一个逗猫棒在使用中，请等它消失后再试";
     [SerializeField] private string otherFailureMessage = "{PetName} 现在无法进行玩具互动";
     
@@ -59,8 +57,7 @@ public class ToolInteractionManager : MonoBehaviour
     private float lastInteractionTime = 0f;
     private float interactionCooldown = 0.3f; // 0.3秒交互间隔
     
-    [Header("可放置工具设置")]
-    [SerializeField] private float placeableObjectRadius = 1f; // 可放置物体的检测半径
+
     
     /// <summary>
     /// 获取工具信息数组（供其他脚本访问）
@@ -162,8 +159,8 @@ public class ToolInteractionManager : MonoBehaviour
         Vector3 clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         clickPosition.z = 0; // 确保Z坐标为0
         
-        // 检查是否点击到宠物
-        if (hit.collider != null)
+        // 检查是否点击到宠物（只对DirectInteraction类型的工具有效）
+        if (hit.collider != null && CurrentTool != null && CurrentTool.toolType == ToolType.DirectInteraction)
         {
             PetController2D pet = hit.collider.GetComponent<PetController2D>();
             
@@ -234,6 +231,84 @@ public class ToolInteractionManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 判断工具是否是基于互动的（需要宠物互动才完成，奖励在互动时发放）
+    /// </summary>
+    /// <param name="toolName">工具名称</param>
+    /// <returns>是否是基于互动的工具</returns>
+    private bool IsInteractionBasedTool(string toolName)
+    {
+        switch (toolName)
+        {
+            case "逗猫棒":
+            case "玩具老鼠":
+                return true; // 这些工具需要宠物互动才完成，奖励在互动完成时发放
+            default:
+                return false; // 其他工具放置即完成，立即发放奖励
+        }
+    }
+    
+    /// <summary>
+    /// 更新工具使用面板为互动时的指令文本
+    /// </summary>
+    /// <param name="toolName">需要更新文本的工具名称</param>
+    public void UpdateToInteractingInstructionText(string toolName)
+    {
+        // 只有当前选中的工具匹配时才更新文本
+        if (CurrentTool != null && CurrentTool.toolName == toolName)
+        {
+            var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
+            if (toolUsePanel != null && !string.IsNullOrEmpty(CurrentTool.interactingInstruction))
+            {
+                toolUsePanel.SetInstructionText(CurrentTool.interactingInstruction);
+                Debug.Log($"更新工具 '{toolName}' 为互动时的说明文本");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 更新工具使用面板为直接交互成功后的指令文本，并隐藏取消按钮
+    /// </summary>
+    /// <param name="toolName">需要更新文本的工具名称</param>
+    public void UpdateToInteractedInstructionText(string toolName)
+    {
+        // 只有当前选中的工具匹配时才更新文本
+        if (CurrentTool != null && CurrentTool.toolName == toolName)
+        {
+            var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
+            if (toolUsePanel != null)
+            {
+                // 更新文本
+                if (!string.IsNullOrEmpty(CurrentTool.interactedInstruction))
+                {
+                    toolUsePanel.SetInstructionText(CurrentTool.interactedInstruction);
+                    Debug.Log($"更新工具 '{toolName}' 为交互成功后的说明文本");
+                }
+                
+                // 隐藏取消按钮
+                toolUsePanel.HideCancelButton();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 恢复工具使用面板的原始指令文本
+    /// </summary>
+    /// <param name="toolName">需要恢复文本的工具名称</param>
+    public void RestoreOriginalInstructionText(string toolName)
+    {
+        // 只有当前选中的工具匹配时才恢复文本
+        if (CurrentTool != null && CurrentTool.toolName == toolName)
+        {
+            var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
+            if (toolUsePanel != null && !string.IsNullOrEmpty(CurrentTool.useInstruction))
+            {
+                toolUsePanel.SetInstructionText(CurrentTool.useInstruction);
+                Debug.Log($"恢复工具 '{toolName}' 的原始使用说明文本");
+            }
+        }
+    }
+    
+    /// <summary>
     /// 取消工具使用
     /// </summary>
     public void CancelToolUse()
@@ -257,6 +332,33 @@ public class ToolInteractionManager : MonoBehaviour
         if (UIManager.Instance != null)
         {
             UIManager.Instance.ExitToolUseMode();
+        }
+    }
+    
+    /// <summary>
+    /// 完成工具使用后回到工具背包界面
+    /// </summary>
+    public void ReturnToToolkit()
+    {
+        isUsingTool = false;
+        currentToolIndex = -1;
+        
+        // 隐藏工具使用面板
+        if (toolUsePanel != null)
+        {
+            toolUsePanel.HidePanel();
+        }
+        
+        // 退出工具使用模式
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.ExitToolUseMode();
+        }
+        
+        // 重新打开工具包选择界面（而不是关闭）
+        if (UIManager.Instance != null)
+        {
+            UIManager.Instance.OpenToolkit();
         }
     }
     
@@ -305,18 +407,14 @@ public class ToolInteractionManager : MonoBehaviour
             // 启动具体的玩具互动表现
             pet.StartToyInteraction(CurrentTool.toolName);
             
-            if (becameBored)
-            {
-                // 本次交互让宠物进入厌倦状态，但仍然显示成功的消息
-                // string message = ReplaceTextSymbols(boredInteractionMessage, pet, heartReward);
-                // ShowPetMessage(pet, message, PetNeedType.Happy);
-            }
-            else
-            {
-                // 宠物没有因本次交互进入厌倦状态，很开心
-                // string message = ReplaceTextSymbols(happyInteractionMessage, pet, heartReward);
-                // ShowPetMessage(pet, message, PetNeedType.Happy);
-            }
+            // 成功互动不再显示消息气泡（根据用户需求简化UI）
+            // 爱心奖励和视觉反馈已在HeartMessageManager中处理
+            
+            // 更新为交互成功后的文本并隐藏取消按钮
+            UpdateToInteractedInstructionText(CurrentTool.toolName);
+            
+            // 直接交互成功后，停止接受进一步的点击操作
+            isUsingTool = false;
                 break;
                 
             case 1: // 厌倦状态
@@ -437,6 +535,9 @@ public class ToolInteractionManager : MonoBehaviour
         // 更新最后交互时间
         lastInteractionTime = Time.time;
         
+        // 获取当前工具的检测半径
+        float detectionRadius = GetToolDetectionRadius();
+        
         // 根据工具类型进行特定检查
         switch (CurrentTool.toolName)
         {
@@ -447,9 +548,9 @@ public class ToolInteractionManager : MonoBehaviour
                     return;
                 }
                 
-                if (!CatTeaserController.CanPlaceAt(position, placeableObjectRadius))
+                if (!CatTeaserController.CanPlaceAt(position, detectionRadius))
                 {
-                    ShowGeneralMessage(cannotPlaceCatTeaserMessage);
+                    ShowGeneralMessage(ReplaceToolNameInMessage(cannotPlaceObjectMessage));
                     return;
                 }
                 break;
@@ -461,9 +562,9 @@ public class ToolInteractionManager : MonoBehaviour
                 
             default:
                 // 通用的可放置物体检查
-                if (!CanPlaceObjectAt(position, placeableObjectRadius))
+                if (!CanPlaceObjectAt(position, detectionRadius))
                 {
-                    ShowGeneralMessage(cannotPlaceCatTeaserMessage); // 可以改为通用消息
+                    ShowGeneralMessage(ReplaceToolNameInMessage(cannotPlaceObjectMessage));
                     return;
                 }
                 break;
@@ -511,8 +612,8 @@ public class ToolInteractionManager : MonoBehaviour
                 break;
         }
         
-        // 获得爱心奖励
-        if (PlayerManager.Instance != null)
+        // 获得爱心奖励（仅限于放置即完成的工具，交互型工具在互动完成时发放）
+        if (PlayerManager.Instance != null && !IsInteractionBasedTool(CurrentTool.toolName))
         {
             int heartReward = CurrentTool.heartReward;
             PlayerManager.Instance.AddHeartCurrency(heartReward);
@@ -521,7 +622,24 @@ public class ToolInteractionManager : MonoBehaviour
             // 爱心货币已在上方添加，UI会自动更新显示
         }
         
-        Debug.Log($"{CurrentTool.toolName}已放置在位置: {position}");
+                Debug.Log($"{CurrentTool.toolName}已放置在位置: {position}");
+
+        // 更新工具使用面板的提示文本为放置后的说明，并隐藏取消按钮
+        var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
+        if (toolUsePanel != null)
+        {
+            // 更新文本
+            if (!string.IsNullOrEmpty(CurrentTool.placedInstruction))
+            {
+                toolUsePanel.SetInstructionText(CurrentTool.placedInstruction);
+            }
+            
+            // 隐藏取消按钮
+            toolUsePanel.HideCancelButton();
+        }
+        
+        // 放置成功后，停止接受进一步的放置操作，但保持面板显示给用户看到放置成功的提示
+        isUsingTool = false;
     }
     
     /// <summary>
@@ -537,8 +655,11 @@ public class ToolInteractionManager : MonoBehaviour
         
         foreach (var collider in colliders)
         {
-            // 检查是否有阻挡物（排除宠物和触发器）
-            if (collider.CompareTag("Obstacle") || collider.CompareTag("Wall"))
+            // 检查layer是否为Pet(宠物)或Scene(场景阻挡物)
+            int layerMask = collider.gameObject.layer;
+            string layerName = LayerMask.LayerToName(layerMask);
+            
+            if (layerName == "Pet" || layerName == "Scene")
             {
                 return false;
             }
@@ -559,10 +680,113 @@ public class ToolInteractionManager : MonoBehaviour
     /// <param name="message">要显示的消息</param>
     private void ShowGeneralMessage(string message)
     {
-        // 目前通过Debug.Log输出消息，后续可以扩展为UI Toast提示
-        Debug.Log("游戏提示: " + message);
+        // 使用ToastManager显示提示消息
+        if (ToastManager.Instance != null)
+        {
+            ToastManager.Instance.ShowToast(message);
+        }
+        else
+        {
+            // 如果ToastManager不可用，回退到Debug.Log
+            Debug.Log("游戏提示: " + message);
+            Debug.LogWarning("ToastManager未找到，无法显示Toast提示。");
+        }
+    }
+    
+    /// <summary>
+    /// 替换通用消息中的工具名称占位符
+    /// </summary>
+    /// <param name="message">包含{ToolName}占位符的消息</param>
+    /// <returns>替换后的消息</returns>
+    private string ReplaceToolNameInMessage(string message)
+    {
+        if (CurrentTool != null)
+        {
+            return message.Replace("{ToolName}", CurrentTool.toolName);
+        }
+        return message.Replace("{ToolName}", "工具");
+    }
+    
+    /// <summary>
+    /// 获取当前工具的检测半径（基于prefab的collider）
+    /// </summary>
+    /// <returns>检测半径</returns>
+    private float GetToolDetectionRadius()
+    {
+        if (CurrentTool == null || CurrentTool.toolPrefab == null)
+        {
+            Debug.LogError("ToolInteractionManager: 无法获取工具prefab！请确保工具配置了预制体。");
+            return 1f; // 默认半径
+        }
         
-        // TODO: 可以在此处添加UI Toast或通用消息显示功能
-        // 例如显示在屏幕顶部的横幅消息
+        // 获取prefab上的所有Collider2D组件
+        Collider2D[] colliders = CurrentTool.toolPrefab.GetComponentsInChildren<Collider2D>();
+        
+        if (colliders.Length == 0)
+        {
+            Debug.LogError($"ToolInteractionManager: 工具prefab '{CurrentTool.toolName}' 没有Collider2D组件！请在prefab上添加碰撞体。");
+            return 1f; // 默认半径
+        }
+        
+        float maxRadius = 0f;
+        
+        // 遍历所有collider，找到最大的检测范围
+        foreach (var collider in colliders)
+        {
+            if (collider == null || !collider.enabled) continue;
+            
+            float currentRadius = GetColliderRadius(collider);
+            if (currentRadius > maxRadius)
+            {
+                maxRadius = currentRadius;
+            }
+        }
+        
+        // 如果没有找到有效的半径，返回默认值
+        if (maxRadius <= 0f)
+        {
+            Debug.LogError($"ToolInteractionManager: 无法从工具prefab '{CurrentTool.toolName}' 获取有效半径！请检查碰撞体配置。");
+            return 1f; // 默认半径
+        }
+        
+        return maxRadius;
+    }
+    
+    /// <summary>
+    /// 根据Collider2D类型获取等效半径
+    /// </summary>
+    /// <param name="collider">碰撞体组件</param>
+    /// <returns>等效半径</returns>
+    private float GetColliderRadius(Collider2D collider)
+    {
+        if (collider == null) return 0f;
+        
+        // 根据不同类型的Collider2D计算半径
+        switch (collider)
+        {
+            case CircleCollider2D circle:
+                // 圆形碰撞体直接返回半径
+                return circle.radius * Mathf.Max(collider.transform.localScale.x, collider.transform.localScale.y);
+                
+            case BoxCollider2D box:
+                // 矩形碰撞体返回对角线的一半作为等效半径
+                Vector2 size = box.size;
+                size.x *= collider.transform.localScale.x;
+                size.y *= collider.transform.localScale.y;
+                return Mathf.Sqrt(size.x * size.x + size.y * size.y) * 0.5f;
+                
+            case CapsuleCollider2D capsule:
+                // 胶囊碰撞体返回最大尺寸的一半
+                Vector2 capsuleSize = capsule.size;
+                capsuleSize.x *= collider.transform.localScale.x;
+                capsuleSize.y *= collider.transform.localScale.y;
+                return Mathf.Max(capsuleSize.x, capsuleSize.y) * 0.5f;
+                
+            default:
+                // 其他类型的碰撞体使用bounds计算等效半径
+                Bounds bounds = collider.bounds;
+                Vector3 size3D = bounds.size;
+                return Mathf.Sqrt(size3D.x * size3D.x + size3D.y * size3D.y) * 0.5f;
+        }
     }
 } 

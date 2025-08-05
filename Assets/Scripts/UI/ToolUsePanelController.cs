@@ -61,6 +61,28 @@ public class ToolUsePanelController : MonoBehaviour
     }
     
     /// <summary>
+    /// 隐藏取消按钮
+    /// </summary>
+    public void HideCancelButton()
+    {
+        if (cancelButton != null)
+        {
+            cancelButton.gameObject.SetActive(false);
+        }
+    }
+    
+    /// <summary>
+    /// 显示取消按钮
+    /// </summary>
+    public void ShowCancelButton()
+    {
+        if (cancelButton != null)
+        {
+            cancelButton.gameObject.SetActive(true);
+        }
+    }
+    
+    /// <summary>
     /// 显示面板
     /// </summary>
     public void ShowPanel(bool animated = true)
@@ -74,6 +96,9 @@ public class ToolUsePanelController : MonoBehaviour
             rectTransform.anchoredPosition = showPosition;
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
+            
+            // 显示取消按钮（默认状态）
+            ShowCancelButton();
             return;
         }
         
@@ -89,6 +114,9 @@ public class ToolUsePanelController : MonoBehaviour
         // 确保面板可交互
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
+        
+        // 显示取消按钮（默认状态）
+        ShowCancelButton();
     }
     
     /// <summary>

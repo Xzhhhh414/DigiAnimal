@@ -9,6 +9,7 @@ public class CatTeaserController : MonoBehaviour
 {
     [Header("逗猫棒设置")]
     [SerializeField] private float initialDetectionTime = 5f; // 初始检测时间（秒）
+    [SerializeField] private Transform interactPos; // 宠物交互位置点
     
     // 动画控制器
     private Animator animator;
@@ -30,9 +31,26 @@ public class CatTeaserController : MonoBehaviour
     // 位置属性，供外部访问
     public Vector3 Position => transform.position;
     
+    // 交互位置属性，供外部访问
+    public Transform InteractPos => interactPos;
+    
+    // 互动列表状态属性，供外部访问
+    public bool IsInteractionListEmpty => interactingPets.Count == 0;
+    public int InteractingPetCount => interactingPets.Count;
+    
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        
+        // 自动查找InteractPos（如果没有在Inspector中设置）
+        if (interactPos == null)
+        {
+            interactPos = transform.Find("InteractPos");
+            if (interactPos == null)
+            {
+                Debug.LogWarning($"逗猫棒 {gameObject.name} 没有找到InteractPos子对象，宠物将移动到逗猫棒中心位置");
+            }
+        }
         
         // 检查是否已有活跃的逗猫棒
         if (currentInstance != null)
@@ -97,18 +115,34 @@ public class CatTeaserController : MonoBehaviour
     /// 宠物开始与逗猫棒互动时调用
     /// </summary>
     /// <param name="pet">开始互动的宠物</param>
-    public void OnPetStartInteraction(PetController2D pet)
+    /// <returns>是否成功加入互动列表</returns>
+    public bool OnPetStartInteraction(PetController2D pet)
     {
-        if (pet == null || interactingPets.Contains(pet)) return;
+        if (pet == null) return false;
+        
+        // 检查是否已有宠物在互动（限制为单宠物互动）
+        if (interactingPets.Count > 0)
+        {
+            Debug.Log($"逗猫棒已有宠物 {interactingPets[0].PetDisplayName} 在互动，拒绝宠物 {pet.PetDisplayName} 的互动请求");
+            return false;
+        }
+        
+        // 检查该宠物是否已在列表中
+        if (interactingPets.Contains(pet))
+        {
+            return true; // 已在列表中，视为成功
+        }
         
         interactingPets.Add(pet);
-        Debug.Log($"宠物 {pet.PetDisplayName} 开始与逗猫棒互动");
+        Debug.Log($"宠物 {pet.PetDisplayName} 开始与逗猫棒互动（互动列表：{interactingPets.Count}/1）");
         
         // 从吸引列表中移除
         if (attractedPets.Contains(pet))
         {
             attractedPets.Remove(pet);
         }
+        
+        return true;
     }
     
     /// <summary>
@@ -191,6 +225,12 @@ public class CatTeaserController : MonoBehaviour
             }
         }
         
+        // 通知工具交互管理器回到工具背包界面
+        if (ToolInteractionManager.Instance != null)
+        {
+            ToolInteractionManager.Instance.ReturnToToolkit();
+        }
+        
         // 清理静态引用
         if (currentInstance == this)
         {
@@ -203,6 +243,12 @@ public class CatTeaserController : MonoBehaviour
     
     private void OnDestroy()
     {
+        // 通知工具交互管理器回到工具背包界面（确保任何情况下销毁都能回到工具背包界面）
+        if (ToolInteractionManager.Instance != null && currentInstance == this)
+        {
+            ToolInteractionManager.Instance.ReturnToToolkit();
+        }
+        
         // 确保清理静态引用
         if (currentInstance == this)
         {
@@ -229,8 +275,11 @@ public class CatTeaserController : MonoBehaviour
         
         foreach (var collider in colliders)
         {
-            // 检查是否有阻挡物（排除宠物和触发器）
-            if (collider.CompareTag("Obstacle") || collider.CompareTag("Wall"))
+            // 检查layer是否为Pet(宠物)或Scene(场景阻挡物)
+            int layerMask = collider.gameObject.layer;
+            string layerName = LayerMask.LayerToName(layerMask);
+            
+            if (layerName == "Pet" || layerName == "Scene")
             {
                 return false;
             }
