@@ -71,10 +71,10 @@ namespace NodeCanvas.Tasks.Actions
             // 调用PetController2D的EndPatting方法（负责动画）
             agent.EndPatting();
             
-            // 互动结束后，回到工具背包界面
+            // 开始通用的互动结束阶段（显示结束文本、给予奖励、延迟后回到工具背包）
             if (ToolInteractionManager.Instance != null)
             {
-                ToolInteractionManager.Instance.ReturnToToolkit();
+                ToolInteractionManager.Instance.StartInteractionEndingPhase("摸摸", agent);
             }
             
             // Debug.Log($"{agent.gameObject.name} BT结束摸摸互动");

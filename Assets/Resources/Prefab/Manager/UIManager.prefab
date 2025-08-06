@@ -64,8 +64,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   toolUsePanel: {fileID: 0}
-  happyInteractionMessage: "{PetName}\u73A9\u7684\u975E\u5E38\u5F00\u5FC3~"
-  boredInteractionMessage: "{PetName}\u4F3C\u4E4E\u6709\u70B9\u7D2F\u4E86"
   cannotInteractMessage: "{PetName}\u73A9\u817B\u4E86\u2026"
   sleepingInteractionMessage: "{PetName}\u5728\u7761\u89C9\u5462"
   eatingInteractionMessage: "{PetName}\u5728\u5403\u996D\u5462"
@@ -75,7 +73,7 @@ MonoBehaviour:
   cannotPlaceObjectMessage: "\u65E0\u6CD5\u653E\u7F6E{ToolName}\uFF0C\u8BF7\u9009\u62E9\u7A7A\u65F7\u5904"
   catTeaserExistsMessage: "\u53EA\u80FD\u540C\u65F6\u653E\u7F6E\u4E00\u4E2A\u9017\u732B\u68D2"
   otherFailureMessage: "\u6682\u65F6\u65E0\u6CD5\u4E92\u52A8"
-  placeableObjectRadius: 1
+  endingPhaseDuration: 3
 --- !u!114 &3038366896281046046
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,7 +108,7 @@ MonoBehaviour:
   heartMessagePrefab: {fileID: 1657893186496397824, guid: 0b94e961012680b478476140f373c0da, type: 3}
   targetCanvas: {fileID: 0}
   offsetFromPet: {x: 100, y: 50}
-  displayDuration: 1
+  displayDuration: 1.5
   fadeInDuration: 0.2
   fadeOutDuration: 0.4
   moveUpDistance: 30

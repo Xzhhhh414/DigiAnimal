@@ -22,6 +22,9 @@ public class ToolInteractionManager : MonoBehaviour
     [SerializeField] private string catTeaserExistsMessage = "已经有一个逗猫棒在使用中，请等它消失后再试";
     [SerializeField] private string otherFailureMessage = "{PetName} 现在无法进行玩具互动";
     
+    [Header("结束阶段设置")]
+    [SerializeField] private float endingPhaseDuration = 2f; // 结束阶段展示时间（秒）
+    
     //[Header("文本替换符号说明")]
     //[SerializeField] [TextArea(2, 3)] private string symbolHelp = "可用符号:\n{PetName} - 宠物名字\n{ToolName} - 工具名字\n{HeartReward} - 爱心奖励数量";
     
@@ -251,7 +254,8 @@ public class ToolInteractionManager : MonoBehaviour
     /// 更新工具使用面板为互动时的指令文本
     /// </summary>
     /// <param name="toolName">需要更新文本的工具名称</param>
-    public void UpdateToInteractingInstructionText(string toolName)
+    /// <param name="pet">参与交互的宠物（用于占位符替换）</param>
+    public void UpdateToInteractingInstructionText(string toolName, PetController2D pet = null)
     {
         // 只有当前选中的工具匹配时才更新文本
         if (CurrentTool != null && CurrentTool.toolName == toolName)
@@ -259,8 +263,20 @@ public class ToolInteractionManager : MonoBehaviour
             var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
             if (toolUsePanel != null && !string.IsNullOrEmpty(CurrentTool.interactingInstruction))
             {
-                toolUsePanel.SetInstructionText(CurrentTool.interactingInstruction);
-                Debug.Log($"更新工具 '{toolName}' 为互动时的说明文本");
+                string interactingText = CurrentTool.interactingInstruction;
+                
+                // 替换占位符
+                interactingText = interactingText.Replace("{ToolName}", CurrentTool.toolName);
+                interactingText = interactingText.Replace("{HeartReward}", CurrentTool.heartReward.ToString());
+                
+                // 替换宠物名称占位符（如果有宠物）
+                if (pet != null)
+                {
+                    interactingText = interactingText.Replace("{PetName}", pet.PetDisplayName);
+                }
+                
+                toolUsePanel.SetInstructionText(interactingText);
+                Debug.Log($"更新工具 '{toolName}' 为互动时的说明文本: {interactingText}");
             }
         }
     }
@@ -269,7 +285,8 @@ public class ToolInteractionManager : MonoBehaviour
     /// 更新工具使用面板为直接交互成功后的指令文本，并隐藏取消按钮
     /// </summary>
     /// <param name="toolName">需要更新文本的工具名称</param>
-    public void UpdateToInteractedInstructionText(string toolName)
+    /// <param name="pet">参与交互的宠物（用于占位符替换）</param>
+    public void UpdateToInteractedInstructionText(string toolName, PetController2D pet = null)
     {
         // 只有当前选中的工具匹配时才更新文本
         if (CurrentTool != null && CurrentTool.toolName == toolName)
@@ -277,11 +294,23 @@ public class ToolInteractionManager : MonoBehaviour
             var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
             if (toolUsePanel != null)
             {
-                // 更新文本
+                // 更新文本（支持占位符替换）
                 if (!string.IsNullOrEmpty(CurrentTool.interactedInstruction))
                 {
-                    toolUsePanel.SetInstructionText(CurrentTool.interactedInstruction);
-                    Debug.Log($"更新工具 '{toolName}' 为交互成功后的说明文本");
+                    string interactedText = CurrentTool.interactedInstruction;
+                    
+                    // 替换占位符
+                    interactedText = interactedText.Replace("{ToolName}", CurrentTool.toolName);
+                    interactedText = interactedText.Replace("{HeartReward}", CurrentTool.heartReward.ToString());
+                    
+                    // 替换宠物名称占位符（如果有宠物）
+                    if (pet != null)
+                    {
+                        interactedText = interactedText.Replace("{PetName}", pet.PetDisplayName);
+                    }
+                    
+                    toolUsePanel.SetInstructionText(interactedText);
+                    Debug.Log($"更新工具 '{toolName}' 为交互成功后的说明文本: {interactedText}");
                 }
                 
                 // 隐藏取消按钮
@@ -363,6 +392,112 @@ public class ToolInteractionManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 开始通用的玩具互动结束阶段（显示结束文本、给予奖励、延迟后回到工具背包）
+    /// </summary>
+    /// <param name="toolName">玩具名称</param>
+    /// <param name="pet">参与互动的宠物（可为null，用于放置类玩具）</param>
+    public void StartInteractionEndingPhase(string toolName, PetController2D pet = null)
+    {
+        if (CurrentTool == null || CurrentTool.toolName != toolName)
+        {
+            Debug.LogWarning($"StartInteractionEndingPhase: 当前工具不匹配 '{toolName}'");
+            ReturnToToolkit(); // 直接回到工具背包
+            return;
+        }
+        
+        // 开始结束阶段的协程
+        StartCoroutine(InteractionEndingCoroutine(pet));
+    }
+    
+    /// <summary>
+    /// 开始放置类玩具的无互动结束阶段（显示无互动文本、延迟后回到工具背包）
+    /// </summary>
+    /// <param name="toolName">玩具名称</param>
+    public void StartNoInteractionEndingPhase(string toolName)
+    {
+        if (CurrentTool == null || CurrentTool.toolName != toolName)
+        {
+            Debug.LogWarning($"StartNoInteractionEndingPhase: 当前工具不匹配 '{toolName}'");
+            ReturnToToolkit(); // 直接回到工具背包
+            return;
+        }
+        
+        // 开始无互动结束阶段的协程
+        StartCoroutine(NoInteractionEndingCoroutine());
+    }
+    
+    /// <summary>
+    /// 玩具互动结束阶段的协程
+    /// </summary>
+    /// <param name="pet">参与互动的宠物（可为null）</param>
+    private System.Collections.IEnumerator InteractionEndingCoroutine(PetController2D pet)
+    {
+        // 1. 给予爱心奖励
+        int heartReward = CurrentTool.heartReward;
+        if (PlayerManager.Instance != null && heartReward > 0)
+        {
+            PlayerManager.Instance.AddHeartCurrency(heartReward);
+            
+            // 显示爱心获得提示
+            var heartManager = UnityEngine.Object.FindObjectOfType<HeartMessageManager>();
+            if (heartManager != null && pet != null)
+            {
+                heartManager.ShowHeartGainMessage(pet, heartReward);
+            }
+        }
+        
+        // 2. 更新为通用结束文本
+        var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
+        if (toolUsePanel != null && !string.IsNullOrEmpty(CurrentTool.endingInstruction))
+        {
+            // 替换文本中的爱心奖励占位符
+            string endingText = CurrentTool.endingInstruction.Replace("{HeartReward}", heartReward.ToString());
+            // 替换工具名称占位符
+            endingText = endingText.Replace("{ToolName}", CurrentTool.toolName);
+            // 替换宠物名称占位符（如果有宠物）
+            if (pet != null)
+            {
+                endingText = endingText.Replace("{PetName}", pet.PetDisplayName);
+            }
+            
+            toolUsePanel.SetInstructionText(endingText);
+            Debug.Log($"显示玩具 '{CurrentTool.toolName}' 的结束文本: {endingText}");
+        }
+        
+        // 3. 等待配置的结束阶段时间
+        yield return new WaitForSeconds(endingPhaseDuration);
+        
+        // 4. 回到工具背包界面
+        ReturnToToolkit();
+    }
+    
+    /// <summary>
+    /// 放置类玩具无互动结束阶段的协程
+    /// </summary>
+    private System.Collections.IEnumerator NoInteractionEndingCoroutine()
+    {
+        // 1. 更新为无互动文本（不给予奖励）
+        var toolUsePanel = FindObjectOfType<ToolUsePanelController>();
+        if (toolUsePanel != null && !string.IsNullOrEmpty(CurrentTool.noInteractionInstruction))
+        {
+            // 替换文本中的占位符
+            string noInteractionText = CurrentTool.noInteractionInstruction;
+            
+            // 替换工具名称占位符
+            noInteractionText = noInteractionText.Replace("{ToolName}", CurrentTool.toolName);
+            
+            toolUsePanel.SetInstructionText(noInteractionText);
+            Debug.Log($"显示玩具 '{CurrentTool.toolName}' 的无互动结束文本: {noInteractionText}");
+        }
+        
+        // 2. 等待配置的结束阶段时间（与成功互动时间一致）
+        yield return new WaitForSeconds(endingPhaseDuration);
+        
+        // 3. 回到工具背包界面
+        ReturnToToolkit();
+    }
+    
+    /// <summary>
     /// 与宠物交互
     /// </summary>
     private void InteractWithPet(PetController2D pet)
@@ -393,28 +528,18 @@ public class ToolInteractionManager : MonoBehaviour
             // 检查本次交互是否让宠物进入厌倦状态
             bool becameBored = !wasBoredBefore && pet.IsBored;
             
-            // 显示爱心获得提示
-            var heartManager = FindObjectOfType<HeartMessageManager>();
-            if (heartManager != null)
-            {
-                heartManager.ShowHeartGainMessage(pet, heartReward);
-            }
-            else
-            {
-                Debug.LogWarning("未找到HeartMessageManager组件，爱心提示将不会显示");
-            }
-            
             // 启动具体的玩具互动表现
             pet.StartToyInteraction(CurrentTool.toolName);
             
             // 成功互动不再显示消息气泡（根据用户需求简化UI）
-            // 爱心奖励和视觉反馈已在HeartMessageManager中处理
             
-            // 更新为交互成功后的文本并隐藏取消按钮
-            UpdateToInteractedInstructionText(CurrentTool.toolName);
+            // 更新为交互成功后的文本并隐藏取消按钮（传入宠物对象以支持占位符替换）
+            UpdateToInteractedInstructionText(CurrentTool.toolName, pet);
             
             // 直接交互成功后，停止接受进一步的点击操作
             isUsingTool = false;
+            
+            // 注意：爱心奖励将在互动结束阶段统一发放，不在这里发放
                 break;
                 
             case 1: // 厌倦状态

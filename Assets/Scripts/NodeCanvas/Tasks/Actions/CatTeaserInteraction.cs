@@ -79,10 +79,10 @@ namespace NodeCanvas.Tasks.Actions
             
             // 注意：宠物已在AttractedByCatTeaser阶段加入互动列表，这里不再重复加入
             
-            // 通知工具交互管理器更新为互动时的指令文本
+            // 通知工具交互管理器更新为互动时的指令文本（传入宠物对象以支持占位符替换）
             if (ToolInteractionManager.Instance != null)
             {
-                ToolInteractionManager.Instance.UpdateToInteractingInstructionText("逗猫棒");
+                ToolInteractionManager.Instance.UpdateToInteractingInstructionText("逗猫棒", agent);
             }
             
             Debug.Log($"宠物 {agent.PetDisplayName} 开始与逗猫棒互动，持续时间: {interactionDuration.value}秒");
@@ -90,20 +90,6 @@ namespace NodeCanvas.Tasks.Actions
         
         private void EndInteraction()
         {
-            // 获得爱心货币奖励（互动完成后发放）
-            int heartReward = GetCatTeaserHeartReward();
-            if (PlayerManager.Instance != null && heartReward > 0)
-            {
-                PlayerManager.Instance.AddHeartCurrency(heartReward);
-                
-                // 显示爱心获得提示
-                var heartManager = UnityEngine.Object.FindObjectOfType<HeartMessageManager>();
-                if (heartManager != null)
-                {
-                    heartManager.ShowHeartGainMessage(agent, heartReward);
-                }
-            }
-            
             // 检查是否进入厌倦状态（类似TryToyInteraction的逻辑）
             bool willBeBored = Random.Range(0f, 1f) < agent.BoredomChance;
             if (willBeBored)
@@ -121,13 +107,19 @@ namespace NodeCanvas.Tasks.Actions
                 // 结束互动状态
                 agent.IsCatTeasering = false;
                 
-                Debug.Log($"宠物 {agent.PetDisplayName} 结束与逗猫棒互动，获得爱心: {heartReward}");
+                Debug.Log($"宠物 {agent.PetDisplayName} 结束与逗猫棒互动");
             }
             
             // 通知逗猫棒结束互动
             if (targetCatTeaser != null)
             {
                 targetCatTeaser.OnPetEndInteraction(agent);
+            }
+            
+            // 开始通用的互动结束阶段（显示结束文本、给予奖励、延迟后回到工具背包）
+            if (ToolInteractionManager.Instance != null)
+            {
+                ToolInteractionManager.Instance.StartInteractionEndingPhase("逗猫棒", agent);
             }
             
             EndAction(true);

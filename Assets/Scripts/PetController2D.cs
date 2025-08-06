@@ -762,11 +762,7 @@ public class PetController2D : MonoBehaviour
             return 1; // 厌倦状态
         }
         
-        // 每次互动都成功，立即获得爱心货币（使用传入的奖励数量）
-        if (PlayerManager.Instance != null)
-        {
-            PlayerManager.Instance.AddHeartCurrency(Mathf.RoundToInt(heartReward));
-        }
+        // 注意：爱心奖励不在这里发放，而是在通用的互动结束阶段统一发放
         
         // 检查是否进入厌倦状态
         bool willBeBored = Random.Range(0f, 1f) < boredomChance;

@@ -17,6 +17,7 @@ public class CatTeaserController : MonoBehaviour
     // 状态管理
     private bool isActive = false;
     private float currentLifetime = 0f;
+    private bool hasHadInteraction = false; // 是否有过宠物互动
     
     // 被吸引的宠物列表
     private List<PetController2D> attractedPets = new List<PetController2D>();
@@ -78,7 +79,8 @@ public class CatTeaserController : MonoBehaviour
         // 检查销毁条件：被吸引宠物列表为空 且 过了初始检测时间
         if (attractedPets.Count == 0 && interactingPets.Count == 0 && currentLifetime >= initialDetectionTime)
         {
-            DestroyCatTeaser();
+            // 根据是否有过互动来决定结束方式
+            DestroyCatTeaser(!hasHadInteraction); // true 表示无互动，false 表示有互动
         }
     }
     
@@ -134,6 +136,7 @@ public class CatTeaserController : MonoBehaviour
         }
         
         interactingPets.Add(pet);
+        hasHadInteraction = true; // 标记有过互动
         Debug.Log($"宠物 {pet.PetDisplayName} 开始与逗猫棒互动（互动列表：{interactingPets.Count}/1）");
         
         // 从吸引列表中移除
@@ -169,7 +172,14 @@ public class CatTeaserController : MonoBehaviour
         if (attractedPets.Count == 0 && interactingPets.Count == 0 && currentLifetime >= initialDetectionTime)
         {
             Debug.Log("所有宠物都结束了互动且过了初始检测时间，准备销毁逗猫棒");
-            DestroyCatTeaser();
+            // 注意：这里不调用DestroyCatTeaser，因为有互动的结束阶段由CatTeaserInteraction处理
+            // 只是清理引用和销毁GameObject
+            if (currentInstance == this)
+            {
+                currentInstance = null;
+            }
+            Debug.Log("逗猫棒被销毁 (有互动结束)");
+            Destroy(gameObject);
         }
     }
     
@@ -204,7 +214,8 @@ public class CatTeaserController : MonoBehaviour
     /// <summary>
     /// 强制销毁逗猫棒
     /// </summary>
-    public void DestroyCatTeaser()
+    /// <param name="noInteraction">是否为无互动销毁（true=无互动，false=有互动）</param>
+    public void DestroyCatTeaser(bool noInteraction = false)
     {
         isActive = false;
         
@@ -225,10 +236,16 @@ public class CatTeaserController : MonoBehaviour
             }
         }
         
-        // 通知工具交互管理器回到工具背包界面
+        // 根据是否有互动来调用不同的结束阶段
         if (ToolInteractionManager.Instance != null)
         {
-            ToolInteractionManager.Instance.ReturnToToolkit();
+            if (noInteraction)
+            {
+                // 无互动的结束阶段
+                ToolInteractionManager.Instance.StartNoInteractionEndingPhase("逗猫棒");
+                Debug.Log("逗猫棒无宠物互动，开始无互动结束阶段");
+            }
+            // 注意：有互动的情况由 CatTeaserInteraction.EndInteraction() 处理
         }
         
         // 清理静态引用
@@ -237,17 +254,15 @@ public class CatTeaserController : MonoBehaviour
             currentInstance = null;
         }
         
-        Debug.Log("逗猫棒被销毁");
+        Debug.Log($"逗猫棒被销毁 (无互动: {noInteraction})");
         Destroy(gameObject);
     }
     
     private void OnDestroy()
     {
-        // 通知工具交互管理器回到工具背包界面（确保任何情况下销毁都能回到工具背包界面）
-        if (ToolInteractionManager.Instance != null && currentInstance == this)
-        {
-            ToolInteractionManager.Instance.ReturnToToolkit();
-        }
+        // 注意：OnDestroy 时不调用结束阶段
+        // 正常的结束阶段应该由 CatTeaserInteraction.EndInteraction() 处理
+        // OnDestroy 只负责清理工作
         
         // 确保清理静态引用
         if (currentInstance == this)

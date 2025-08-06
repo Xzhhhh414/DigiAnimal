@@ -81,10 +81,12 @@ MonoBehaviour:
     toolIcon: {fileID: 21300000, guid: 3984581ddc0f409468737aa33bb344bd, type: 3}
     toolDescription: "\u7528\u624B\u629A\u6478\u732B\u732B"
     useInstruction: "\u70B9\u51FB\u60F3\u8981\u629A\u6478\u7684\u732B\u732B"
-    interactedInstruction: "\u54C7~\u732B\u732B\u6B63\u5728\u4EAB\u53D7\u6478\u6478\u5462"
+    interactedInstruction: "\u54C7~{PetName}\u6B63\u5728\u4EAB\u53D7\u6478\u6478\u5462"
     placedInstruction: 
     interactingInstruction: 
+    noInteractionInstruction: "\u6CA1\u6709\u5BA0\u7269\u5BF9{ToolName}\u611F\u5174\u8DA3\uFF0C{ToolName}\u6D88\u5931\u4E86"
     heartReward: 1
+    endingInstruction: "{PetName}\u5F88\u4EAB\u53D7\u4F60\u7684\u6478\u6478\uFF0C\u83B7\u5F97{HeartReward}\u4E2A\u7231\u5FC3"
   - toolType: 1
     toolPrefab: {fileID: 847570557904668539, guid: 6e5fdbc121aea8e40a9746e97c4321a6, type: 3}
     toolName: "\u9017\u732B\u68D2"
@@ -93,8 +95,10 @@ MonoBehaviour:
     useInstruction: "\u70B9\u51FB\u7A7A\u65F7\u5904\uFF0C\u6325\u821E\u9017\u732B\u68D2"
     interactedInstruction: 
     placedInstruction: "\u9017\u732B\u68D2\u6325\u821Eing\uFF0C\u7B49\u5F85\u5C0F\u732B\u4E0A\u94A9"
-    interactingInstruction: "\u54C7~\u6709\u732B\u732B\u6B63\u5728\u73A9\u5462"
+    interactingInstruction: "{PetName}\u6B63\u5728\u548C\u9017\u732B\u68D2\u5BF9\u6253\u5462~"
+    noInteractionInstruction: "\u597D\u53EF\u60DC\uFF0C\u6CA1\u6709\u5438\u5F15\u5230\u5927\u5BB6\u7684\u6CE8\u610F\u2026"
     heartReward: 2
+    endingInstruction: "{PetName}\u732B\u62F3\u597D\u5E05\uFF0C\u83B7\u5F97{HeartReward}\u4E2A\u7231\u5FC3"
   - toolType: 1
     toolPrefab: {fileID: 0}
     toolName: "\u73A9\u5177\u8001\u9F20"
@@ -104,7 +108,10 @@ MonoBehaviour:
     interactedInstruction: 
     placedInstruction: "\u770B\u8001\u9F20\u778E\u8DD1"
     interactingInstruction: "\u54C7~\u6709\u732B\u732B\u6B63\u5728\u73A9\u5462"
+    noInteractionInstruction: "\u597D\u53EF\u60DC\uFF0C\u6CA1\u6709\u5438\u5F15\u5230\u5927\u5BB6\u7684\u6CE8\u610F\u2026"
     heartReward: 3
+    endingInstruction: "\u4E92\u52A8\u5B8C\u6210\uFF01\u83B7\u5F97\u4E86 {HeartReward}
+      \u4E2A\u7231\u5FC3\uFF01"
 --- !u!114 &4651001465556447005
 MonoBehaviour:
   m_ObjectHideFlags: 0

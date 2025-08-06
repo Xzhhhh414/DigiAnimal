@@ -406,6 +406,12 @@ public class PlayerManager : MonoBehaviour
             {
                 Debug.LogWarning($"PlayerManager: 可放置物体类型的工具 '{tools[i].toolName}' 没有设置互动时的提示文本。建议在interactingInstruction字段中配置相关说明。");
             }
+            
+            // 检查可放置物体类型的工具是否配置了无互动时的提示文本
+            if (tools[i].toolType == ToolType.PlaceableObject && string.IsNullOrEmpty(tools[i].noInteractionInstruction))
+            {
+                Debug.LogWarning($"PlayerManager: 可放置物体类型的工具 '{tools[i].toolName}' 没有设置无互动时的提示文本。建议在noInteractionInstruction字段中配置相关说明。");
+            }
         }
     }
 }
@@ -426,13 +432,20 @@ public class ToolInfo
     
     [Header("直接交互类工具专用")]
     public string interactedInstruction; // 直接交互成功后的提示文本（仅用于DirectInteraction类型工具）
+                                        // 支持占位符：{PetName} - 宠物名称, {ToolName} - 工具名称, {HeartReward} - 爱心奖励数量
     
     [Header("放置类工具专用")]
     public string placedInstruction;     // 放置成功后的提示文本（仅用于PlaceableObject类型工具）
     public string interactingInstruction; // 宠物开始互动后的提示文本（仅用于PlaceableObject类型工具）
+                                          // 支持占位符：{PetName} - 宠物名称, {ToolName} - 工具名称, {HeartReward} - 爱心奖励数量
+    public string noInteractionInstruction = "没有宠物对{ToolName}感兴趣，{ToolName}消失了"; // 无宠物互动时的提示文本（仅用于PlaceableObject类型工具）
+                                                                                           // 支持占位符：{ToolName} - 工具名称
     
     [Header("交互奖励")]
     public int heartReward = 1;          // 交互成功时获得的爱心数量
+    
+    [Header("通用结束阶段")]
+    public string endingInstruction = "互动完成！获得了 {HeartReward} 个爱心！"; // 互动结束时的通用提示文本
     
 
 
