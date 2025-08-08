@@ -44,6 +44,7 @@ GameObject:
   - component: {fileID: 7250404895571418937}
   - component: {fileID: 7591069024514174086}
   - component: {fileID: 8423326822044170306}
+  - component: {fileID: 9217213462869038860}
   m_Layer: 8
   m_Name: Toy_CatTeaser
   m_TagString: Untagged
@@ -199,3 +200,17 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.7751324, y: 0.6884727}
   m_EdgeRadius: 0
+--- !u!114 &9217213462869038860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847570557904668539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bb06537dfb17724fafc2ac201527947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeOutDuration: 1
+  fadeOutEase: 7

@@ -12,6 +12,11 @@ GameObject:
   - component: {fileID: 431373375360329812}
   - component: {fileID: 6949103795540313469}
   - component: {fileID: 7619137658102178686}
+  - component: {fileID: 877472936800732553}
+  - component: {fileID: 2218125644513562224}
+  - component: {fileID: 5075597776857404697}
+  - component: {fileID: 4673871773516888963}
+  - component: {fileID: -4727786581071756152}
   m_Layer: 8
   m_Name: Toy_Mouse
   m_TagString: Untagged
@@ -153,6 +158,103 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 0.5716212}
   m_EdgeRadius: 0
+--- !u!114 &877472936800732553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929464526654175335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f92c939a215fa494bae1c3f2d2e9378d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lifeTime: 60
+  interactPos: {fileID: 2304693631971596983}
+  movingThreshold: 0.05
+  quantizeIdleDirection: 1
+--- !u!195 &2218125644513562224
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929464526654175335}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.15
+  m_Speed: 1.5
+  m_Acceleration: 40
+  avoidancePriority: 50
+  m_AngularSpeed: 180
+  m_StoppingDistance: 0.01
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1
+  m_BaseOffset: 1
+  m_WalkableMask: 1
+  m_ObstacleAvoidanceType: 1
+--- !u!114 &5075597776857404697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929464526654175335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aad115aca74ce3c4891b3f6de0b4aae8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _serializedExposedParameters: []
+  _boundGraphSerialization: 
+  _boundGraphObjectReferences: []
+  _boundGraphSource:
+    _version: 0
+    _category: 
+    _comments: 
+    _translation: {x: 0, y: 0}
+    _zoomFactor: 1
+  _firstActivation: 0
+  _enableAction: 0
+  _disableAction: 0
+  _lockBoundGraphPrefabOverrides: 1
+  _preInitializeSubGraphs: 0
+  _updateMode: 0
+  _graph: {fileID: 11400000, guid: c131ef8bde7f2a545b951f6e082a22e0, type: 2}
+  _blackboard: {fileID: 4673871773516888963}
+--- !u!114 &4673871773516888963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929464526654175335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b98a6db0b653f764eac834f85857a9dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _parentBlackboard: {fileID: 0}
+  _serializedBlackboard: '{"_variables":{}}'
+  _objectReferences: []
+  _serializedVariables: []
+--- !u!114 &-4727786581071756152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1929464526654175335}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3bb06537dfb17724fafc2ac201527947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeOutDuration: 1
+  fadeOutEase: 7
 --- !u!1 &7242630774923496337
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,7 +280,7 @@ Transform:
   m_GameObject: {fileID: 7242630774923496337}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.57, y: -0.093, z: 0}
+  m_LocalPosition: {x: -0.417, y: -0.307, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

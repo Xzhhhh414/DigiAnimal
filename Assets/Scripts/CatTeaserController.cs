@@ -49,14 +49,14 @@ public class CatTeaserController : MonoBehaviour
             interactPos = transform.Find("InteractPos");
             if (interactPos == null)
             {
-                Debug.LogWarning($"逗猫棒 {gameObject.name} 没有找到InteractPos子对象，宠物将移动到逗猫棒中心位置");
+                // Debug.LogWarning($"逗猫棒 {gameObject.name} 没有找到InteractPos子对象，宠物将移动到逗猫棒中心位置");
             }
         }
         
         // 检查是否已有活跃的逗猫棒
         if (currentInstance != null)
         {
-            Debug.LogWarning("已存在活跃的逗猫棒，销毁新创建的实例");
+            // Debug.LogWarning("已存在活跃的逗猫棒，销毁新创建的实例");
             Destroy(gameObject);
             return;
         }
@@ -98,7 +98,7 @@ public class CatTeaserController : MonoBehaviour
             animator.SetTrigger(AnimationStrings.startWaveTrigger);
         }
         
-        Debug.Log($"逗猫棒启动，初始检测时间: {initialDetectionTime}秒");
+        // Debug.Log($"逗猫棒启动，初始检测时间: {initialDetectionTime}秒");
     }
     
     /// <summary>
@@ -110,7 +110,7 @@ public class CatTeaserController : MonoBehaviour
         if (pet == null || attractedPets.Contains(pet)) return;
         
         attractedPets.Add(pet);
-        Debug.Log($"宠物 {pet.PetDisplayName} 被逗猫棒吸引，当前被吸引宠物数量: {attractedPets.Count}");
+        // Debug.Log($"宠物 {pet.PetDisplayName} 被逗猫棒吸引，当前被吸引宠物数量: {attractedPets.Count}");
     }
     
     /// <summary>
@@ -125,7 +125,7 @@ public class CatTeaserController : MonoBehaviour
         // 检查是否已有宠物在互动（限制为单宠物互动）
         if (interactingPets.Count > 0)
         {
-            Debug.Log($"逗猫棒已有宠物 {interactingPets[0].PetDisplayName} 在互动，拒绝宠物 {pet.PetDisplayName} 的互动请求");
+            // Debug.Log($"逗猫棒已有宠物 {interactingPets[0].PetDisplayName} 在互动，拒绝宠物 {pet.PetDisplayName} 的互动请求");
             return false;
         }
         
@@ -137,7 +137,7 @@ public class CatTeaserController : MonoBehaviour
         
         interactingPets.Add(pet);
         hasHadInteraction = true; // 标记有过互动
-        Debug.Log($"宠物 {pet.PetDisplayName} 开始与逗猫棒互动（互动列表：{interactingPets.Count}/1）");
+        // Debug.Log($"宠物 {pet.PetDisplayName} 开始与逗猫棒互动（互动列表：{interactingPets.Count}/1）");
         
         // 从吸引列表中移除
         if (attractedPets.Contains(pet))
@@ -159,26 +159,26 @@ public class CatTeaserController : MonoBehaviour
         if (interactingPets.Contains(pet))
         {
             interactingPets.Remove(pet);
-            Debug.Log($"宠物 {pet.PetDisplayName} 结束与逗猫棒互动，当前互动宠物数量: {interactingPets.Count}");
+            // Debug.Log($"宠物 {pet.PetDisplayName} 结束与逗猫棒互动，当前互动宠物数量: {interactingPets.Count}");
         }
         
         if (attractedPets.Contains(pet))
         {
             attractedPets.Remove(pet);
-            Debug.Log($"宠物 {pet.PetDisplayName} 从被吸引列表移除，当前被吸引宠物数量: {attractedPets.Count}");
+            // Debug.Log($"宠物 {pet.PetDisplayName} 从被吸引列表移除，当前被吸引宠物数量: {attractedPets.Count}");
         }
         
         // 检查销毁条件：没有被吸引的宠物且没有互动中的宠物且过了初始检测时间
         if (attractedPets.Count == 0 && interactingPets.Count == 0 && currentLifetime >= initialDetectionTime)
         {
-            Debug.Log("所有宠物都结束了互动且过了初始检测时间，准备销毁逗猫棒");
+            // Debug.Log("所有宠物都结束了互动且过了初始检测时间，准备销毁逗猫棒");
             // 注意：这里不调用DestroyCatTeaser，因为有互动的结束阶段由CatTeaserInteraction处理
             // 只是清理引用和销毁GameObject
             if (currentInstance == this)
             {
                 currentInstance = null;
             }
-            Debug.Log("逗猫棒被销毁 (有互动结束)");
+            // Debug.Log("逗猫棒被销毁 (有互动结束)");
             Destroy(gameObject);
         }
     }
@@ -243,7 +243,7 @@ public class CatTeaserController : MonoBehaviour
             {
                 // 无互动的结束阶段
                 ToolInteractionManager.Instance.StartNoInteractionEndingPhase("逗猫棒");
-                Debug.Log("逗猫棒无宠物互动，开始无互动结束阶段");
+                // Debug.Log("逗猫棒无宠物互动，开始无互动结束阶段");
             }
             // 注意：有互动的情况由 CatTeaserInteraction.EndInteraction() 处理
         }
@@ -254,8 +254,30 @@ public class CatTeaserController : MonoBehaviour
             currentInstance = null;
         }
         
-        Debug.Log($"逗猫棒被销毁 (无互动: {noInteraction})");
-        Destroy(gameObject);
+        // Debug.Log($"逗猫棒开始渐变消失 (无互动: {noInteraction})");
+        
+        // 使用渐变效果销毁（通过反射避免类型引用问题）
+        var fadeOut = GetComponent("FadeOutDestroy");
+        if (fadeOut != null)
+        {
+            var fadeOutType = fadeOut.GetType();
+            var method = fadeOutType.GetMethod("StartFadeOut", new System.Type[] { typeof(bool) });
+            if (method != null)
+            {
+                method.Invoke(fadeOut, new object[] { true });
+            }
+            else
+            {
+                // Debug.LogWarning("逗猫棒的FadeOutDestroy组件没有找到StartFadeOut方法，直接销毁");
+                Destroy(gameObject);
+            }
+        }
+        else
+        {
+            // 如果没有FadeOutDestroy组件，直接销毁（向后兼容）
+            // Debug.LogWarning("逗猫棒没有FadeOutDestroy组件，直接销毁");
+            Destroy(gameObject);
+        }
     }
     
     private void OnDestroy()

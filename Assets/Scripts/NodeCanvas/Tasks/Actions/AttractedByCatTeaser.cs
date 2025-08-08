@@ -83,7 +83,7 @@ namespace NodeCanvas.Tasks.Actions
             if (!canInteract)
             {
                 // 如果无法加入互动列表（已有其他宠物在互动），结束当前行为
-                Debug.Log($"宠物 {agent.PetDisplayName} 无法与逗猫棒互动，已有其他宠物在互动");
+                // Debug.Log($"宠物 {agent.PetDisplayName} 无法与逗猫棒互动，已有其他宠物在互动");
                 EndAction(false);
                 return;
             }
@@ -102,15 +102,15 @@ namespace NodeCanvas.Tasks.Actions
             if (interactPos != null)
             {
                 saveGameObjectTo.value = interactPos.gameObject;
-                Debug.Log($"宠物 {agent.PetDisplayName} 将移动到逗猫棒的交互位置点");
+                // Debug.Log($"宠物 {agent.PetDisplayName} 将移动到逗猫棒的交互位置点");
             }
             else
             {
                 saveGameObjectTo.value = targetCatTeaser.gameObject;
-                Debug.Log($"宠物 {agent.PetDisplayName} 将移动到逗猫棒中心位置（未找到InteractPos）");
+                // Debug.Log($"宠物 {agent.PetDisplayName} 将移动到逗猫棒中心位置（未找到InteractPos）");
             }
             
-            Debug.Log($"宠物 {agent.PetDisplayName} 开始被逗猫棒吸引，持续时间: {attractedDuration.value}秒");
+            // Debug.Log($"宠物 {agent.PetDisplayName} 开始被逗猫棒吸引，持续时间: {attractedDuration.value}秒");
         }
         
         private void EndAttraction()
@@ -126,7 +126,7 @@ namespace NodeCanvas.Tasks.Actions
                 // 开始逗猫棒互动状态，准备进入下一个阶段
                 agent.IsCatTeasering = true;
                 
-                Debug.Log($"宠物 {agent.PetDisplayName} 结束被吸引状态，准备与逗猫棒互动");
+                // Debug.Log($"宠物 {agent.PetDisplayName} 结束被吸引状态，准备与逗猫棒互动");
             }
             
             // 标记为正常完成，避免在OnStop中清理互动列表
@@ -146,7 +146,7 @@ namespace NodeCanvas.Tasks.Actions
                 if (targetCatTeaser != null)
                 {
                     targetCatTeaser.OnPetEndInteraction(agent);
-                    Debug.Log($"宠物 {agent.PetDisplayName} 被中途停止，从逗猫棒互动列表中移除");
+                    // Debug.Log($"宠物 {agent.PetDisplayName} 被中途停止，从逗猫棒互动列表中移除");
                 }
             }
             

@@ -78,6 +78,10 @@ public class PetController2D : MonoBehaviour
     [SerializeField]
     private bool _IsCatTeasering = false;
     
+    // 是否正在与玩具老鼠互动
+    [SerializeField]
+    private bool _IsPlayingMouse = false;
+    
     // [SerializeField]    
     // private bool _InFreeMode = true; // 自由活动状态
     
@@ -328,6 +332,23 @@ public class PetController2D : MonoBehaviour
         }
     }
     
+    // 玩具老鼠互动状态属性
+    [Tooltip("宠物是否正在与玩具老鼠互动")]
+    public bool IsPlayingMouse
+    {
+        get 
+        { 
+            // 从Animator获取最新值，确保同步
+            _IsPlayingMouse = animator.GetBool(AnimationStrings.isPlayingMouse);
+            return _IsPlayingMouse; 
+        }
+        set
+        {
+            _IsPlayingMouse = value;
+            animator.SetBool(AnimationStrings.isPlayingMouse, value);
+        }
+    }
+    
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
     
@@ -502,8 +523,8 @@ public class PetController2D : MonoBehaviour
     {
         if (needBubbleController == null) return;
         
-        // 如果宠物正在吃东西、睡觉、被摸摸、被吸引或与逗猫棒互动，隐藏所有气泡
-        if (IsEating || IsSleeping || IsPatting || IsAttracted || IsCatTeasering)
+        // 如果宠物正在吃东西、睡觉、被摸摸、被吸引、与逗猫棒互动或与玩具老鼠互动，隐藏所有气泡
+        if (IsEating || IsSleeping || IsPatting || IsAttracted || IsCatTeasering || IsPlayingMouse)
         {
             // 如果当前有气泡显示，隐藏它
             if (isShowingHungryBubble || isShowingTiredBubble)
@@ -756,6 +777,12 @@ public class PetController2D : MonoBehaviour
             return 6; // 正在与逗猫棒互动
         }
         
+        // 检查是否正在与玩具老鼠互动
+        if (IsPlayingMouse)
+        {
+            return 7; // 正在与玩具老鼠互动
+        }
+        
         // 检查是否可以进行玩具互动（厌倦状态检查）
         if (!CanInteractWithToy)
         {
@@ -840,14 +867,36 @@ public class PetController2D : MonoBehaviour
     }
     
     /// <summary>
-    /// 结束摸摸互动（只负责动画触发，由BT调用）
+    /// 结束逗猫棒互动（只负责动画触发，由BT调用）
     /// </summary>
     public void EndCatTeaser()
     {
-        // 触发结束摸摸动画
+        // 触发结束逗猫棒动画
         animator.SetTrigger(AnimationStrings.endCatTeaserTrigger);
         
-        // Debug.Log($"{gameObject.name} 触发结束摸摸动画");
+        // Debug.Log($"{gameObject.name} 触发结束逗猫棒动画");
+    }
+    
+    /// <summary>
+    /// 开始玩具老鼠互动（只负责动画触发，由BT调用）
+    /// </summary>
+    public void StartPlayMouse()
+    {
+        // 触发开始玩具老鼠动画
+        animator.SetTrigger(AnimationStrings.startPlayMouseTrigger);
+        
+        // Debug.Log($"{gameObject.name} 触发开始玩具老鼠动画");
+    }
+    
+    /// <summary>
+    /// 结束玩具老鼠互动（只负责动画触发，由BT调用）
+    /// </summary>
+    public void EndPlayMouse()
+    {
+        // 触发结束玩具老鼠动画
+        animator.SetTrigger(AnimationStrings.endPlayMouseTrigger);
+        
+        // Debug.Log($"{gameObject.name} 触发结束玩具老鼠动画");
     }
 
     /// <summary>

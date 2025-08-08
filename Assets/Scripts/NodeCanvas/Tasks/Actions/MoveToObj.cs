@@ -47,15 +47,8 @@ namespace NodeCanvas.Tasks.Actions
                 // Debug.LogWarning($"[{petName}] 未找到PetController2D组件，动画可能无法正确更新");
             }
             
-            // 立即强制切换到移动状态，避免等待当前动画结束
-            Animator animator = agent.GetComponent<Animator>();
-            if (animator != null) {
-                // 设置移动状态为true
-                animator.SetBool(AnimationStrings.isMoving, true);
-                // 触发强制移动触发器，立即切换到移动状态
-                animator.SetTrigger(AnimationStrings.forceMoveTrigger);
-                // Debug.Log($"[{petName}] 强制触发移动状态切换");
-            }
+            // 不直接操作Animator参数，避免每帧/每次启动任务时重新触发进入Movement
+            // 由PetController2D根据NavMeshAgent.velocity在Update中统一驱动isMoving
             
             if (target.value == null) {
                 // Debug.LogWarning($"[{petName}] 目标对象为空，无法移动");

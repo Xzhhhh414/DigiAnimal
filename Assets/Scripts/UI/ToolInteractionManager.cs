@@ -572,6 +572,10 @@ public class ToolInteractionManager : MonoBehaviour
                 ShowPetMessage(pet, catTeaserMessage, PetNeedType.None);
                 break;
                 
+            case 7: // 正在与玩具老鼠互动
+                ShowPetMessage(pet, "我正在和玩具老鼠玩耍，请稍后再来~", PetNeedType.None);
+                break;
+                
             default: // 其他失败情况
                 string failureMessage = ReplaceTextSymbols(otherFailureMessage, pet, 0);
                 ShowPetMessage(pet, failureMessage, PetNeedType.Indifferent);

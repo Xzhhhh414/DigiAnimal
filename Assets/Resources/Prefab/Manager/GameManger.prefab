@@ -96,9 +96,9 @@ MonoBehaviour:
     interactedInstruction: 
     placedInstruction: "\u9017\u732B\u68D2\u6325\u821Eing\uFF0C\u7B49\u5F85\u5C0F\u732B\u4E0A\u94A9"
     interactingInstruction: "{PetName}\u6B63\u5728\u548C\u9017\u732B\u68D2\u5BF9\u6253\u5462~"
-    noInteractionInstruction: "\u597D\u53EF\u60DC\uFF0C\u6CA1\u6709\u5438\u5F15\u5230\u5927\u5BB6\u7684\u6CE8\u610F\u2026"
+    noInteractionInstruction: "\u597D\u53EF\u60DC\uFF0C\u6CA1\u6709\u5438\u5F15\u5230\u732B\u732B\u7684\u6CE8\u610F\u2026"
     heartReward: 2
-    endingInstruction: "{PetName}\u732B\u62F3\u597D\u5E05\uFF0C\u83B7\u5F97{HeartReward}\u4E2A\u7231\u5FC3"
+    endingInstruction: "{PetName}\u7684\u732B\u62F3\u597D\u5E05\uFF0C\u83B7\u5F97{HeartReward}\u4E2A\u7231\u5FC3"
   - toolType: 1
     toolPrefab: {fileID: 1929464526654175335, guid: a88dbc12a4e8b55438058b86d92b81e3, type: 3}
     toolName: "\u73A9\u5177\u8001\u9F20"
@@ -106,9 +106,9 @@ MonoBehaviour:
     toolDescription: "\u732B\u732B\u6700\u559C\u6B22\u4F1A\u52A8\u7684\u8001\u9F20\u4E86\u2026"
     useInstruction: "\u5C06\u8001\u9F20\u653E\u7F6E\u5728\u7A7A\u5730"
     interactedInstruction: 
-    placedInstruction: "\u770B\u8001\u9F20\u778E\u8DD1"
+    placedInstruction: "\u8001\u9F20\u4E71\u8DD1ing\uFF0C\u770B\u54EA\u4E2A\u732B\u732B\u4F1A\u7B2C\u4E00\u4E2A\u53D1\u73B0"
     interactingInstruction: "\u54C7~\u6709\u732B\u732B\u6B63\u5728\u73A9\u5462"
-    noInteractionInstruction: "\u597D\u53EF\u60DC\uFF0C\u6CA1\u6709\u5438\u5F15\u5230\u5927\u5BB6\u7684\u6CE8\u610F\u2026"
+    noInteractionInstruction: "\u597D\u53EF\u60DC\uFF0C\u6CA1\u6709\u5438\u5F15\u5230\u732B\u732B\u7684\u6CE8\u610F\u2026"
     heartReward: 3
     endingInstruction: "\u4E92\u52A8\u5B8C\u6210\uFF01\u83B7\u5F97\u4E86 {HeartReward}
       \u4E2A\u7231\u5FC3\uFF01"

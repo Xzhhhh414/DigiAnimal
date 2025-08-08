@@ -6,22 +6,22 @@ using UnityEngine;
 namespace NodeCanvas.Tasks.Actions
 {
     [Category("Pet AI")]
-    [Description("宠物与逗猫棒互动的行为")]
-    public class CatTeaserInteraction : ActionTask<PetController2D>
+    [Description("宠物与玩具老鼠互动的行为")]
+    public class ToyMouseInteraction : ActionTask<PetController2D>
     {
         [Name("互动持续时间")]
-        public BBParameter<float> interactionDuration = 5f;
+        public BBParameter<float> interactionDuration = 4f;
         
         private float startTime;
         private bool hasStarted = false;
-        private CatTeaserController targetCatTeaser;
+        private ToyMouseController targetToyMouse;
         
         protected override string info
         {
             get 
             { 
-                int heartReward = GetCatTeaserHeartReward();
-                return string.Format("逗猫棒互动 (持续时间: {0}秒, 爱心: {1})", interactionDuration.value, heartReward); 
+                int heartReward = GetToyMouseHeartReward();
+                return string.Format("玩具老鼠互动 (持续时间: {0}秒, 爱心: {1})", interactionDuration.value, heartReward); 
             }
         }
         
@@ -33,8 +33,8 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
             
-            // 检查是否有活跃的逗猫棒
-            if (!CatTeaserController.HasActiveCatTeaser)
+            // 检查是否有活跃的玩具老鼠
+            if (!ToyMouseController.HasActiveToyMouse)
             {
                 EndAction(false);
                 return;
@@ -48,7 +48,7 @@ namespace NodeCanvas.Tasks.Actions
         
         protected override void OnUpdate()
         {
-            if (agent == null || targetCatTeaser == null)
+            if (agent == null || targetToyMouse == null)
             {
                 EndAction(false);
                 return;
@@ -66,29 +66,42 @@ namespace NodeCanvas.Tasks.Actions
         {
             hasStarted = true;
             startTime = Time.time;
-            targetCatTeaser = CatTeaserController.CurrentInstance;
+            targetToyMouse = ToyMouseController.CurrentInstance;
             
-            if (targetCatTeaser == null)
+            if (targetToyMouse == null)
             {
                 EndAction(false);
                 return;
             }
             
-            // 确保互动期间标志位为true，防止状态机过早退出互动层
-            agent.IsCatTeasering = true;
-
-            // 调用PetController2D的StartCatTeaser方法
-            agent.StartCatTeaser();
+            // 逗猫棒吸引阶段已加入互动列表，这里避免重复加入失败
+            // 若未加入（比如直接跳到此节点），再尝试一次加入
+            if (targetToyMouse != null)
+            {
+                targetToyMouse.OnPetStartInteraction(agent);
+            }
             
-            // 注意：宠物已在AttractedByCatTeaser阶段加入互动列表，这里不再重复加入
+            // 设置宠物状态（先清理残留吸引状态）
+            agent.IsAttracted = false;
+            agent.IsPlayingMouse = true;
+            
+            // 停止路径，避免残余位移影响互动动画
+            var nav = agent.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (nav != null && nav.isOnNavMesh)
+            {
+                try { nav.ResetPath(); } catch { }
+            }
+            
+            // 调用PetController2D的StartPlayMouse方法
+            agent.StartPlayMouse();
             
             // 通知工具交互管理器更新为互动时的指令文本（传入宠物对象以支持占位符替换）
             if (ToolInteractionManager.Instance != null)
             {
-                ToolInteractionManager.Instance.UpdateToInteractingInstructionText("逗猫棒", agent);
+                ToolInteractionManager.Instance.UpdateToInteractingInstructionText("玩具老鼠", agent);
             }
             
-            // Debug.Log($"宠物 {agent.PetDisplayName} 开始与逗猫棒互动，持续时间: {interactionDuration.value}秒");
+            Debug.Log($"宠物 {agent.PetDisplayName} 开始与玩具老鼠互动，持续时间: {interactionDuration.value}秒");
         }
         
         private void EndInteraction()
@@ -99,30 +112,36 @@ namespace NodeCanvas.Tasks.Actions
             {
                 // 进入厌倦状态
                 agent.SetBored(true);
-                // Debug.Log($"宠物 {agent.PetDisplayName} 在与逗猫棒互动后感到厌倦了，需要 {agent.BoredomRecoveryRemaining} 分钟恢复");
+                Debug.Log($"宠物 {agent.PetDisplayName} 在与玩具老鼠互动后感到厌倦了，需要 {agent.BoredomRecoveryRemaining} 分钟恢复");
             }
             
             if (agent != null)
             {
-                // 调用PetController2D的EndCatTeaser方法
-                agent.EndCatTeaser();
+                // 调用PetController2D的EndPlayMouse方法
+                agent.EndPlayMouse();
                 
                 // 结束互动状态
-                agent.IsCatTeasering = false;
+                agent.IsPlayingMouse = false;
                 
-                // Debug.Log($"宠物 {agent.PetDisplayName} 结束与逗猫棒互动");
+                Debug.Log($"宠物 {agent.PetDisplayName} 结束与玩具老鼠互动");
             }
             
-            // 通知逗猫棒结束互动
-            if (targetCatTeaser != null)
+            // 通知玩具老鼠结束互动
+            if (targetToyMouse != null)
             {
-                targetCatTeaser.OnPetEndInteraction(agent);
+                targetToyMouse.OnPetEndInteraction(agent);
             }
             
             // 开始通用的互动结束阶段（显示结束文本、给予奖励、延迟后回到工具背包）
+            // 使用当前工具名称，避免面板上工具被切换时名称不匹配
             if (ToolInteractionManager.Instance != null)
             {
-                ToolInteractionManager.Instance.StartInteractionEndingPhase("逗猫棒", agent);
+                var tim = ToolInteractionManager.Instance;
+                var currentTool = typeof(ToolInteractionManager)
+                    .GetProperty("CurrentTool", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    ?.GetValue(tim) as ToolInfo;
+                string toolName = currentTool != null ? currentTool.toolName : "玩具老鼠";
+                tim.StartInteractionEndingPhase(toolName, agent);
             }
             
             EndAction(true);
@@ -133,13 +152,13 @@ namespace NodeCanvas.Tasks.Actions
             // 如果任务被中途停止，清理状态
             if (agent != null && hasStarted)
             {
-                agent.IsCatTeasering = false;
+                agent.IsPlayingMouse = false;
             }
             
-            // 通知逗猫棒结束互动
-            if (targetCatTeaser != null)
+            // 通知玩具老鼠结束互动
+            if (targetToyMouse != null)
             {
-                targetCatTeaser.OnPetEndInteraction(agent);
+                targetToyMouse.OnPetEndInteraction(agent);
             }
             
             hasStarted = false;
@@ -151,10 +170,10 @@ namespace NodeCanvas.Tasks.Actions
         }
         
         /// <summary>
-        /// 从PlayerManager中获取逗猫棒工具的爱心奖励数值
+        /// 从PlayerManager中获取玩具老鼠工具的爱心奖励数值
         /// </summary>
         /// <returns>爱心奖励数量</returns>
-        private int GetCatTeaserHeartReward()
+        private int GetToyMouseHeartReward()
         {
             // 在编辑器模式下（非运行时），直接返回默认值，避免警告
             if (!Application.isPlaying)
@@ -164,27 +183,26 @@ namespace NodeCanvas.Tasks.Actions
             
             if (PlayerManager.Instance == null)
             {
-             //   Debug.LogWarning("CatTeaserInteraction: PlayerManager.Instance为空，使用默认爱心奖励");
                 return 0; // 运行时默认奖励
             }
             
             ToolInfo[] tools = PlayerManager.Instance.GetTools();
             if (tools == null)
             {
-            // Debug.LogWarning("CatTeaserInteraction: 未找到工具配置，使用默认爱心奖励");
+                Debug.LogWarning("ToyMouseInteraction: 未找到工具配置，使用默认爱心奖励");
                 return 1; // 默认奖励
             }
             
-            // 查找逗猫棒工具
+            // 查找玩具老鼠工具
             foreach (ToolInfo tool in tools)
             {
-                if (tool != null && tool.toolName == "逗猫棒")
+                if (tool != null && tool.toolName == "玩具老鼠")
                 {
                     return tool.heartReward;
                 }
             }
             
-            // Debug.LogWarning("CatTeaserInteraction: 未找到逗猫棒工具配置，使用默认爱心奖励");
+            Debug.LogWarning("ToyMouseInteraction: 未找到玩具老鼠工具配置，使用默认爱心奖励");
             return 1; // 默认奖励
         }
     }

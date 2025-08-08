@@ -73,7 +73,7 @@ MonoBehaviour:
   cannotPlaceObjectMessage: "\u65E0\u6CD5\u653E\u7F6E{ToolName}\uFF0C\u8BF7\u9009\u62E9\u7A7A\u65F7\u5904"
   catTeaserExistsMessage: "\u53EA\u80FD\u540C\u65F6\u653E\u7F6E\u4E00\u4E2A\u9017\u732B\u68D2"
   otherFailureMessage: "\u6682\u65F6\u65E0\u6CD5\u4E92\u52A8"
-  endingPhaseDuration: 3
+  endingPhaseDuration: 2
 --- !u!114 &3038366896281046046
 MonoBehaviour:
   m_ObjectHideFlags: 0

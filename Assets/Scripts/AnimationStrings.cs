@@ -24,8 +24,10 @@ public static class AnimationStrings
     public static string endCatTeaserTrigger = "endCatTeaserTrigger";
     public static string startWaveTrigger = "startWaveTrigger";
     
-    // 移动相关触发器
-    public static string forceMoveTrigger = "forceMoveTrigger"; // 强制切换到移动状态的触发器
+    // 玩具老鼠相关动画参数
+    public static string isPlayingMouse = "isPlayingMouse";
+    public static string startPlayMouseTrigger = "startPlayMouseTrigger";
+    public static string endPlayMouseTrigger = "endPlayMouseTrigger";
     
     // 可以在此处添加更多动画参数名称
 
