@@ -89,11 +89,17 @@ namespace NodeCanvas.Tasks.Actions
             var nav = agent.GetComponent<UnityEngine.AI.NavMeshAgent>();
             if (nav != null && nav.isOnNavMesh)
             {
-                try { nav.ResetPath(); } catch { }
+                try { 
+                    nav.isStopped = true; 
+                    nav.ResetPath(); 
+                } catch { }
             }
             
-            // 调用PetController2D的StartPlayMouse方法
+            // 调用PetController2D的StartPlayMouse方法（确保老鼠外观已被隐藏，避免重复表现）
+            Debug.Log($"[ToyMouseInteraction] 准备调用 agent.StartPlayMouse()，宠物: {agent.name}");
+            Debug.Log($"[ToyMouseInteraction] 调用前状态 - IsPlayingMouse: {agent.IsPlayingMouse}");
             agent.StartPlayMouse();
+            Debug.Log($"[ToyMouseInteraction] 调用后状态 - IsPlayingMouse: {agent.IsPlayingMouse}");
             
             // 通知工具交互管理器更新为互动时的指令文本（传入宠物对象以支持占位符替换）
             if (ToolInteractionManager.Instance != null)
@@ -132,16 +138,17 @@ namespace NodeCanvas.Tasks.Actions
                 targetToyMouse.OnPetEndInteraction(agent);
             }
             
+            // 恢复导航
+            var nav = agent.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (nav != null && nav.isOnNavMesh)
+            {
+                try { nav.isStopped = false; } catch { }
+            }
+
             // 开始通用的互动结束阶段（显示结束文本、给予奖励、延迟后回到工具背包）
-            // 使用当前工具名称，避免面板上工具被切换时名称不匹配
             if (ToolInteractionManager.Instance != null)
             {
-                var tim = ToolInteractionManager.Instance;
-                var currentTool = typeof(ToolInteractionManager)
-                    .GetProperty("CurrentTool", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                    ?.GetValue(tim) as ToolInfo;
-                string toolName = currentTool != null ? currentTool.toolName : "玩具老鼠";
-                tim.StartInteractionEndingPhase(toolName, agent);
+                ToolInteractionManager.Instance.StartInteractionEndingPhase("玩具老鼠", agent);
             }
             
             EndAction(true);

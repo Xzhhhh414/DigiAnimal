@@ -23,10 +23,17 @@ namespace NodeCanvas.Tasks.Actions
         [Tooltip("如果启用，将永远保持漫步。如果不启用，则只执行一次漫步")]
         public bool repeat = true;
         
+        [Name("移动速度")]
+        [Tooltip("NavMeshAgent的移动速度，3=walk, 4=run")]
+        public BBParameter<float> moveSpeed = 3f; // 散步默认用走的
+        
         // 用于追踪是否已找到有效位置
         private bool foundValidPosition = false;
 
         protected override void OnExecute() {
+            // 设置NavMeshAgent的移动速度
+            agent.speed = moveSpeed.value;
+            
             // 尝试寻找漫步点并设置路径
             foundValidPosition = AttemptToFindWanderPoint();
         }

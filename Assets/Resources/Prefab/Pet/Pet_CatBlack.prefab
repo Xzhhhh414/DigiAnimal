@@ -243,6 +243,7 @@ MonoBehaviour:
   petIntroduction: "\u5929\u4E0B\u7B2C\u4E00\u597D\u732B~"
   isSelected: 0
   _IsMoving: 0
+  runSpeedThreshold: 3.5
   _Energy: 81
   energyDecreaseInterval: 3
   energyDecreaseValue: 1
@@ -255,6 +256,7 @@ MonoBehaviour:
   _IsPatting: 0
   _IsAttracted: 0
   _IsCatTeasering: 0
+  _IsPlayingMouse: 0
   needBubbleController: {fileID: 8385827696282192901}
   hungryThreshold: 5
   tiredThreshold: 5

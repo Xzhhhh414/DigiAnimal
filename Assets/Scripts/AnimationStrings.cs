@@ -6,6 +6,7 @@ public static class AnimationStrings
     public static string isMoving = "isMoving";
     public static string horizontal = "horizontal";
     public static string vertical = "vertical";
+    public static string speed = "speed"; // 控制walk/run的速度参数
     //public static string InFreeMode = "InFreeMode";
     public static string isSleeping = "isSleeping";
     public static string sleepTrigger = "sleepTrigger";

@@ -86,12 +86,15 @@ public class ToyMouseController : MonoBehaviour
         if (currentInstance != null && currentInstance != this)
         {
             // 如果已有实例，销毁当前对象
-            Debug.LogWarning("已存在玩具老鼠实例，销毁新创建的实例");
+            Debug.LogWarning($"已存在玩具老鼠实例 {currentInstance.name}，销毁新创建的实例 {gameObject.name}");
             Destroy(gameObject);
             return;
         }
         
         currentInstance = this;
+        
+        // 确保新实例的组件都是启用状态（防止prefab保存了禁用状态）
+        EnsureComponentsEnabled();
         
         // 启动老鼠
         StartToyMouse();
@@ -226,14 +229,10 @@ public class ToyMouseController : MonoBehaviour
         
         interactingPet = null;
         
-        Debug.Log($"宠物 {pet.PetDisplayName} 结束与玩具老鼠互动");
+        Debug.Log($"宠物 {pet.PetDisplayName} 结束与玩具老鼠互动，准备销毁老鼠");
         
-        // 检查是否需要销毁（超过生命周期且无互动）
-        if (currentLifetime >= lifeTime)
-        {
-            Debug.Log("玩具老鼠生命周期结束，准备销毁");
-            DestroyToyMouse(false); // false 表示有过互动
-        }
+        // 互动结束后立即销毁老鼠（不管生命周期是否到期）
+        DestroyToyMouse(false); // false 表示有过互动
     }
     
     /// <summary>
@@ -266,6 +265,7 @@ public class ToyMouseController : MonoBehaviour
         if (currentInstance == this)
         {
             currentInstance = null;
+            Debug.Log($"[ToyMouseController] 已清理 currentInstance: {gameObject.name}");
         }
         
         Debug.Log($"玩具老鼠开始渐变消失 (无互动: {noInteraction})");
@@ -315,8 +315,6 @@ public class ToyMouseController : MonoBehaviour
         {
             currentInstance = null;
         }
-        
-        // OnDestroy时的清理工作
     }
     
     /// <summary>
@@ -340,4 +338,49 @@ public class ToyMouseController : MonoBehaviour
     /// 交互位置属性，供外部访问
     /// </summary>
     public Transform InteractPos => interactPos;
+
+    /// <summary>
+    /// 确保组件都是启用状态（用于新实例初始化）
+    /// </summary>
+    private void EnsureComponentsEnabled()
+    {
+        // 启用动画
+        if (animator != null) { animator.enabled = true; }
+        
+        // 启用所有SpriteRenderer
+        var renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (var r in renderers) { if (r != null) r.enabled = true; }
+        
+        // 启用所有Collider2D
+        var colliders = GetComponentsInChildren<Collider2D>(true);
+        foreach (var c in colliders) { if (c != null) c.enabled = true; }
+        
+        Debug.Log($"[ToyMouseController] 已确保 {gameObject.name} 的所有组件启用状态");
+    }
+
+    /// <summary>
+    /// 在宠物抓到老鼠的一刻，隐藏老鼠外观并冻结其行为（不销毁）
+    /// </summary>
+    public void HideForInteraction()
+    {
+        // 停止Update驱动
+        isActive = false;
+
+        // 停止导航
+        if (agent != null && agent.isOnNavMesh)
+        {
+            try { agent.isStopped = true; agent.ResetPath(); } catch { }
+        }
+
+        // 关闭动画与渲染（仅隐藏外观，不销毁对象）
+        if (animator != null) { animator.enabled = false; }
+        var renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        foreach (var r in renderers) { if (r != null) r.enabled = false; }
+
+        // 关闭碰撞体，避免后续检测/阻挡
+        var colliders = GetComponentsInChildren<Collider2D>(true);
+        foreach (var c in colliders) { if (c != null) c.enabled = false; }
+        
+        Debug.Log($"[ToyMouseController] 已隐藏 {gameObject.name} 的外观和碰撞体");
+    }
 }

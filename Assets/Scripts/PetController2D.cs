@@ -28,6 +28,11 @@ public class PetController2D : MonoBehaviour
     private float _Horizontal = 0f;
     private float _Vertical = 0f;
     
+    [Header("移动动画设置")]
+    [SerializeField]
+    [Tooltip("区分Walk和Run的速度阈值")]
+    private float runSpeedThreshold = 3.5f;
+    
     // 精力值字段 (0-100)
     [SerializeField]
     [Range(0, 100)]
@@ -443,12 +448,17 @@ public class PetController2D : MonoBehaviour
         }
         
         // 根据NavMeshAgent的速度更新动画
-        if (agent.velocity.magnitude > 0.1f)
+        float currentSpeed = agent.velocity.magnitude;
+        if (currentSpeed > 0.1f)
         {
             IsMoving = true;
             // 使用NavMeshAgent的速度方向更新动画参数
             Horizontal = agent.velocity.normalized.x;
             Vertical = agent.velocity.normalized.y;
+            
+            // 根据速度设置speed参数（0.5=walk, 1.0=run）
+            float speedParam = currentSpeed >= runSpeedThreshold ? 1.0f : 0.5f;
+            animator.SetFloat(AnimationStrings.speed, speedParam);
         }
         else
         {
@@ -456,6 +466,7 @@ public class PetController2D : MonoBehaviour
             IsMoving = false;
             Horizontal = 0;
             Vertical = 0;
+            animator.SetFloat(AnimationStrings.speed, 0f);
         }
         
         // 更新目标位置以便与其他系统兼容
@@ -883,9 +894,23 @@ public class PetController2D : MonoBehaviour
     public void StartPlayMouse()
     {
         // 触发开始玩具老鼠动画
-        animator.SetTrigger(AnimationStrings.startPlayMouseTrigger);
+        Debug.Log($"[PetController2D] {gameObject.name} 准备设置 startPlayMouseTrigger");
+        Debug.Log($"[PetController2D] animator 是否为空: {animator == null}");
+        Debug.Log($"[PetController2D] AnimationStrings.startPlayMouseTrigger = {AnimationStrings.startPlayMouseTrigger}");
+        Debug.Log($"[PetController2D] 当前 isPlayingMouse 状态: {animator.GetBool(AnimationStrings.isPlayingMouse)}");
         
-        // Debug.Log($"{gameObject.name} 触发开始玩具老鼠动画");
+        if (animator != null)
+        {
+            // 先设置布尔参数，再触发trigger
+            animator.SetBool(AnimationStrings.isPlayingMouse, true);
+            animator.SetTrigger(AnimationStrings.startPlayMouseTrigger);
+            Debug.Log($"[PetController2D] {gameObject.name} 已设置 isPlayingMouse=true 并触发 startPlayMouseTrigger");
+            Debug.Log($"[PetController2D] 设置后 isPlayingMouse 状态: {animator.GetBool(AnimationStrings.isPlayingMouse)}");
+        }
+        else
+        {
+            Debug.LogError($"[PetController2D] {gameObject.name} 的 animator 为空！");
+        }
     }
     
     /// <summary>

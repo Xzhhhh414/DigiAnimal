@@ -13,6 +13,10 @@ namespace NodeCanvas.Tasks.Actions
         public BBParameter<GameObject> target;
         public BBParameter<float> keepDistance = 0.1f;
         
+        [Name("移动速度")]
+        [Tooltip("NavMeshAgent的移动速度，3=walk, 4=run")]
+        public BBParameter<float> moveSpeed = 3f;
+        
         // 用于缓存NavMeshAgent和PetController2D组件
         private NavMeshAgent navMeshAgent;
         private PetController2D characterController;
@@ -46,6 +50,9 @@ namespace NodeCanvas.Tasks.Actions
             if (characterController == null) {
                 // Debug.LogWarning($"[{petName}] 未找到PetController2D组件，动画可能无法正确更新");
             }
+            
+            // 设置NavMeshAgent的移动速度
+            navMeshAgent.speed = moveSpeed.value;
             
             // 不直接操作Animator参数，避免每帧/每次启动任务时重新触发进入Movement
             // 由PetController2D根据NavMeshAgent.velocity在Update中统一驱动isMoving
