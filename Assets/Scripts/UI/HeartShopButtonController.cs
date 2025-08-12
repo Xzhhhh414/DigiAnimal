@@ -93,7 +93,7 @@ public class HeartShopButtonController : MonoBehaviour
     private void OnShopButtonClick()
     {
         int currentCurrency = PlayerManager.Instance?.HeartCurrency ?? 0;
-        Debug.Log("爱心商店按钮被点击！当前爱心货币: " + currentCurrency);
+       // Debug.Log("爱心商店按钮被点击！当前爱心货币: " + currentCurrency);
         
         // 打开爱心商店
         if (HeartShopController.Instance != null)

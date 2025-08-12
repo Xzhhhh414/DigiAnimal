@@ -10,6 +10,7 @@ public class SelectedPetInfo : MonoBehaviour
     [Header("UI引用")]
     [SerializeField] private Image petAvatar;           // 宠物头像图片
     [SerializeField] private Text petName;              // 宠物名字文本 (使用Legacy Text)
+    [SerializeField] private Text petAge;               // 宠物年龄文本 (使用Legacy Text)
     [SerializeField] private Slider energySlider;       // 精力值滑动条
     [SerializeField] private Slider satietySlider;      // 饱腹度滑动条
     [SerializeField] private Text introductionText;     // 宠物简介文本
@@ -105,6 +106,12 @@ public class SelectedPetInfo : MonoBehaviour
         if (petName != null)
         {
             petName.text = currentPet.PetDisplayName;
+        }
+        
+        // 设置宠物年龄
+        if (petAge != null)
+        {
+            petAge.text = currentPet.FormattedAge;
         }
         
         // 设置精力值

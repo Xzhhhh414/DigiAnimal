@@ -110,6 +110,10 @@ public class PetController2D : MonoBehaviour
     [Header("存档设置")]
     public string petId = ""; // 宠物唯一ID，由存档系统设置
     
+    [Header("年龄系统")]
+    [SerializeField] private System.DateTime purchaseDate; // 宠物购买日期
+    private bool isPurchaseDateSet = false; // 标记购买日期是否已设置
+    
     // 宠物名称属性
     public string PetDisplayName
     {
@@ -165,6 +169,72 @@ public class PetController2D : MonoBehaviour
     {
         get { return petIntroduction; }
         set { petIntroduction = value; }
+    }
+    
+    /// <summary>
+    /// 宠物购买日期属性（供存档系统使用）
+    /// </summary>
+    public System.DateTime PurchaseDate
+    {
+        get { return purchaseDate; }
+        set 
+        { 
+            purchaseDate = value;
+            isPurchaseDateSet = true;
+        }
+    }
+    
+    /// <summary>
+    /// 获取宠物年龄（天数）
+    /// </summary>
+    public int AgeInDays
+    {
+        get
+        {
+            if (!isPurchaseDateSet)
+            {
+                // 如果购买日期未设置，默认为1天
+                return 1;
+            }
+            
+            System.TimeSpan age = System.DateTime.Now - purchaseDate;
+            int days = Mathf.Max(1, (int)age.TotalDays + 1); // 最少1天，+1是因为购买当天算1天
+            return days;
+        }
+    }
+    
+    /// <summary>
+    /// 获取格式化的年龄字符串
+    /// </summary>
+    public string FormattedAge
+    {
+        get
+        {
+            int totalDays = AgeInDays;
+            
+            // 计算年、月、天
+            int years = totalDays / 365;
+            int remainingDays = totalDays % 365;
+            int months = remainingDays / 30;
+            int days = remainingDays % 30;
+            
+            // 根据规则格式化显示
+            if (years > 0)
+            {
+                // 满1年，显示全部：例如 1年3月20天
+                return $"{years}年{months}月{days}天";
+            }
+            else if (months > 0)
+            {
+                // 不满1年，不显示年：例如 3月20天
+                return $"{months}月{days}天";
+            }
+            else
+            {
+                // 不满1个月，不显示年和月：例如 20天
+                return $"{days}天";
+            }
+        }
     }
     
     // 动画状态属性

@@ -78,6 +78,9 @@ public class PetSaveData
     // 位置信息
     public Vector3 position;
     
+    // 年龄系统
+    public string purchaseDate; // 购买日期，格式："yyyy-MM-dd HH:mm:ss"
+    
     // 注意：不保存当前状态（isSleeping、isEating）
     // 重新登录后这些状态会重置为默认值
     
@@ -97,6 +100,7 @@ public class PetSaveData
         energy = 100;
         satiety = 100;
         position = Vector3.zero;
+        purchaseDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); // 默认设置为当前时间
         isBored = false;
         lastBoredomTime = -1f;
         customProperties = new Dictionary<string, object>();
@@ -111,6 +115,7 @@ public class PetSaveData
         energy = 100;
         satiety = 100;
         position = Vector3.zero;
+        purchaseDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); // 默认设置为当前时间
         isBored = false;
         lastBoredomTime = -1f;
         customProperties = new Dictionary<string, object>();

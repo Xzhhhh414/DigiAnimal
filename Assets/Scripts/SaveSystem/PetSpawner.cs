@@ -334,6 +334,28 @@ public class PetSpawner : MonoBehaviour
             petController.Energy = petData.energy;
             petController.Satiety = petData.satiety;
             
+            // 设置年龄数据
+            if (!string.IsNullOrEmpty(petData.purchaseDate))
+            {
+                if (System.DateTime.TryParseExact(petData.purchaseDate, "yyyy-MM-dd HH:mm:ss", 
+                    System.Globalization.CultureInfo.InvariantCulture, 
+                    System.Globalization.DateTimeStyles.None, out System.DateTime purchaseDate))
+                {
+                    petController.PurchaseDate = purchaseDate;
+                }
+                else
+                {
+                    // 如果解析失败，使用当前时间作为默认值
+                    Debug.LogWarning($"宠物 {petData.petId} 的购买日期格式错误，使用当前时间");
+                    petController.PurchaseDate = System.DateTime.Now;
+                }
+            }
+            else
+            {
+                // 如果没有购买日期数据，使用当前时间作为默认值
+                petController.PurchaseDate = System.DateTime.Now;
+            }
+            
             // 调试：显示存档中的位置信息
             // Debug.Log($"[位置调试] 宠物 {petData.petId} 存档位置: {petData.position}");
             

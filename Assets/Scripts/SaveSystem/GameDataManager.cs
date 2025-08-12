@@ -222,6 +222,9 @@ public class GameDataManager : MonoBehaviour
             petSaveData.position = petController.transform.position;
             petSaveData.isBored = petController.IsBored;
             
+            // 同步年龄数据
+            petSaveData.purchaseDate = petController.PurchaseDate.ToString("yyyy-MM-dd HH:mm:ss");
+            
             // 同步厌倦时间 - 需要反射或添加公共属性
             // petSaveData.lastBoredomTime = petController.LastBoredomTime;
         }
