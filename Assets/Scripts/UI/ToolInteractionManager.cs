@@ -276,7 +276,7 @@ public class ToolInteractionManager : MonoBehaviour
                 }
                 
                 toolUsePanel.SetInstructionText(interactingText);
-                Debug.Log($"更新工具 '{toolName}' 为互动时的说明文本: {interactingText}");
+                // Debug.Log($"更新工具 '{toolName}' 为互动时的说明文本: {interactingText}");
             }
         }
     }
@@ -461,7 +461,7 @@ public class ToolInteractionManager : MonoBehaviour
             }
             
             toolUsePanel.SetInstructionText(endingText);
-            Debug.Log($"显示玩具 '{CurrentTool.toolName}' 的结束文本: {endingText}");
+            // Debug.Log($"显示玩具 '{CurrentTool.toolName}' 的结束文本: {endingText}");
         }
         
         // 3. 等待配置的结束阶段时间
@@ -751,7 +751,7 @@ public class ToolInteractionManager : MonoBehaviour
             // 爱心货币已在上方添加，UI会自动更新显示
         }
         
-                Debug.Log($"{CurrentTool.toolName}已放置在位置: {position}");
+                //Debug.Log($"{CurrentTool.toolName}已放置在位置: {position}");
 
         // 更新工具使用面板的提示文本为放置后的说明，并隐藏取消按钮
         var toolUsePanel = FindObjectOfType<ToolUsePanelController>();

@@ -103,9 +103,8 @@ namespace NodeCanvas.Tasks.Actions
             {
                 agent.HideEmotionBubble(PetNeedType.Curious);
                 agent.IsAttracted = false;
-
-                // 进入玩具老鼠互动阶段（与逗猫棒保持一致的约定）
-                agent.IsPlayingMouse = true;
+                
+                // 不在这里设置 IsPlayingMouse，让 CatchToyMouse 在合适的时机设置
             }
 
             hasCompletedNormally = true;

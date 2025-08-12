@@ -127,7 +127,7 @@ public class ToyMouseController : MonoBehaviour
         isActive = true;
         currentLifetime = 0f;
         
-        Debug.Log("玩具老鼠开始活动");
+        // Debug.Log("玩具老鼠开始活动");
     }
 
     /// <summary>
@@ -204,14 +204,14 @@ public class ToyMouseController : MonoBehaviour
             {
                 return true;
             }
-            Debug.Log($"玩具老鼠已有宠物 {interactingPet.PetDisplayName} 在互动，拒绝宠物 {pet.PetDisplayName} 的互动请求");
+            // Debug.Log($"玩具老鼠已有宠物 {interactingPet.PetDisplayName} 在互动，拒绝宠物 {pet.PetDisplayName} 的互动请求");
             return false;
         }
         
         interactingPet = pet;
         hasHadInteraction = true; // 标记有过互动
         
-        Debug.Log($"宠物 {pet.PetDisplayName} 开始与玩具老鼠互动");
+        // Debug.Log($"宠物 {pet.PetDisplayName} 开始与玩具老鼠互动");
         
         return true;
     }
@@ -229,7 +229,7 @@ public class ToyMouseController : MonoBehaviour
         
         interactingPet = null;
         
-        Debug.Log($"宠物 {pet.PetDisplayName} 结束与玩具老鼠互动，准备销毁老鼠");
+        // Debug.Log($"宠物 {pet.PetDisplayName} 结束与玩具老鼠互动，准备销毁老鼠");
         
         // 互动结束后立即销毁老鼠（不管生命周期是否到期）
         DestroyToyMouse(false); // false 表示有过互动
@@ -256,7 +256,7 @@ public class ToyMouseController : MonoBehaviour
             {
                 // 无互动的结束阶段
                 ToolInteractionManager.Instance.StartNoInteractionEndingPhase("玩具老鼠");
-                Debug.Log("玩具老鼠无宠物互动，开始无互动结束阶段");
+                // Debug.Log("玩具老鼠无宠物互动，开始无互动结束阶段");
             }
             // 注意：有互动的情况由 ToyMouseInteraction.EndInteraction() 处理
         }
@@ -265,10 +265,10 @@ public class ToyMouseController : MonoBehaviour
         if (currentInstance == this)
         {
             currentInstance = null;
-            Debug.Log($"[ToyMouseController] 已清理 currentInstance: {gameObject.name}");
+            // Debug.Log($"[ToyMouseController] 已清理 currentInstance: {gameObject.name}");
         }
         
-        Debug.Log($"玩具老鼠开始渐变消失 (无互动: {noInteraction})");
+                    // Debug.Log($"玩具老鼠开始渐变消失 (无互动: {noInteraction})");
         
         // 使用渐变效果销毁（通过反射避免类型引用问题）
         var fadeOut = GetComponent("FadeOutDestroy");
@@ -355,7 +355,7 @@ public class ToyMouseController : MonoBehaviour
         var colliders = GetComponentsInChildren<Collider2D>(true);
         foreach (var c in colliders) { if (c != null) c.enabled = true; }
         
-        Debug.Log($"[ToyMouseController] 已确保 {gameObject.name} 的所有组件启用状态");
+                    // Debug.Log($"[ToyMouseController] 已确保 {gameObject.name} 的所有组件启用状态");
     }
 
     /// <summary>
@@ -381,6 +381,6 @@ public class ToyMouseController : MonoBehaviour
         var colliders = GetComponentsInChildren<Collider2D>(true);
         foreach (var c in colliders) { if (c != null) c.enabled = false; }
         
-        Debug.Log($"[ToyMouseController] 已隐藏 {gameObject.name} 的外观和碰撞体");
+        // Debug.Log($"[ToyMouseController] 已隐藏 {gameObject.name} 的外观和碰撞体");
     }
 }

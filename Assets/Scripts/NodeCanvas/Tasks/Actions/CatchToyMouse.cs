@@ -119,6 +119,9 @@ namespace NodeCanvas.Tasks.Actions
                 // 最终距离再核验一遍
                 if (dist <= stopDist + arriveRadius.value + 0.2f)
                 {
+                    // 设置宠物进入玩具老鼠互动状态
+                    agent.IsPlayingMouse = true;
+                    
                     // 隐藏老鼠供宠物播放融合了老鼠的互动动画
                     toyMouse.HideForInteraction();
                     EndAction(true);

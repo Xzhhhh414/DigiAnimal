@@ -76,7 +76,7 @@ namespace NodeCanvas.Tasks.Conditions
                 return false;
             }
             
-            Debug.Log($"宠物 {agent.PetDisplayName} 检测到逗猫棒并被吸引！");
+            // Debug.Log($"宠物 {agent.PetDisplayName} 检测到逗猫棒并被吸引！");
             return true;
         }
     }

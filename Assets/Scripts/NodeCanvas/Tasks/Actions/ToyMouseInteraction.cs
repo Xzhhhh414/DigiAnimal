@@ -96,10 +96,10 @@ namespace NodeCanvas.Tasks.Actions
             }
             
             // 调用PetController2D的StartPlayMouse方法（确保老鼠外观已被隐藏，避免重复表现）
-            Debug.Log($"[ToyMouseInteraction] 准备调用 agent.StartPlayMouse()，宠物: {agent.name}");
-            Debug.Log($"[ToyMouseInteraction] 调用前状态 - IsPlayingMouse: {agent.IsPlayingMouse}");
+            // Debug.Log($"[ToyMouseInteraction] 准备调用 agent.StartPlayMouse()，宠物: {agent.name}");
+            // Debug.Log($"[ToyMouseInteraction] 调用前状态 - IsPlayingMouse: {agent.IsPlayingMouse}");
             agent.StartPlayMouse();
-            Debug.Log($"[ToyMouseInteraction] 调用后状态 - IsPlayingMouse: {agent.IsPlayingMouse}");
+            // Debug.Log($"[ToyMouseInteraction] 调用后状态 - IsPlayingMouse: {agent.IsPlayingMouse}");
             
             // 通知工具交互管理器更新为互动时的指令文本（传入宠物对象以支持占位符替换）
             if (ToolInteractionManager.Instance != null)
@@ -107,7 +107,7 @@ namespace NodeCanvas.Tasks.Actions
                 ToolInteractionManager.Instance.UpdateToInteractingInstructionText("玩具老鼠", agent);
             }
             
-            Debug.Log($"宠物 {agent.PetDisplayName} 开始与玩具老鼠互动，持续时间: {interactionDuration.value}秒");
+            // Debug.Log($"宠物 {agent.PetDisplayName} 开始与玩具老鼠互动，持续时间: {interactionDuration.value}秒");
         }
         
         private void EndInteraction()
@@ -118,7 +118,7 @@ namespace NodeCanvas.Tasks.Actions
             {
                 // 进入厌倦状态
                 agent.SetBored(true);
-                Debug.Log($"宠物 {agent.PetDisplayName} 在与玩具老鼠互动后感到厌倦了，需要 {agent.BoredomRecoveryRemaining} 分钟恢复");
+                // Debug.Log($"宠物 {agent.PetDisplayName} 在与玩具老鼠互动后感到厌倦了，需要 {agent.BoredomRecoveryRemaining} 分钟恢复");
             }
             
             if (agent != null)
@@ -129,7 +129,7 @@ namespace NodeCanvas.Tasks.Actions
                 // 结束互动状态
                 agent.IsPlayingMouse = false;
                 
-                Debug.Log($"宠物 {agent.PetDisplayName} 结束与玩具老鼠互动");
+                // Debug.Log($"宠物 {agent.PetDisplayName} 结束与玩具老鼠互动");
             }
             
             // 通知玩具老鼠结束互动

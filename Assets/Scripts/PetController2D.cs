@@ -894,23 +894,10 @@ public class PetController2D : MonoBehaviour
     public void StartPlayMouse()
     {
         // 触发开始玩具老鼠动画
-        Debug.Log($"[PetController2D] {gameObject.name} 准备设置 startPlayMouseTrigger");
-        Debug.Log($"[PetController2D] animator 是否为空: {animator == null}");
-        Debug.Log($"[PetController2D] AnimationStrings.startPlayMouseTrigger = {AnimationStrings.startPlayMouseTrigger}");
-        Debug.Log($"[PetController2D] 当前 isPlayingMouse 状态: {animator.GetBool(AnimationStrings.isPlayingMouse)}");
-        
-        if (animator != null)
-        {
-            // 先设置布尔参数，再触发trigger
+        // 先设置布尔参数，再触发trigger
             animator.SetBool(AnimationStrings.isPlayingMouse, true);
             animator.SetTrigger(AnimationStrings.startPlayMouseTrigger);
-            Debug.Log($"[PetController2D] {gameObject.name} 已设置 isPlayingMouse=true 并触发 startPlayMouseTrigger");
-            Debug.Log($"[PetController2D] 设置后 isPlayingMouse 状态: {animator.GetBool(AnimationStrings.isPlayingMouse)}");
-        }
-        else
-        {
-            Debug.LogError($"[PetController2D] {gameObject.name} 的 animator 为空！");
-        }
+
     }
     
     /// <summary>
