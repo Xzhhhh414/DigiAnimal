@@ -153,7 +153,7 @@ public class SaveManager : MonoBehaviour
             {
                 // 更新宠物ID计数器
                 UpdatePetIdCounter();
-                Debug.Log($"[SaveManager] 存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
+                //Debug.Log($"[SaveManager] 存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
             }
             
             OnSaveLoaded?.Invoke(currentSaveData);

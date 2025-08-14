@@ -245,11 +245,11 @@ MonoBehaviour:
   _IsMoving: 0
   runSpeedThreshold: 3.5
   _Energy: 81
-  energyDecreaseInterval: 3
+  energyDecreaseInterval: 72
   energyDecreaseValue: 1
   energyRecoveryValue: 3
   _Satiety: 29
-  satietyDecreaseInterval: 5
+  satietyDecreaseInterval: 36
   satietyDecreaseValue: 1
   _IsSleeping: 0
   _IsEating: 0
@@ -260,8 +260,8 @@ MonoBehaviour:
   needBubbleController: {fileID: 8385827696282192901}
   hungryThreshold: 5
   tiredThreshold: 5
-  boredomChance: 0.3
-  boredomRecoveryMinutes: 2
+  boredomChance: 0.25
+  boredomRecoveryMinutes: 5
   isBored: 0
   petId: 
 --- !u!114 &8883347001294338108

@@ -16,7 +16,7 @@ public static class GameState
         {
             if (_isInitializing != value)
             {
-                UnityEngine.Debug.Log($"[GameState] IsInitializing 变更: {_isInitializing} → {value}");
+                //UnityEngine.Debug.Log($"[GameState] IsInitializing 变更: {_isInitializing} → {value}");
                 _isInitializing = value;
             }
         }
@@ -32,7 +32,7 @@ public static class GameState
         {
             if (_isReturningFromGameplay != value)
             {
-                UnityEngine.Debug.Log($"[GameState] IsReturningFromGameplay 变更: {_isReturningFromGameplay} → {value}");
+                //UnityEngine.Debug.Log($"[GameState] IsReturningFromGameplay 变更: {_isReturningFromGameplay} → {value}");
                 _isReturningFromGameplay = value;
             }
         }
@@ -58,7 +58,7 @@ public static class GameState
     /// </summary>
     public static void ResetForNewScene()
     {
-        UnityEngine.Debug.Log("[GameState] ResetForNewScene() 被调用");
+        //UnityEngine.Debug.Log("[GameState] ResetForNewScene() 被调用");
         IsInitializing = true;
     }
     
@@ -67,7 +67,7 @@ public static class GameState
     /// </summary>
     public static void CompleteInitialization()
     {
-        UnityEngine.Debug.Log("[GameState] CompleteInitialization() 被调用");
+        //UnityEngine.Debug.Log("[GameState] CompleteInitialization() 被调用");
         IsInitializing = false;
         // UnityEngine.Debug.Log("GameState: 游戏初始化完成，所有系统可以正常运行");
     }

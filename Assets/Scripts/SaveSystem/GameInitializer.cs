@@ -39,7 +39,7 @@ public class GameInitializer : MonoBehaviour
     {
         if (isInitialized)
         {
-            DebugLog("游戏已经初始化过了");
+            // DebugLog("游戏已经初始化过了");
             yield break;
         }
         
@@ -250,7 +250,7 @@ public class GameInitializer : MonoBehaviour
     {
         if (enableDebugLog)
         {
-            Debug.Log($"[GameInitializer] {message}");
+            // Debug.Log($"[GameInitializer] {message}");
         }
     }
     
@@ -271,7 +271,7 @@ public class GameInitializer : MonoBehaviour
         }
         else
         {
-            DebugLog("游戏已经初始化，跳过");
+            // DebugLog("游戏已经初始化，跳过");
         }
     }
     
@@ -281,7 +281,7 @@ public class GameInitializer : MonoBehaviour
     [ContextMenu("重置游戏状态")]
     public void ResetGameState()
     {
-        DebugLog("重置游戏状态...");
+        // DebugLog("重置游戏状态...");
         
         // 清理现有宠物
         if (GameDataManager.Instance != null)
@@ -315,7 +315,7 @@ public class GameInitializer : MonoBehaviour
         // 创建食物数据的副本，避免在遍历过程中被修改
         var foodDataCopy = new List<FoodSaveData>(saveData.worldData.foods);
         
-        Debug.Log($"[GameInitializer] 开始加载 {foodDataCopy.Count} 个食物的状态...");
+        // Debug.Log($"[GameInitializer] 开始加载 {foodDataCopy.Count} 个食物的状态...");
         
         // 查找场景中所有的食物对象
         FoodController[] allFoods = FindObjectsOfType<FoodController>();
@@ -327,9 +327,9 @@ public class GameInitializer : MonoBehaviour
             
             if (matchedFood != null)
             {
-                Debug.Log($"[GameInitializer] 找到匹配食物 {matchedFood.name}，加载状态: isEmpty={foodSaveData.isEmpty}");
+                // Debug.Log($"[GameInitializer] 找到匹配食物 {matchedFood.name}，加载状态: isEmpty={foodSaveData.isEmpty}");
                 matchedFood.LoadFromSaveData(foodSaveData);
-                Debug.Log($"[GameInitializer] 加载完成，当前食物状态: isEmpty={matchedFood.IsEmpty}");
+                // Debug.Log($"[GameInitializer] 加载完成，当前食物状态: isEmpty={matchedFood.IsEmpty}");
             }
             else
             {
@@ -340,15 +340,15 @@ public class GameInitializer : MonoBehaviour
             yield return null;
         }
         
-        Debug.Log("[GameInitializer] 食物状态加载完成");
+        // Debug.Log("[GameInitializer] 食物状态加载完成");
         
         // 延迟1秒后再检查一次食物状态，看是否被其他地方修改了
         yield return new WaitForSeconds(1f);
-        Debug.Log("[GameInitializer] 1秒后检查食物状态...");
+        // Debug.Log("[GameInitializer] 1秒后检查食物状态...");
         FoodController[] allFoodsCheck = FindObjectsOfType<FoodController>();
         foreach (var food in allFoodsCheck)
         {
-            Debug.Log($"[GameInitializer] 延迟检查 - 食物 {food.name}: isEmpty={food.IsEmpty}");
+            // Debug.Log($"[GameInitializer] 延迟检查 - 食物 {food.name}: isEmpty={food.IsEmpty}");
         }
     }
     

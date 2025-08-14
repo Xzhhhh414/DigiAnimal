@@ -170,7 +170,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f92c939a215fa494bae1c3f2d2e9378d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lifeTime: 60
+  lifeTime: 15
   interactPos: {fileID: 2304693631971596983}
   movingThreshold: 0.05
   quantizeIdleDirection: 1
