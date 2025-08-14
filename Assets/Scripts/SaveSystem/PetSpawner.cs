@@ -396,10 +396,26 @@ public class PetSpawner : MonoBehaviour
             // 设置宠物ID（用于存档系统）
             petController.petId = petData.petId;
             
-            // 如果需要恢复厌倦状态，设置厌倦时间
-            if (petData.isBored && petData.lastBoredomTime >= 0)
+            // 恢复厌倦状态
+            // Debug.Log($"[PetSpawner] 恢复宠物 {petData.petId} 厌倦状态: isBored={petData.isBored}, lastBoredomTime={petData.lastBoredomTime}");
+            
+            if (petData.isBored)
             {
-                petController.LastBoredomTime = petData.lastBoredomTime;
+                // 设置厌倦状态
+                petController.SetBored(true);
+                
+                // 如果有有效的厌倦时间，恢复它；否则使用当前时间
+                if (petData.lastBoredomTime >= 0)
+                {
+                    petController.LastBoredomTime = petData.lastBoredomTime;
+                }
+                else
+                {
+                    // 如果没有有效的厌倦时间，使用当前时间作为厌倦开始时间
+                    petController.LastBoredomTime = Time.time;
+                }
+                
+                // Debug.Log($"[PetSpawner] 宠物 {petData.petId} 厌倦状态已恢复，lastBoredomTime={petController.LastBoredomTime}");
             }
             
             // Debug.Log($"宠物数据应用完成: {petData.petId} - {petData.displayName}");

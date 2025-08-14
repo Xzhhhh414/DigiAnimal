@@ -129,10 +129,20 @@ public class SaveManager : MonoBehaviour
         
         try
         {
-            // Debug.Log($"开始加载存档: {SaveFilePath}");
+            // Debug.Log($"[SaveManager] 开始加载存档: {SaveFilePath}");
             string jsonContent = await File.ReadAllTextAsync(SaveFilePath);
             
             currentSaveData = JsonUtility.FromJson<SaveData>(jsonContent);
+            
+            // 调试：检查加载的食物数据
+            // if (currentSaveData?.worldData?.foods != null)
+            // {
+            //     Debug.Log($"[SaveManager] 从文件加载了 {currentSaveData.worldData.foods.Count} 个食物数据");
+            //     foreach (var food in currentSaveData.worldData.foods)
+            //     {
+            //         Debug.Log($"[SaveManager] 加载食物: {food.foodId}, isEmpty={food.isEmpty}");
+            //     }
+            // }
             
             if (currentSaveData == null)
             {
@@ -143,7 +153,7 @@ public class SaveManager : MonoBehaviour
             {
                 // 更新宠物ID计数器
                 UpdatePetIdCounter();
-                // Debug.Log($"存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
+                Debug.Log($"[SaveManager] 存档加载成功! 宠物数量: {currentSaveData.petsData.Count}, 爱心货币: {currentSaveData.playerData.heartCurrency}");
             }
             
             OnSaveLoaded?.Invoke(currentSaveData);
@@ -248,7 +258,7 @@ public class SaveManager : MonoBehaviour
             string jsonContent = JsonUtility.ToJson(currentSaveData, true);
             File.WriteAllText(SaveFilePath, jsonContent);
             
-            // Debug.Log($"存档保存成功: {SaveFilePath}");
+            // Debug.Log($"存档保存成功(同步): {SaveFilePath}");
             OnSaveOperation?.Invoke(true);
             return true;
         }

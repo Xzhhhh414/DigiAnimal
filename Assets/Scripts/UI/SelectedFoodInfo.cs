@@ -13,11 +13,17 @@ public class SelectedFoodInfo : MonoBehaviour
     [SerializeField] private GameObject[] starImages;   // 美味度星星数组，应包含5个星星图像对象
     [SerializeField] private Text foodStatusText;       // 食物状态文本（空盘/可用）
     [SerializeField] private Button refillButton;       // 添加食物按钮
+    [SerializeField] private Text refillCostText;       // 添加食物消耗显示文本
     
     // 状态显示文本
     [Header("状态文本配置")]
     [SerializeField] private string emptyText = "被吃光啦";   // 空盘状态显示文本
     [SerializeField] private string availableText = "满满一碗"; // 可用状态显示文本
+    
+    // Toast提示文本配置
+    [Header("提示文本配置")]
+    [SerializeField] private string refillSuccessText = "食物添加成功！"; // 添加成功提示
+    [SerializeField] private string refillFailedText = "爱心不足，无法添加食物！"; // 添加失败提示
     
     [Header("动画设置")]
     [SerializeField] private float animationDuration = 0.3f; // 动画持续时间
@@ -112,11 +118,43 @@ public class SelectedFoodInfo : MonoBehaviour
     {
         if (currentFood != null && currentFood.IsEmpty)
         {
-            // 调用食物控制器的填满方法
-            currentFood.RefillFood();
+            int heartCost = currentFood.RefillHeartCost;
             
-            // 更新UI显示
-            UpdateFoodInfo();
+            // 检查是否有足够的爱心货币
+            if (PlayerManager.Instance != null && PlayerManager.Instance.HasEnoughCurrency(heartCost))
+            {
+                // 消费爱心货币
+                if (PlayerManager.Instance.SpendHeartCurrency(heartCost))
+                {
+                    // 调用食物控制器的填满方法
+                    currentFood.RefillFood();
+                    
+                    // 更新UI显示
+                    UpdateFoodInfo();
+                    
+                    // 显示成功提示
+                    if (ToastManager.Instance != null)
+                    {
+                        ToastManager.Instance.ShowToast(refillSuccessText);
+                    }
+                }
+                else
+                {
+                    // 消费失败（理论上不应该发生）
+                    if (ToastManager.Instance != null)
+                    {
+                        ToastManager.Instance.ShowToast(refillFailedText);
+                    }
+                }
+            }
+            else
+            {
+                // 爱心不足
+                if (ToastManager.Instance != null)
+                {
+                    ToastManager.Instance.ShowToast(refillFailedText);
+                }
+            }
         }
     }
     
@@ -153,6 +191,9 @@ public class SelectedFoodInfo : MonoBehaviour
         
         // 更新添加按钮显示状态
         UpdateRefillButtonVisibility(currentFood.IsEmpty);
+        
+        // 更新爱心消耗显示
+        UpdateRefillCostDisplay(currentFood.RefillHeartCost);
     }
     
     // 更新美味度星星显示
@@ -189,6 +230,17 @@ public class SelectedFoodInfo : MonoBehaviour
         {
             // 只有在食物为空盘状态时显示添加按钮
             refillButton.gameObject.SetActive(isEmpty);
+        }
+    }
+    
+    // 更新爱心消耗显示
+    private void UpdateRefillCostDisplay(int heartCost)
+    {
+        if (refillCostText != null)
+        {
+            refillCostText.text = $"{heartCost}";
+            // 只有在食物为空盘状态时显示消耗文本
+            refillCostText.gameObject.SetActive(currentFood != null && currentFood.IsEmpty);
         }
     }
     

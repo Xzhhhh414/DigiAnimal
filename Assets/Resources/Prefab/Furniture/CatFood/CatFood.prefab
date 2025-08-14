@@ -121,7 +121,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.004240513, y: -0.003278017}
+  m_Offset: {x: 0.0010408163, y: 0.025518417}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -132,7 +132,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.9439964, y: 0.7767739}
+  m_Size: {x: 0.5280497, y: 0.47601223}
   m_EdgeRadius: 0
 --- !u!114 &2659069545387971226
 MonoBehaviour:
@@ -166,9 +166,11 @@ MonoBehaviour:
   _isEmpty: 0
   _tasty: 2
   satietyRecoveryValue: 100
+  refillHeartCost: 2
   fullFoodIcon: {fileID: -2053511491, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
   emptyFoodIcon: {fileID: -1058956477, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
   isSelected: 0
+  foodId: 
 --- !u!114 &6276110034230596032
 MonoBehaviour:
   m_ObjectHideFlags: 0

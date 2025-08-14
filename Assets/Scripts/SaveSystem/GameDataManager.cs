@@ -29,6 +29,7 @@ public class GameDataManager : MonoBehaviour
     
     [Header("自动保存设置")]
     [SerializeField] private float positionSaveInterval = 1f; // 位置保存间隔（秒）- 改为每秒保存
+    [SerializeField] private float foodSaveInterval = 5f; // 食物状态保存间隔（秒）- 每5秒保存一次
     [SerializeField] private bool enableAutoSave = true; // 是否启用自动保存
     
     // 运行时宠物数据映射 (petId -> PetController2D)
@@ -36,6 +37,7 @@ public class GameDataManager : MonoBehaviour
     
     // 定时器
     private float positionSaveTimer = 0f;
+    private float foodSaveTimer = 0f;
     
     // 事件
     public event System.Action OnDataChanged;
@@ -74,6 +76,14 @@ public class GameDataManager : MonoBehaviour
         {
             SavePetPositions();
             positionSaveTimer = 0f;
+        }
+        
+        // 定时保存食物状态
+        foodSaveTimer += Time.deltaTime;
+        if (foodSaveTimer >= foodSaveInterval)
+        {
+            SaveFoodStates();
+            foodSaveTimer = 0f;
         }
     }
     
@@ -156,6 +166,8 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     public async void SyncToSave(bool immediate = false)
     {
+        // Debug.Log($"[GameDataManager] SyncToSave 被调用，immediate={immediate}");
+        
         SaveData saveData = SaveManager.Instance.GetCurrentSaveData();
         if (saveData == null)
         {
@@ -168,6 +180,9 @@ public class GameDataManager : MonoBehaviour
         
         // 同步宠物数据
         SyncPetData(saveData);
+        
+        // 同步食物数据
+        SyncFoodData(saveData);
         
         // 保存到文件
         if (immediate)
@@ -225,9 +240,35 @@ public class GameDataManager : MonoBehaviour
             // 同步年龄数据
             petSaveData.purchaseDate = petController.PurchaseDate.ToString("yyyy-MM-dd HH:mm:ss");
             
-            // 同步厌倦时间 - 需要反射或添加公共属性
-            // petSaveData.lastBoredomTime = petController.LastBoredomTime;
+            // 同步厌倦时间
+            petSaveData.lastBoredomTime = petController.LastBoredomTime;
+            
+            // Debug.Log($"[GameDataManager] 同步宠物 {petId} 厌倦状态: isBored={petSaveData.isBored}, lastBoredomTime={petSaveData.lastBoredomTime}");
         }
+    }
+    
+    /// <summary>
+    /// 同步食物数据
+    /// </summary>
+    private void SyncFoodData(SaveData saveData)
+    {
+        // 清空旧的食物数据
+        saveData.worldData.foods.Clear();
+        
+        // 查找场景中所有的食物对象
+        FoodController[] allFoods = FindObjectsOfType<FoodController>();
+        
+        foreach (FoodController food in allFoods)
+        {
+            if (food != null)
+            {
+                FoodSaveData foodSaveData = food.GetSaveData();
+                saveData.worldData.foods.Add(foodSaveData);
+                // Debug.Log($"[GameDataManager] 同步食物: {foodSaveData.foodId}, isEmpty={foodSaveData.isEmpty}");
+            }
+        }
+        
+        // Debug.Log($"[GameDataManager] 同步了 {saveData.worldData.foods.Count} 个食物的存档数据");
     }
     
     /// <summary>
@@ -274,6 +315,57 @@ public class GameDataManager : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// 定时保存食物状态
+    /// </summary>
+    private async void SaveFoodStates()
+    {
+        SaveData saveData = SaveManager.Instance.GetCurrentSaveData();
+        if (saveData == null) 
+        {
+            // Debug.LogWarning("[食物保存] 无法获取当前存档数据");
+            return;
+        }
+        
+        // 获取当前场景中的所有食物
+        FoodController[] allFoods = FindObjectsOfType<FoodController>();
+        if (allFoods.Length == 0)
+        {
+            // Debug.Log("[食物保存] 场景中没有食物对象");
+            return;
+        }
+        
+        // 检查是否有食物状态变化
+        bool hasChanges = false;
+        var currentFoodData = new List<FoodSaveData>();
+        
+        foreach (FoodController food in allFoods)
+        {
+            if (food != null)
+            {
+                FoodSaveData currentData = food.GetSaveData();
+                currentFoodData.Add(currentData);
+                
+                // 检查是否与存档中的数据不同
+                var existingData = saveData.worldData.foods.Find(f => f.foodId == currentData.foodId);
+                if (existingData == null || existingData.isEmpty != currentData.isEmpty)
+                {
+                    hasChanges = true;
+                }
+            }
+        }
+        
+        if (hasChanges)
+        {
+            // 更新存档中的食物数据
+            saveData.worldData.foods.Clear();
+            saveData.worldData.foods.AddRange(currentFoodData);
+            
+            await SaveManager.Instance.SaveAsync();
+            Debug.Log($"[食物保存] 定时保存了 {currentFoodData.Count} 个食物的状态");
+        }
+    }
+    
     #endregion
     
     #region 事件处理
@@ -312,6 +404,26 @@ public class GameDataManager : MonoBehaviour
         {
             IOSDataBridge.Instance.ForceSyncNow();
             // Debug.Log("[GameDataManager] 宠物数据变化，已触发iOS数据同步");
+        }
+    }
+    
+    /// <summary>
+    /// 食物状态变化通知
+    /// </summary>
+    public void OnFoodDataChanged()
+    {
+        OnDataChanged?.Invoke();
+        
+        // 只有在启用自动保存时才保存
+        if (enableAutoSave)
+        {
+            // 立即保存食物数据变化（食物状态变化比较重要，立即保存）
+            // Debug.Log("[GameDataManager] 食物状态发生变化，触发立即保存");
+            SyncToSave(true);
+        }
+        else
+        {
+            // Debug.Log("[GameDataManager] 食物状态发生变化，但自动保存已禁用");
         }
     }
     
@@ -398,6 +510,86 @@ public class GameDataManager : MonoBehaviour
         {
             bool isRegistered = activePets.ContainsValue(pet);
             Debug.Log($"宠物 {pet.name} (ID: {pet.petId}): 注册状态={isRegistered}, 位置={pet.transform.position}");
+        }
+    }
+    
+    [ContextMenu("调试：检查食物状态")]
+    public void DebugCheckFoodStates()
+    {
+        Debug.Log($"=== 食物状态检查 ===");
+        
+        // 检查场景中的所有食物
+        FoodController[] allFoods = FindObjectsOfType<FoodController>();
+        Debug.Log($"场景中的食物数量: {allFoods.Length}");
+        
+        foreach (var food in allFoods)
+        {
+            Debug.Log($"食物 {food.name} (ID: {food.FoodId}): 空盘状态={food.IsEmpty}, 位置={food.transform.position}, 爱心消耗={food.RefillHeartCost}");
+        }
+        
+        // 检查存档中的食物数据
+        SaveData saveData = SaveManager.Instance.GetCurrentSaveData();
+        if (saveData?.worldData?.foods != null)
+        {
+            Debug.Log($"存档中的食物数量: {saveData.worldData.foods.Count}");
+            foreach (var foodData in saveData.worldData.foods)
+            {
+                Debug.Log($"存档食物 {foodData.foodId}: 空盘状态={foodData.isEmpty}, 位置={foodData.position}");
+            }
+        }
+        else
+        {
+            Debug.Log("存档中没有食物数据");
+        }
+    }
+    
+    [ContextMenu("调试：强制保存食物状态")]
+    public void DebugSaveFoodStates()
+    {
+        Debug.Log($"=== 强制保存食物状态 ===");
+        OnFoodDataChanged();
+        Debug.Log("食物状态保存完成");
+    }
+    
+    [ContextMenu("调试：立即执行定时食物保存")]
+    public void DebugSaveFoodStatesTimer()
+    {
+        Debug.Log($"=== 立即执行定时食物保存 ===");
+        SaveFoodStates();
+        Debug.Log("定时食物保存完成");
+    }
+    
+    [ContextMenu("调试：检查宠物厌倦状态")]
+    public void DebugCheckPetBoredomStates()
+    {
+        Debug.Log($"=== 宠物厌倦状态检查 ===");
+        Debug.Log($"当前游戏时间: {Time.time:F1}秒");
+        
+        foreach (var kvp in activePets)
+        {
+            string petId = kvp.Key;
+            PetController2D pet = kvp.Value;
+            
+            if (pet != null)
+            {
+                float timeSinceBoredom = pet.LastBoredomTime >= 0 ? Time.time - pet.LastBoredomTime : -1f;
+                Debug.Log($"宠物 {petId} ({pet.PetDisplayName}):");
+                Debug.Log($"  - IsBored: {pet.IsBored}");
+                Debug.Log($"  - LastBoredomTime: {pet.LastBoredomTime:F1}秒");
+                Debug.Log($"  - 厌倦已持续: {timeSinceBoredom:F1}秒");
+                Debug.Log($"  - 剩余恢复时间: {pet.BoredomRecoveryRemaining:F1}分钟");
+            }
+        }
+        
+        // 检查存档中的厌倦数据
+        SaveData saveData = SaveManager.Instance.GetCurrentSaveData();
+        if (saveData?.petsData != null)
+        {
+            Debug.Log($"存档中的宠物厌倦数据:");
+            foreach (var petData in saveData.petsData)
+            {
+                Debug.Log($"存档宠物 {petData.petId}: isBored={petData.isBored}, lastBoredomTime={petData.lastBoredomTime:F1}");
+            }
         }
     }
     

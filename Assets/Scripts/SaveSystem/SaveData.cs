@@ -144,6 +144,9 @@ public class WorldSaveData
     // 家具数据
     public List<FurnitureSaveData> furniture;
     
+    // 食物数据
+    public List<FoodSaveData> foods;
+    
     // 场景设置
     public string currentScene;
     
@@ -151,6 +154,7 @@ public class WorldSaveData
     {
         toys = new List<ToySaveData>();
         furniture = new List<FurnitureSaveData>();
+        foods = new List<FoodSaveData>();
         currentScene = "Gameplay";
     }
 }
@@ -194,5 +198,39 @@ public class FurnitureSaveData
         position = Vector3.zero;
         rotation = Vector3.zero;
         properties = new Dictionary<string, object>();
+    }
+}
+
+/// <summary>
+/// 食物存档数据
+/// </summary>
+[Serializable]
+public class FoodSaveData
+{
+    public string foodId;           // 食物唯一标识（基于场景中的GameObject名称或位置）
+    public string foodType;         // 食物类型（如"CatFood"）
+    public bool isEmpty;            // 是否为空盘状态
+    public Vector3 position;        // 食物位置
+    public int tasty;               // 美味度
+    public int satietyRecoveryValue; // 饱腹度恢复值
+    
+    public FoodSaveData()
+    {
+        foodId = "";
+        foodType = "";
+        isEmpty = false;
+        position = Vector3.zero;
+        tasty = 3;
+        satietyRecoveryValue = 25;
+    }
+    
+    public FoodSaveData(string id, string type, bool empty, Vector3 pos, int tastyValue, int satietyValue)
+    {
+        foodId = id;
+        foodType = type;
+        isEmpty = empty;
+        position = pos;
+        tasty = tastyValue;
+        satietyRecoveryValue = satietyValue;
     }
 } 

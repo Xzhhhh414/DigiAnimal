@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -74,13 +75,25 @@ public class GameInitializer : MonoBehaviour
         {
             // DebugLog($"存档加载成功，宠物数量: {saveData.petsData.Count}");
             
-            // 4. 同步玩家数据到PlayerManager
+            // 4. 暂时禁用自动保存，避免在初始化过程中覆盖存档数据
+            bool originalAutoSaveState = GameDataManager.Instance.IsAutoSaveEnabled;
+            GameDataManager.Instance.SetAutoSaveEnabled(false);
+            // Debug.Log("[GameInitializer] 已暂时禁用自动保存");
+            
+            // 5. 同步玩家数据到PlayerManager
             yield return SyncPlayerData(saveData);
             
-            // 5. 生成宠物
+            // 6. 生成宠物
             yield return SpawnPets(saveData);
             
-            // 6. 如果没有宠物且启用了默认宠物创建，创建默认宠物
+            // 7. 加载食物状态
+            yield return LoadFoodStates(saveData);
+            
+            // 8. 重新启用自动保存
+            GameDataManager.Instance.SetAutoSaveEnabled(originalAutoSaveState);
+            // Debug.Log("[GameInitializer] 已重新启用自动保存");
+            
+            // 9. 如果没有宠物且启用了默认宠物创建，创建默认宠物
             if (saveData.petsData.Count == 0 && createDefaultPetIfEmpty)
             {
                 yield return CreateDefaultPet();
@@ -286,5 +299,90 @@ public class GameInitializer : MonoBehaviour
         
         // 重新初始化
         StartCoroutine(InitializeGameAsync());
+    }
+    
+    /// <summary>
+    /// 加载食物状态
+    /// </summary>
+    private IEnumerator LoadFoodStates(SaveData saveData)
+    {
+        if (saveData?.worldData?.foods == null || saveData.worldData.foods.Count == 0)
+        {
+            // DebugLog("没有食物数据需要加载");
+            yield break;
+        }
+        
+        // 创建食物数据的副本，避免在遍历过程中被修改
+        var foodDataCopy = new List<FoodSaveData>(saveData.worldData.foods);
+        
+        Debug.Log($"[GameInitializer] 开始加载 {foodDataCopy.Count} 个食物的状态...");
+        
+        // 查找场景中所有的食物对象
+        FoodController[] allFoods = FindObjectsOfType<FoodController>();
+        
+        foreach (FoodSaveData foodSaveData in foodDataCopy)
+        {
+            // 根据位置和类型查找对应的食物对象
+            FoodController matchedFood = FindFoodByIdOrPosition(allFoods, foodSaveData);
+            
+            if (matchedFood != null)
+            {
+                Debug.Log($"[GameInitializer] 找到匹配食物 {matchedFood.name}，加载状态: isEmpty={foodSaveData.isEmpty}");
+                matchedFood.LoadFromSaveData(foodSaveData);
+                Debug.Log($"[GameInitializer] 加载完成，当前食物状态: isEmpty={matchedFood.IsEmpty}");
+            }
+            else
+            {
+                Debug.LogWarning($"[GameInitializer] 未找到匹配的食物对象: {foodSaveData.foodId}");
+            }
+            
+            // 每处理一个食物对象后让出一帧，避免阻塞
+            yield return null;
+        }
+        
+        Debug.Log("[GameInitializer] 食物状态加载完成");
+        
+        // 延迟1秒后再检查一次食物状态，看是否被其他地方修改了
+        yield return new WaitForSeconds(1f);
+        Debug.Log("[GameInitializer] 1秒后检查食物状态...");
+        FoodController[] allFoodsCheck = FindObjectsOfType<FoodController>();
+        foreach (var food in allFoodsCheck)
+        {
+            Debug.Log($"[GameInitializer] 延迟检查 - 食物 {food.name}: isEmpty={food.IsEmpty}");
+        }
+    }
+    
+    /// <summary>
+    /// 根据ID或位置查找食物对象
+    /// </summary>
+    private FoodController FindFoodByIdOrPosition(FoodController[] allFoods, FoodSaveData saveData)
+    {
+        // 首先尝试通过ID匹配
+        foreach (FoodController food in allFoods)
+        {
+            if (food.FoodId == saveData.foodId)
+            {
+                return food;
+            }
+        }
+        
+        // 如果ID匹配失败，尝试通过位置和类型匹配
+        foreach (FoodController food in allFoods)
+        {
+            Vector3 foodPos = food.transform.position;
+            Vector3 savePos = saveData.position;
+            
+            // 检查位置是否接近（误差范围0.5单位）
+            if (Vector3.Distance(foodPos, savePos) < 0.5f)
+            {
+                string foodType = food.gameObject.name.Replace("(Clone)", "");
+                if (foodType == saveData.foodType)
+                {
+                    return food;
+                }
+            }
+        }
+        
+        return null;
     }
 } 
