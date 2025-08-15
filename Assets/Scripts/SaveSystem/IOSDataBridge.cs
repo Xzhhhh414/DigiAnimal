@@ -247,6 +247,19 @@ public class IOSDataBridge : MonoBehaviour
     {
         var petConfig = PetDatabaseManager.Instance?.GetPetByPrefabName(petSaveData.prefabName);
         
+        // 计算宠物年龄（天数）
+        int ageInDays = 1; // 默认最小1天
+        if (!string.IsNullOrEmpty(petSaveData.purchaseDate))
+        {
+            if (DateTime.TryParseExact(petSaveData.purchaseDate, "yyyy-MM-dd HH:mm:ss", 
+                System.Globalization.CultureInfo.InvariantCulture, 
+                System.Globalization.DateTimeStyles.None, out DateTime purchaseDateTime))
+            {
+                TimeSpan age = DateTime.Now - purchaseDateTime;
+                ageInDays = Mathf.Max(1, (int)age.TotalDays + 1);
+            }
+        }
+        
         return new IOSPetData
         {
             petId = petSaveData.petId,
@@ -255,6 +268,9 @@ public class IOSDataBridge : MonoBehaviour
             prefabName = petSaveData.prefabName,
             energy = petSaveData.energy,
             satiety = petSaveData.satiety,
+            isBored = petSaveData.isBored,
+            purchaseDate = petSaveData.purchaseDate,
+            ageInDays = ageInDays,
             introduction = !string.IsNullOrEmpty(petSaveData.introduction) ? petSaveData.introduction :
                           (petConfig?.introduction ?? "可爱的宠物"),
             lastUpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
@@ -274,6 +290,9 @@ public class IOSDataBridge : MonoBehaviour
                data1.prefabName == data2.prefabName &&
                data1.energy == data2.energy &&
                data1.satiety == data2.satiety &&
+               data1.isBored == data2.isBored &&
+               data1.purchaseDate == data2.purchaseDate &&
+               data1.ageInDays == data2.ageInDays &&
                data1.introduction == data2.introduction;
     }
     
@@ -401,6 +420,9 @@ public class IOSDataBridge : MonoBehaviour
         Debug.Log($"  - 预制体: {currentData.prefabName}");
         Debug.Log($"  - 能量: {currentData.energy}");
         Debug.Log($"  - 饱腹度: {currentData.satiety}");
+        Debug.Log($"  - 厌倦状态: {currentData.isBored}");
+        Debug.Log($"  - 创建时间: {currentData.purchaseDate}");
+        Debug.Log($"  - 养成天数: {currentData.ageInDays}天");
         Debug.Log($"  - 介绍: {currentData.introduction}");
         
         if (cachedPetData.ContainsKey(selectedPetId))
@@ -418,6 +440,12 @@ public class IOSDataBridge : MonoBehaviour
                     Debug.Log($"  - 能量: {cachedData.energy} -> {currentData.energy}");
                 if (cachedData.satiety != currentData.satiety)
                     Debug.Log($"  - 饱腹度: {cachedData.satiety} -> {currentData.satiety}");
+                if (cachedData.isBored != currentData.isBored)
+                    Debug.Log($"  - 厌倦状态: {cachedData.isBored} -> {currentData.isBored}");
+                if (cachedData.purchaseDate != currentData.purchaseDate)
+                    Debug.Log($"  - 创建时间: {cachedData.purchaseDate} -> {currentData.purchaseDate}");
+                if (cachedData.ageInDays != currentData.ageInDays)
+                    Debug.Log($"  - 养成天数: {cachedData.ageInDays} -> {currentData.ageInDays}天");
                 if (cachedData.introduction != currentData.introduction)
                     Debug.Log($"  - 介绍: {cachedData.introduction} -> {currentData.introduction}");
             }
@@ -471,6 +499,9 @@ public class IOSPetData
     public string prefabName;
     public int energy;
     public int satiety;
+    public bool isBored;
+    public string purchaseDate;
+    public int ageInDays;
     public string introduction;
     public string lastUpdateTime;
 } 
