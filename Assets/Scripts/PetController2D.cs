@@ -602,6 +602,9 @@ public class PetController2D : MonoBehaviour
     
     // 定期更新离线时间戳
     private float offlineTimeStampUpdateTimer = 0f;
+    private System.DateTime pauseTime; // 记录暂停时间
+    private bool wasApplicationPaused = false;
+    
     private void UpdateOfflineTimeStamps()
     {
         offlineTimeStampUpdateTimer += Time.deltaTime;
@@ -616,6 +619,84 @@ public class PetController2D : MonoBehaviour
             
             offlineTimeStampUpdateTimer -= 1.0f;
         }
+    }
+    
+    /// <summary>
+    /// 应用程序暂停时调用
+    /// </summary>
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            // 游戏暂停（切换到后台）
+            pauseTime = System.DateTime.Now;
+            wasApplicationPaused = true;
+        }
+        else if (wasApplicationPaused)
+        {
+            // 游戏恢复（从后台回到前台）
+            System.DateTime resumeTime = System.DateTime.Now;
+            ApplyBackgroundTimeChanges(pauseTime, resumeTime);
+            wasApplicationPaused = false;
+        }
+    }
+    
+    /// <summary>
+    /// 应用程序焦点变化时调用
+    /// </summary>
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus)
+        {
+            // 游戏失去焦点
+            pauseTime = System.DateTime.Now;
+            wasApplicationPaused = true;
+        }
+        else if (wasApplicationPaused)
+        {
+            // 游戏获得焦点
+            System.DateTime resumeTime = System.DateTime.Now;
+            ApplyBackgroundTimeChanges(pauseTime, resumeTime);
+            wasApplicationPaused = false;
+        }
+    }
+    
+    /// <summary>
+    /// 应用后台时间变化（与完全离线类似，但时间较短）
+    /// </summary>
+    private void ApplyBackgroundTimeChanges(System.DateTime pauseTime, System.DateTime resumeTime)
+    {
+        System.TimeSpan backgroundTime = resumeTime - pauseTime;
+        double backgroundSeconds = backgroundTime.TotalSeconds;
+        
+        // 只有后台时间超过5秒才进行计算，避免频繁切换的影响
+        if (backgroundSeconds < 5.0)
+            return;
+            
+        // Debug.Log($"宠物 {PetDisplayName} 在后台 {backgroundSeconds:F0} 秒，开始计算属性变化");
+        
+        // 应用后台精力变化
+        if (backgroundSeconds > 0)
+        {
+            // 计算后台期间的精力变化（假设非睡眠状态）
+            int energyDecrease = (int)(backgroundSeconds / energyDecreaseInterval) * energyDecreaseValue;
+            Energy = Mathf.Max(0, Energy - energyDecrease);
+            
+            // 计算后台期间的饱腹度变化
+            int satietyDecrease = (int)(backgroundSeconds / satietyDecreaseInterval) * satietyDecreaseValue;
+            Satiety = Mathf.Max(0, Satiety - satietyDecrease);
+            
+            // Debug.Log($"宠物 {PetDisplayName} 后台时间计算完成：精力-{energyDecrease}，饱腹度-{satietyDecrease}");
+        }
+        
+        // 检查厌倦状态恢复（IsBored属性会自动检查）
+        bool currentBoredState = IsBored;
+        
+        // 更新时间戳
+        System.DateTime now = System.DateTime.Now;
+        lastEnergyUpdateTime = now;
+        lastSatietyUpdateTime = now;
+        lastBoredomCheckTime = now;
     }
     
     // 更新需求气泡显示
