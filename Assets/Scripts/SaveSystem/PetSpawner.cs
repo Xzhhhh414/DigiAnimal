@@ -418,6 +418,13 @@ public class PetSpawner : MonoBehaviour
                 // Debug.Log($"[PetSpawner] 宠物 {petData.petId} 厌倦状态已恢复，lastBoredomTime={petController.LastBoredomTime}");
             }
             
+            // 应用离线时间变化
+            System.DateTime lastEnergyUpdate = ParseDateTime(petData.lastEnergyUpdateTime);
+            System.DateTime lastSatietyUpdate = ParseDateTime(petData.lastSatietyUpdateTime);
+            System.DateTime lastBoredomCheck = ParseDateTime(petData.lastBoredomCheckTime);
+            
+            petController.ApplyOfflineTimeChanges(lastEnergyUpdate, lastSatietyUpdate, lastBoredomCheck);
+            
             // Debug.Log($"宠物数据应用完成: {petData.petId} - {petData.displayName}");
         }
         finally
@@ -425,6 +432,28 @@ public class PetSpawner : MonoBehaviour
             // 恢复自动保存设置
             GameDataManager.Instance.SetAutoSaveEnabled(wasAutoSaveEnabled);
         }
+    }
+    
+    #endregion
+    
+    #region 辅助方法
+    
+    /// <summary>
+    /// 解析日期时间字符串，失败时返回MinValue
+    /// </summary>
+    private System.DateTime ParseDateTime(string dateTimeString)
+    {
+        if (string.IsNullOrEmpty(dateTimeString))
+            return System.DateTime.MinValue;
+            
+        if (System.DateTime.TryParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", 
+            System.Globalization.CultureInfo.InvariantCulture, 
+            System.Globalization.DateTimeStyles.None, out System.DateTime result))
+        {
+            return result;
+        }
+        
+        return System.DateTime.MinValue;
     }
     
     #endregion

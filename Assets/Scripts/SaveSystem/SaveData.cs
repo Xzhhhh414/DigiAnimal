@@ -88,6 +88,11 @@ public class PetSaveData
     public bool isBored;
     public float lastBoredomTime;
     
+    // 离线时间计算相关
+    public string lastEnergyUpdateTime;    // 上次精力更新时间
+    public string lastSatietyUpdateTime;   // 上次饱腹度更新时间
+    public string lastBoredomCheckTime;    // 上次厌倦检查时间
+    
     // 预留扩展字段
     public Dictionary<string, object> customProperties;
     
@@ -103,6 +108,13 @@ public class PetSaveData
         purchaseDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); // 默认设置为当前时间
         isBored = false;
         lastBoredomTime = -1f;
+        
+        // 初始化离线时间字段
+        string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        lastEnergyUpdateTime = currentTime;
+        lastSatietyUpdateTime = currentTime;
+        lastBoredomCheckTime = currentTime;
+        
         customProperties = new Dictionary<string, object>();
     }
     
@@ -118,6 +130,13 @@ public class PetSaveData
         purchaseDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"); // 默认设置为当前时间
         isBored = false;
         lastBoredomTime = -1f;
+        
+        // 初始化离线时间字段
+        string currentTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        lastEnergyUpdateTime = currentTime;
+        lastSatietyUpdateTime = currentTime;
+        lastBoredomCheckTime = currentTime;
+        
         customProperties = new Dictionary<string, object>();
     }
     

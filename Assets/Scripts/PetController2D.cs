@@ -50,6 +50,11 @@ public class PetController2D : MonoBehaviour
     // 精力值恢复的速度 (每秒)
     [SerializeField]
     private int energyRecoveryValue = 2;
+    
+    // 离线时间计算相关
+    private System.DateTime lastEnergyUpdateTime;
+    private System.DateTime lastSatietyUpdateTime;
+    private System.DateTime lastBoredomCheckTime;
 
 
     [SerializeField]
@@ -103,7 +108,8 @@ public class PetController2D : MonoBehaviour
     [Header("厌倦状态设置")]
     [SerializeField] [Range(0f, 1f)] private float boredomChance = 0.3f; // 进入厌倦状态的几率 (0-1)
     [SerializeField] private float boredomRecoveryMinutes = 2f; // 厌倦状态恢复时间（分钟）
-    private float lastBoredomTime = -1f; // 上次进入厌倦状态的时间
+    private float lastBoredomTime = -1f; // 上次进入厌倦状态的时间（兼容旧存档，将逐步废弃）
+    private System.DateTime realLastBoredomTime; // 真实时间的厌倦开始时间
     [SerializeField] private bool isBored = false; // 当前是否处于厌倦状态
     
     // 存档系统相关
@@ -204,7 +210,7 @@ public class PetController2D : MonoBehaviour
     }
     
     /// <summary>
-    /// 获取格式化的年龄字符串
+    /// 获取格式化的年龄字符串（岁+天格式）
     /// </summary>
     public string FormattedAge
     {
@@ -212,27 +218,19 @@ public class PetController2D : MonoBehaviour
         {
             int totalDays = AgeInDays;
             
-            // 计算年、月、天
+            // 计算岁数和剩余天数（365天=1岁）
             int years = totalDays / 365;
             int remainingDays = totalDays % 365;
-            int months = remainingDays / 30;
-            int days = remainingDays % 30;
             
-            // 根据规则格式化显示
             if (years > 0)
             {
-                // 满1年，显示全部：例如 1年3月20天
-                return $"{years}年{months}月{days}天";
-            }
-            else if (months > 0)
-            {
-                // 不满1年，不显示年：例如 3月20天
-                return $"{months}月{days}天";
+                // 满1岁，显示岁+天：例如 1岁20天
+                return $"{years}岁{remainingDays}天";
             }
             else
             {
-                // 不满1个月，不显示年和月：例如 20天
-                return $"{days}天";
+                // 不满1岁，只显示天数：例如 20天
+                return $"{totalDays}天";
             }
         }
     }
@@ -546,6 +544,9 @@ public class PetController2D : MonoBehaviour
         UpdateEnergy();
         UpdateSatiety();
         
+        // 定期更新时间戳（每秒更新一次）
+        UpdateOfflineTimeStamps();
+        
         // 检查并更新需求气泡
         UpdateNeedBubbles();
     }
@@ -596,6 +597,24 @@ public class PetController2D : MonoBehaviour
             
             // 重置计时器，减去整数部分，保留小数部分
             satietyTimer -= Mathf.Floor(satietyTimer);
+        }
+    }
+    
+    // 定期更新离线时间戳
+    private float offlineTimeStampUpdateTimer = 0f;
+    private void UpdateOfflineTimeStamps()
+    {
+        offlineTimeStampUpdateTimer += Time.deltaTime;
+        
+        // 每秒更新一次时间戳
+        if (offlineTimeStampUpdateTimer >= 1.0f)
+        {
+            System.DateTime now = System.DateTime.Now;
+            lastEnergyUpdateTime = now;
+            lastSatietyUpdateTime = now;
+            lastBoredomCheckTime = now;
+            
+            offlineTimeStampUpdateTimer -= 1.0f;
         }
     }
     
@@ -747,14 +766,17 @@ public class PetController2D : MonoBehaviour
     {
         get
         {
-            // 检查厌倦状态是否已恢复
-            if (isBored && lastBoredomTime >= 0)
+            // 检查厌倦状态是否已恢复（使用真实时间）
+            if (isBored && realLastBoredomTime != System.DateTime.MinValue)
             {
-                float boredomRecoverySeconds = boredomRecoveryMinutes * 60f;
-                if (Time.time - lastBoredomTime >= boredomRecoverySeconds)
+                double boredomRecoverySeconds = boredomRecoveryMinutes * 60.0;
+                System.TimeSpan elapsed = System.DateTime.Now - realLastBoredomTime;
+                if (elapsed.TotalSeconds >= boredomRecoverySeconds)
                 {
                     isBored = false;
                     // Debug.Log($"宠物 {PetDisplayName} 从厌倦状态中恢复了");
+                    // 更新检查时间
+                    lastBoredomCheckTime = System.DateTime.Now;
                 }
             }
             return isBored;
@@ -768,12 +790,13 @@ public class PetController2D : MonoBehaviour
     {
         get
         {
-            if (!isBored || lastBoredomTime < 0)
+            if (!isBored || realLastBoredomTime == System.DateTime.MinValue)
                 return 0f;
                 
-            float boredomRecoverySeconds = boredomRecoveryMinutes * 60f;
-            float remaining = boredomRecoverySeconds - (Time.time - lastBoredomTime);
-            return Mathf.Max(0f, remaining / 60f); // 转换为分钟
+            double boredomRecoverySeconds = boredomRecoveryMinutes * 60.0;
+            System.TimeSpan elapsed = System.DateTime.Now - realLastBoredomTime;
+            double remaining = boredomRecoverySeconds - elapsed.TotalSeconds;
+            return Mathf.Max(0f, (float)(remaining / 60.0)); // 转换为分钟
         }
     }
     
@@ -803,7 +826,9 @@ public class PetController2D : MonoBehaviour
         isBored = bored;
         if (bored)
         {
-            lastBoredomTime = Time.time;
+            lastBoredomTime = Time.time; // 兼容旧系统
+            realLastBoredomTime = System.DateTime.Now; // 使用真实时间
+            lastBoredomCheckTime = System.DateTime.Now;
         }
     }
     
@@ -819,6 +844,69 @@ public class PetController2D : MonoBehaviour
             // 如果处于厌倦状态，则不能互动
             return !IsBored;
         }
+    }
+    
+    /// <summary>
+    /// 应用离线时间变化（游戏启动时调用）
+    /// </summary>
+    public void ApplyOfflineTimeChanges(System.DateTime lastEnergyUpdate, System.DateTime lastSatietyUpdate, System.DateTime lastBoredomCheck)
+    {
+        System.DateTime now = System.DateTime.Now;
+        
+        // 应用离线精力变化
+        if (lastEnergyUpdate != System.DateTime.MinValue)
+        {
+            System.TimeSpan energyOfflineTime = now - lastEnergyUpdate;
+            double offlineSeconds = energyOfflineTime.TotalSeconds;
+            
+            if (offlineSeconds > 0)
+            {
+                // 计算离线期间的精力变化
+                // 假设非睡眠状态，每energyDecreaseInterval秒减少energyDecreaseValue点精力
+                int energyDecrease = (int)(offlineSeconds / energyDecreaseInterval) * energyDecreaseValue;
+                Energy = Mathf.Max(0, Energy - energyDecrease);
+                
+                // Debug.Log($"宠物 {PetDisplayName} 离线 {offlineSeconds:F0} 秒，精力减少 {energyDecrease} 点");
+            }
+        }
+        
+        // 应用离线饱腹度变化
+        if (lastSatietyUpdate != System.DateTime.MinValue)
+        {
+            System.TimeSpan satietyOfflineTime = now - lastSatietyUpdate;
+            double offlineSeconds = satietyOfflineTime.TotalSeconds;
+            
+            if (offlineSeconds > 0)
+            {
+                // 计算离线期间的饱腹度变化
+                // 每satietyDecreaseInterval秒减少satietyDecreaseValue点饱腹度
+                int satietyDecrease = (int)(offlineSeconds / satietyDecreaseInterval) * satietyDecreaseValue;
+                Satiety = Mathf.Max(0, Satiety - satietyDecrease);
+                
+                // Debug.Log($"宠物 {PetDisplayName} 离线 {offlineSeconds:F0} 秒，饱腹度减少 {satietyDecrease} 点");
+            }
+        }
+        
+        // 应用离线厌倦状态变化
+        if (lastBoredomCheck != System.DateTime.MinValue)
+        {
+            realLastBoredomTime = lastBoredomCheck;
+            // IsBored属性会自动检查并更新厌倦状态
+            bool currentBoredState = IsBored;
+        }
+        
+        // 更新时间戳
+        lastEnergyUpdateTime = now;
+        lastSatietyUpdateTime = now;
+        lastBoredomCheckTime = now;
+    }
+    
+    /// <summary>
+    /// 获取当前的离线时间数据（供存档系统使用）
+    /// </summary>
+    public (System.DateTime energy, System.DateTime satiety, System.DateTime boredom) GetOfflineTimeData()
+    {
+        return (lastEnergyUpdateTime, lastSatietyUpdateTime, lastBoredomCheckTime);
     }
     
     /// <summary>

@@ -243,6 +243,12 @@ public class GameDataManager : MonoBehaviour
             // 同步厌倦时间
             petSaveData.lastBoredomTime = petController.LastBoredomTime;
             
+            // 同步离线时间数据
+            var offlineTimeData = petController.GetOfflineTimeData();
+            petSaveData.lastEnergyUpdateTime = offlineTimeData.energy.ToString("yyyy-MM-dd HH:mm:ss");
+            petSaveData.lastSatietyUpdateTime = offlineTimeData.satiety.ToString("yyyy-MM-dd HH:mm:ss");
+            petSaveData.lastBoredomCheckTime = offlineTimeData.boredom.ToString("yyyy-MM-dd HH:mm:ss");
+            
             // Debug.Log($"[GameDataManager] 同步宠物 {petId} 厌倦状态: isBored={petSaveData.isBored}, lastBoredomTime={petSaveData.lastBoredomTime}");
         }
     }
