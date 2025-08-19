@@ -245,11 +245,11 @@ MonoBehaviour:
   _IsMoving: 0
   runSpeedThreshold: 3.5
   _Energy: 81
-  energyDecreaseInterval: 72
+  energyDecreaseInterval: 216
   energyDecreaseValue: 1
   energyRecoveryValue: 3
   _Satiety: 29
-  satietyDecreaseInterval: 36
+  satietyDecreaseInterval: 108
   satietyDecreaseValue: 1
   _IsSleeping: 0
   _IsEating: 0
