@@ -260,8 +260,8 @@ MonoBehaviour:
   needBubbleController: {fileID: 8385827696282192901}
   hungryThreshold: 5
   tiredThreshold: 5
-  boredomChance: 0.25
-  boredomRecoveryMinutes: 5
+  boredomChance: 0.5
+  boredomRecoveryMinutes: 10
   isBored: 0
   petId: 
 --- !u!114 &8883347001294338108
