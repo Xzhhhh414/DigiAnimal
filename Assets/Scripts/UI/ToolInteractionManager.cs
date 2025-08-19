@@ -310,7 +310,7 @@ public class ToolInteractionManager : MonoBehaviour
                     }
                     
                     toolUsePanel.SetInstructionText(interactedText);
-                    Debug.Log($"更新工具 '{toolName}' 为交互成功后的说明文本: {interactedText}");
+                    //Debug.Log($"更新工具 '{toolName}' 为交互成功后的说明文本: {interactedText}");
                 }
                 
                 // 隐藏取消按钮
@@ -332,7 +332,7 @@ public class ToolInteractionManager : MonoBehaviour
             if (toolUsePanel != null && !string.IsNullOrEmpty(CurrentTool.useInstruction))
             {
                 toolUsePanel.SetInstructionText(CurrentTool.useInstruction);
-                Debug.Log($"恢复工具 '{toolName}' 的原始使用说明文本");
+                //Debug.Log($"恢复工具 '{toolName}' 的原始使用说明文本");
             }
         }
     }
@@ -487,7 +487,7 @@ public class ToolInteractionManager : MonoBehaviour
             noInteractionText = noInteractionText.Replace("{ToolName}", CurrentTool.toolName);
             
             toolUsePanel.SetInstructionText(noInteractionText);
-            Debug.Log($"显示玩具 '{CurrentTool.toolName}' 的无互动结束文本: {noInteractionText}");
+            //Debug.Log($"显示玩具 '{CurrentTool.toolName}' 的无互动结束文本: {noInteractionText}");
         }
         
         // 2. 等待配置的结束阶段时间（与成功互动时间一致）
@@ -817,7 +817,7 @@ public class ToolInteractionManager : MonoBehaviour
         else
         {
             // 如果ToastManager不可用，回退到Debug.Log
-            Debug.Log("游戏提示: " + message);
+           //Debug.Log("游戏提示: " + message);
             Debug.LogWarning("ToastManager未找到，无法显示Toast提示。");
         }
     }

@@ -1046,9 +1046,8 @@ public class PetController2D : MonoBehaviour
         
         if (willBeBored)
         {
-            // 进入厌倦状态
-            isBored = true;
-            lastBoredomTime = Time.time;
+            // 进入厌倦状态（使用SetBored方法确保所有时间戳都正确设置）
+            SetBored(true);
             // Debug.Log($"宠物 {PetDisplayName} 对玩具感到厌倦了，需要 {boredomRecoveryMinutes} 分钟恢复");
         }
         else

@@ -65,6 +65,15 @@ namespace NodeCanvas.Tasks.Actions
         /// </summary>
         private void EndPatting()
         {
+            // 检查是否进入厌倦状态（与其他玩具互动保持一致）
+            bool willBeBored = Random.Range(0f, 1f) < agent.BoredomChance;
+            if (willBeBored)
+            {
+                // 进入厌倦状态
+                agent.SetBored(true);
+                // Debug.Log($"宠物 {agent.PetDisplayName} 在摸摸后感到厌倦了，需要 {agent.BoredomRecoveryRemaining} 分钟恢复");
+            }
+            
             // 重置宠物状态
             agent.IsPatting = false;
             
