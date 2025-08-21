@@ -33,7 +33,7 @@ public class IOSDataBridge : MonoBehaviour
     
     [Header("iOS 数据同步设置")]
     [SerializeField] private bool enableIOSSync = true;
-    [SerializeField] private string appGroupIdentifier = "group.com.zher.digiAnimal";
+    [SerializeField] private string appGroupIdentifier = "group.com.zher.meow";
     [SerializeField] private float syncInterval = 2f; // 数据同步间隔（秒）
     
     // iOS原生插件方法声明

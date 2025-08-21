@@ -5,7 +5,7 @@
 #endif
 
 // App Group标识符，用于与Widget共享数据
-static NSString *appGroupIdentifier = @"group.com.zher.digiAnimal";
+static NSString *appGroupIdentifier = @"group.com.zher.meow";
 
 // C函数接口，供Unity调用
 extern "C" {
