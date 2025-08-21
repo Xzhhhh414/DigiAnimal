@@ -60,7 +60,7 @@ extern "C" {
     void _IOSUpdateLiveActivity() {
         if (@available(iOS 16.1, *)) {
             // 通过反射调用主Target中的LiveActivityManager
-            Class managerClass = NSClassFromString(@"PatPat.LiveActivityManager");
+            Class managerClass = NSClassFromString(@"Meow.LiveActivityManager");
             if (managerClass) {
                 id sharedManager = [managerClass performSelector:@selector(shared)];
                 if (sharedManager) {
@@ -85,7 +85,7 @@ extern "C" {
         if (@available(iOS 16.1, *)) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 // 通过反射调用主Target中的LiveActivityManager
-                Class managerClass = NSClassFromString(@"PatPat.LiveActivityManager");
+                Class managerClass = NSClassFromString(@"Meow.LiveActivityManager");
                 if (managerClass) {
                     id sharedManager = [managerClass performSelector:@selector(shared)];
                     if (sharedManager) {
@@ -110,7 +110,7 @@ extern "C" {
         if (@available(iOS 16.1, *)) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 // 通过反射调用主Target中的LiveActivityManager
-                Class managerClass = NSClassFromString(@"PatPat.LiveActivityManager");
+                Class managerClass = NSClassFromString(@"Meow.LiveActivityManager");
                 if (managerClass) {
                     id sharedManager = [managerClass performSelector:@selector(shared)];
                     if (sharedManager) {
@@ -127,7 +127,7 @@ extern "C" {
     /// 检查Live Activity是否活跃
     bool _IOSIsLiveActivityActive() {
         if (@available(iOS 16.1, *)) {
-            Class managerClass = NSClassFromString(@"PatPat.LiveActivityManager");
+            Class managerClass = NSClassFromString(@"Meow.LiveActivityManager");
             if (managerClass) {
                 id sharedManager = [managerClass performSelector:@selector(shared)];
                 if (sharedManager) {
