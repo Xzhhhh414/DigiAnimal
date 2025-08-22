@@ -89,7 +89,10 @@ public class GameInitializer : MonoBehaviour
             // 7. 加载食物状态
             yield return LoadFoodStates(saveData);
             
-            // 8. 重新启用自动保存
+            // 8. 加载植物状态
+            yield return LoadPlantStates(saveData);
+            
+            // 9. 重新启用自动保存
             GameDataManager.Instance.SetAutoSaveEnabled(originalAutoSaveState);
             // Debug.Log("[GameInitializer] 已重新启用自动保存");
             
@@ -379,6 +382,82 @@ public class GameInitializer : MonoBehaviour
                 if (foodType == saveData.foodType)
                 {
                     return food;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// 加载植物状态
+    /// </summary>
+    private IEnumerator LoadPlantStates(SaveData saveData)
+    {
+        if (saveData?.worldData?.plants == null || saveData.worldData.plants.Count == 0)
+        {
+            // DebugLog("没有植物数据需要加载");
+            yield break;
+        }
+        
+        // 创建植物数据的副本，避免在遍历过程中被修改
+        var plantDataCopy = new List<PlantSaveData>(saveData.worldData.plants);
+        
+        // Debug.Log($"[GameInitializer] 开始加载 {plantDataCopy.Count} 个植物的状态...");
+        
+        // 查找场景中所有的植物对象
+        PlantController[] allPlants = FindObjectsOfType<PlantController>();
+        
+        foreach (PlantSaveData plantSaveData in plantDataCopy)
+        {
+            // 根据位置和名称查找对应的植物对象
+            PlantController matchedPlant = FindPlantByIdOrPosition(allPlants, plantSaveData);
+            
+            if (matchedPlant != null)
+            {
+                // Debug.Log($"[GameInitializer] 找到匹配植物 {matchedPlant.name}，加载状态: healthLevel={plantSaveData.healthLevel}");
+                matchedPlant.LoadFromSaveData(plantSaveData);
+                // Debug.Log($"[GameInitializer] 加载完成，当前植物健康度: {matchedPlant.HealthLevel}");
+            }
+            else
+            {
+                Debug.LogWarning($"[GameInitializer] 未找到匹配的植物对象: {plantSaveData.plantId}");
+            }
+            
+            // 每处理一个植物对象后让出一帧，避免阻塞
+            yield return null;
+        }
+        
+        // Debug.Log("[GameInitializer] 植物状态加载完成");
+    }
+    
+    /// <summary>
+    /// 根据ID或位置查找植物对象
+    /// </summary>
+    private PlantController FindPlantByIdOrPosition(PlantController[] allPlants, PlantSaveData saveData)
+    {
+        // 首先尝试通过ID匹配
+        foreach (PlantController plant in allPlants)
+        {
+            if (plant.PlantId == saveData.plantId)
+            {
+                return plant;
+            }
+        }
+        
+        // 如果ID匹配失败，尝试通过位置和名称匹配
+        foreach (PlantController plant in allPlants)
+        {
+            Vector3 plantPos = plant.transform.position;
+            Vector3 savePos = saveData.position;
+            
+            // 检查位置是否接近（误差范围0.5单位）
+            if (Vector3.Distance(plantPos, savePos) < 0.5f)
+            {
+                string plantName = plant.gameObject.name.Replace("(Clone)", "");
+                if (plantName == saveData.plantName || plant.PlantName == saveData.plantName)
+                {
+                    return plant;
                 }
             }
         }

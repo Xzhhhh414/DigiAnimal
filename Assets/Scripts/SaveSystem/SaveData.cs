@@ -166,6 +166,9 @@ public class WorldSaveData
     // 食物数据
     public List<FoodSaveData> foods;
     
+    // 植物数据
+    public List<PlantSaveData> plants;
+    
     // 场景设置
     public string currentScene;
     
@@ -174,6 +177,7 @@ public class WorldSaveData
         toys = new List<ToySaveData>();
         furniture = new List<FurnitureSaveData>();
         foods = new List<FoodSaveData>();
+        plants = new List<PlantSaveData>();
         currentScene = "Gameplay";
     }
 }
@@ -251,5 +255,39 @@ public class FoodSaveData
         position = pos;
         tasty = tastyValue;
         satietyRecoveryValue = satietyValue;
+    }
+}
+
+/// <summary>
+/// 植物存档数据
+/// </summary>
+[Serializable]
+public class PlantSaveData
+{
+    public string plantId;                  // 植物唯一ID
+    public string plantName;                // 植物名称
+    public int healthLevel;                 // 健康度 (0-100)
+    public Vector3 position;                // 植物位置
+    public int wateringHeartCost;           // 浇水消耗的爱心
+    public int healthRecoveryValue;         // 每次浇水恢复的健康度
+    
+    public PlantSaveData()
+    {
+        plantId = "";
+        plantName = "盆栽植物";
+        healthLevel = 100;
+        position = Vector3.zero;
+        wateringHeartCost = 3;
+        healthRecoveryValue = 25;
+    }
+    
+    public PlantSaveData(string id, string name, int health, Vector3 pos, int cost, int recovery)
+    {
+        plantId = id;
+        plantName = name;
+        healthLevel = health;
+        position = pos;
+        wateringHeartCost = cost;
+        healthRecoveryValue = recovery;
     }
 } 

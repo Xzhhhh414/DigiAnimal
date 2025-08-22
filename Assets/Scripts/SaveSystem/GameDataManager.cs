@@ -184,6 +184,9 @@ public class GameDataManager : MonoBehaviour
         // 同步食物数据
         SyncFoodData(saveData);
         
+        // 同步植物数据
+        SyncPlantData(saveData);
+        
         // 保存到文件
         if (immediate)
         {
@@ -275,6 +278,30 @@ public class GameDataManager : MonoBehaviour
         }
         
         // Debug.Log($"[GameDataManager] 同步了 {saveData.worldData.foods.Count} 个食物的存档数据");
+    }
+    
+    /// <summary>
+    /// 同步植物数据
+    /// </summary>
+    private void SyncPlantData(SaveData saveData)
+    {
+        // 清空旧的植物数据
+        saveData.worldData.plants.Clear();
+        
+        // 查找场景中所有的植物对象
+        PlantController[] allPlants = FindObjectsOfType<PlantController>();
+        
+        foreach (PlantController plant in allPlants)
+        {
+            if (plant != null)
+            {
+                PlantSaveData plantSaveData = plant.GetSaveData();
+                saveData.worldData.plants.Add(plantSaveData);
+                // Debug.Log($"[GameDataManager] 同步植物: {plantSaveData.plantId}, healthLevel={plantSaveData.healthLevel}");
+            }
+        }
+        
+        // Debug.Log($"[GameDataManager] 同步了 {saveData.worldData.plants.Count} 个植物的存档数据");
     }
     
     /// <summary>
@@ -430,6 +457,26 @@ public class GameDataManager : MonoBehaviour
         else
         {
             // Debug.Log("[GameDataManager] 食物状态发生变化，但自动保存已禁用");
+        }
+    }
+    
+    /// <summary>
+    /// 植物状态变化通知
+    /// </summary>
+    public void OnPlantDataChanged()
+    {
+        OnDataChanged?.Invoke();
+        
+        // 只有在启用自动保存时才保存
+        if (enableAutoSave)
+        {
+            // 立即保存植物数据变化
+            // Debug.Log("[GameDataManager] 植物状态发生变化，触发立即保存");
+            SyncToSave(true);
+        }
+        else
+        {
+            // Debug.Log("[GameDataManager] 植物状态发生变化，但自动保存已禁用");
         }
     }
     

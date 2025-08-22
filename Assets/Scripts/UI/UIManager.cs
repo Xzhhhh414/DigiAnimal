@@ -15,6 +15,7 @@ public class UIManager : MonoBehaviour
     [Header("UI面板")]
     [SerializeField] private SelectedPetInfo selectedPetInfoPanel;
     [SerializeField] private SelectedFoodInfo selectedFoodInfoPanel;
+    [SerializeField] private SelectedPlantInfo selectedPlantInfoPanel;
     
     // 单例模式 - 添加静态引用初始化
     private static UIManager _instance;
@@ -155,6 +156,13 @@ public class UIManager : MonoBehaviour
             selectedFoodInfoPanel.gameObject.SetActive(false);
         }
         
+        // 隐藏选中植物信息面板
+        if (selectedPlantInfoPanel != null && selectedPlantInfoPanel.gameObject.activeSelf)
+        {
+            hiddenUIStates[selectedPlantInfoPanel.gameObject] = true;
+            selectedPlantInfoPanel.gameObject.SetActive(false);
+        }
+        
         // 隐藏底部面板中的工具包按钮（已集成到BottomPanelController中）
         // ToolkitButtonController已弃用，功能已合并到BottomPanelController
         
@@ -288,6 +296,17 @@ public class UIManager : MonoBehaviour
                 // 在Start场景中找不到是正常的，不输出日志
             }
         }
+        
+        // 查找SelectedPlantInfo面板（如果没有通过Inspector设置）
+        if (selectedPlantInfoPanel == null)
+        {
+            selectedPlantInfoPanel = FindObjectOfType<SelectedPlantInfo>();
+            
+            if (selectedPlantInfoPanel == null)
+            {
+                // 在Start场景中找不到是正常的，不输出日志
+            }
+        }
     }
     
     // 显示选中宠物信息面板
@@ -323,6 +342,28 @@ public class UIManager : MonoBehaviour
         if (selectedFoodInfoPanel != null)
         {
             selectedFoodInfoPanel.gameObject.SetActive(false);
+        }
+    }
+    
+    // 打开植物信息面板
+    public void OpenPlantInfo(PlantController plant)
+    {
+        if (selectedPlantInfoPanel != null)
+        {
+            selectedPlantInfoPanel.ShowPlantInfo(plant);
+        }
+        else
+        {
+            Debug.LogWarning("SelectedPlantInfo面板未设置！");
+        }
+    }
+    
+    // 关闭植物信息面板
+    public void ClosePlantInfo()
+    {
+        if (selectedPlantInfoPanel != null)
+        {
+            selectedPlantInfoPanel.HidePlantInfo();
         }
     }
     
