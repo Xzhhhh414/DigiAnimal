@@ -40,7 +40,8 @@ public class ToolInteractionManager : MonoBehaviour
                 
                 if (_instance == null)
                 {
-                    Debug.LogError("场景中未找到ToolInteractionManager实例！");
+                    Debug.LogWarning("场景中未找到ToolInteractionManager实例！请确保场景中有ToolInteractionManager组件。");
+                    return null;
                 }
             }
             return _instance;
@@ -55,6 +56,11 @@ public class ToolInteractionManager : MonoBehaviour
     
     // 工具使用状态
     private bool isUsingTool = false;
+    
+    /// <summary>
+    /// 获取当前是否正在使用工具
+    /// </summary>
+    public bool IsUsingTool => isUsingTool;
     
     // 交互间隔控制（防止过快连续点击）
     private float lastInteractionTime = 0f;

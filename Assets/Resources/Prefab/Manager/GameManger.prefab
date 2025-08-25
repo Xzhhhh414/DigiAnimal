@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4526765363287032426}
   - component: {fileID: 4720878334869674178}
-  - component: {fileID: 8217037408411075934}
+  - component: {fileID: 4623433669036567871}
   - component: {fileID: 3045847506654479961}
   - component: {fileID: 4651001465556447005}
   m_Layer: 0
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a27369ab56f50e14181bcdaedc661b06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &8217037408411075934
+--- !u!114 &4623433669036567871
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -56,11 +56,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 4353075851608123511}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: defadce8940e0904f898ce426a6654d2, type: 3}
+  m_Script: {fileID: 11500000, guid: fbb62412db2832741b729f7af867bd4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  petManager: {fileID: 4720878334869674178}
-  cameraController: {fileID: 0}
 --- !u!114 &3045847506654479961
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,7 +89,7 @@ MonoBehaviour:
     toolPrefab: {fileID: 847570557904668539, guid: 6e5fdbc121aea8e40a9746e97c4321a6, type: 3}
     toolName: "\u9017\u732B\u68D2"
     toolIcon: {fileID: 21300000, guid: fb23096a350d14d43bc817975bfb129d, type: 3}
-    toolDescription: "\u6325\u52A8\u8D77\u6765\uFF0C\u5F15\u8BF1\u732B\u732B\u6765\u8FC7\u6765"
+    toolDescription: "\u6325\u52A8\u8D77\u6765\uFF0C\u5F15\u8BF1\u732B\u732B\u8FC7\u6765"
     useInstruction: "\u70B9\u51FB\u7A7A\u65F7\u5904\uFF0C\u6325\u821E\u9017\u732B\u68D2"
     interactedInstruction: 
     placedInstruction: "\u9017\u732B\u68D2\u6325\u821Eing\uFF0C\u7B49\u5F85\u5C0F\u732B\u4E0A\u94A9"

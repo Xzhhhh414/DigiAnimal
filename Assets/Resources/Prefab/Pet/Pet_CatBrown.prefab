@@ -247,7 +247,7 @@ MonoBehaviour:
   _Energy: 81
   energyDecreaseInterval: 216
   energyDecreaseValue: 1
-  energyRecoveryValue: 3
+  energyRecoveryValue: 6
   _Satiety: 29
   satietyDecreaseInterval: 108
   satietyDecreaseValue: 1

@@ -74,6 +74,12 @@ public class PetManager : MonoBehaviour
             // 不在这里触发取消选中事件，避免连续触发两个事件
         }
         
+        // 如果有选中的家具，取消选中
+        if (FurnitureManager.Instance != null && FurnitureManager.Instance.GetSelectedFurniture() != null)
+        {
+            FurnitureManager.Instance.UnselectCurrentFurniture();
+        }
+        
         // 选中新的宠物
         selectedPet = pet;
         selectedPet.SetSelected(true);

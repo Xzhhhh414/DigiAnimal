@@ -164,11 +164,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _isUsing: 0
   _isEmpty: 0
-  _tasty: 2
+  _tasty: 3
   satietyRecoveryValue: 100
   refillHeartCost: 2
   fullFoodIcon: {fileID: -2053511491, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
   emptyFoodIcon: {fileID: -1058956477, guid: 61bf717e29b12a240b1531f23b7c0516, type: 3}
+  foodName: "\u732B\u996D"
   isSelected: 0
   foodId: 
 --- !u!114 &6276110034230596032

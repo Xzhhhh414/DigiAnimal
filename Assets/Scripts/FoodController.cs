@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FoodController : MonoBehaviour
+public class FoodController : MonoBehaviour, ISelectableFurniture
 {
     // 食物是否正在被使用
     [SerializeField]
@@ -32,6 +32,11 @@ public class FoodController : MonoBehaviour
     // 食物图标 - 空盘状态
     [SerializeField]
     private Sprite emptyFoodIcon;
+    
+    // 食物名称
+    [Header("食物基本信息")]
+    [SerializeField]
+    private string foodName = "猫粮";  // 食物名称
     
     // 食物是否被选中
     [SerializeField]
@@ -111,6 +116,13 @@ public class FoodController : MonoBehaviour
     // 获取添加食物的爱心消耗
     public int RefillHeartCost => refillHeartCost;
     
+    // 食物名称属性
+    public string FoodName
+    {
+        get { return foodName; }
+        set { foodName = value; }
+    }
+    
     // 食物唯一标识符属性
     public string FoodId
     {
@@ -181,23 +193,7 @@ public class FoodController : MonoBehaviour
         }
     }
     
-    // 设置食物是否被选中
-    public void SetSelected(bool selected)
-    {
-        isSelected = selected;
-        
-        // 激活/停用描边效果
-        if (pixelOutlineManager != null)
-        {
-            pixelOutlineManager.SetOutlineActive(selected);
-        }
-        
-        // 如果被选中，通知UI状态变化
-        if (selected)
-        {
-            EventManager.Instance.TriggerEvent(CustomEventType.FoodStatusChanged, this);
-        }
-    }
+    // 旧的SetSelected方法已移除，现在使用ISelectableFurniture接口的OnSelected/OnDeselected
     
     // 食物被吃完，变成空盘
     public void SetEmpty()
@@ -266,5 +262,47 @@ public class FoodController : MonoBehaviour
             // 确保无论如何都会清除加载标志
             isLoadingFromSave = false;
         }
+    }
+    
+    // ===== ISelectableFurniture 接口实现 =====
+    
+    public string FurnitureType => "Food";
+    
+    public string FurnitureName => FoodName;
+    
+    public bool IsSelected 
+    { 
+        get => isSelected; 
+        set => isSelected = value; 
+    }
+    
+    public GameObject GameObject => gameObject;
+    
+    public void OnSelected()
+    {
+        // 激活描边效果
+        if (pixelOutlineManager != null)
+        {
+            pixelOutlineManager.SetOutlineActive(true);
+        }
+        
+        // 通知UI状态变化
+        EventManager.Instance.TriggerEvent(CustomEventType.FoodStatusChanged, this);
+    }
+    
+    public void OnDeselected()
+    {
+        isSelected = false;
+        
+        // 停用描边效果
+        if (pixelOutlineManager != null)
+        {
+            pixelOutlineManager.SetOutlineActive(false);
+        }
+    }
+    
+    public Sprite GetIcon()
+    {
+        return FoodIcon;
     }
 } 

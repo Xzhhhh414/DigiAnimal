@@ -12,7 +12,6 @@ public class SelectedPlantInfo : MonoBehaviour
     [SerializeField] private Text plantName;             // 植物名称文本
     [SerializeField] private Text plantStatusText;       // 植物状态文本
     [SerializeField] private Slider healthSlider;        // 健康度滑动条
-    [SerializeField] private Text healthValueText;       // 健康度数值文本
     [SerializeField] private Button wateringButton;      // 浇水按钮
     
     // 状态显示文本配置
@@ -21,21 +20,12 @@ public class SelectedPlantInfo : MonoBehaviour
     [SerializeField] private string thirstyText = "需要浇水";      // 缺水状态显示文本
     [SerializeField] private string witheredText = "快要枯萎";     // 枯萎状态显示文本
     
-    // Toast提示文本配置
-    [Header("提示文本配置")]
-    [SerializeField] private string wateringSuccessText = "浇水成功！植物更健康了~"; // 浇水成功提示
-    [SerializeField] private string wateringFailedText = "浇水失败！"; // 浇水失败提示
+
     
     [Header("动画设置")]
     [SerializeField] private float animationDuration = 0.3f; // 动画持续时间
     [SerializeField] private Ease animationEase = Ease.OutBack; // 动画缓动效果
     [SerializeField] private Vector2 hiddenPosition = new Vector2(0, 100); // 隐藏时的位置偏移
-    
-    // 健康度滑动条颜色设置
-    [Header("健康度颜色设置")]
-    [SerializeField] private Color healthyColor = Color.green;   // 健康状态颜色
-    [SerializeField] private Color thirstyColor = Color.yellow;  // 缺水状态颜色
-    [SerializeField] private Color witheredColor = Color.red;    // 枯萎状态颜色
     
     private PlantController currentPlant;               // 当前显示的植物
     private CanvasGroup canvasGroup;                    // 用于控制面板显示/隐藏
@@ -87,15 +77,16 @@ public class SelectedPlantInfo : MonoBehaviour
             currentAnimation.Kill();
         }
         
+        // 不需要特殊处理，UpdatePlantInfo()会正确设置按钮状态
+        
+        // 在动画开始前立即设置交互状态，与SelectedFoodInfo保持一致
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+        
         // 显示面板动画
         currentAnimation = DOTween.Sequence()
             .Append(rectTransform.DOAnchorPos(shownPosition, animationDuration).SetEase(animationEase))
-            .Join(canvasGroup.DOFade(1f, animationDuration))
-            .OnComplete(() =>
-            {
-                canvasGroup.interactable = true;
-                canvasGroup.blocksRaycasts = true;
-            });
+            .Join(canvasGroup.DOFade(1f, animationDuration));
     }
     
     /// <summary>
@@ -135,44 +126,16 @@ public class SelectedPlantInfo : MonoBehaviour
             plantName.text = currentPlant.PlantName;
         }
         
-        // 更新植物图片（从SpriteRenderer获取当前显示的sprite）
-        if (plantImage != null)
+        // 更新植物图片（使用植物图标）
+        if (plantImage != null && currentPlant.PlantIcon != null)
         {
-            SpriteRenderer plantSpriteRenderer = currentPlant.GetComponent<SpriteRenderer>();
-            if (plantSpriteRenderer != null && plantSpriteRenderer.sprite != null)
-            {
-                plantImage.sprite = plantSpriteRenderer.sprite;
-            }
+            plantImage.sprite = currentPlant.PlantIcon;
         }
         
         // 更新健康度滑动条
         if (healthSlider != null)
         {
             healthSlider.value = currentPlant.HealthLevel / 100f;
-            
-            // 根据健康度设置滑动条颜色
-            Image fillImage = healthSlider.fillRect?.GetComponent<Image>();
-            if (fillImage != null)
-            {
-                switch (currentPlant.CurrentState)
-                {
-                    case PlantController.PlantState.Healthy:
-                        fillImage.color = healthyColor;
-                        break;
-                    case PlantController.PlantState.Thirsty:
-                        fillImage.color = thirstyColor;
-                        break;
-                    case PlantController.PlantState.Withered:
-                        fillImage.color = witheredColor;
-                        break;
-                }
-            }
-        }
-        
-        // 更新健康度数值文本
-        if (healthValueText != null)
-        {
-            healthValueText.text = $"{currentPlant.HealthLevel}/100";
         }
         
         // 更新植物状态文本
@@ -208,28 +171,14 @@ public class SelectedPlantInfo : MonoBehaviour
     /// </summary>
     private void UpdateWateringButton()
     {
-        if (currentPlant == null) return;
+        if (currentPlant == null || wateringButton == null) return;
         
-        // 更新按钮可用状态（浇水免费，只需检查是否满血）
-        if (wateringButton != null)
-        {
-            bool notFullHealth = currentPlant.HealthLevel < 100;
-            wateringButton.interactable = notFullHealth;
-            
-            // 更新按钮文本
-            Text buttonText = wateringButton.GetComponentInChildren<Text>();
-            if (buttonText != null)
-            {
-                if (currentPlant.HealthLevel >= 100)
-                {
-                    buttonText.text = "植物很健康";
-                }
-                else
-                {
-                    buttonText.text = "浇水";
-                }
-            }
-        }
+        // 健康度不是最大时显示按钮，否则隐藏按钮
+        bool needsWatering = currentPlant.HealthLevel < 100;
+        
+        // 简单的显示/隐藏逻辑，和食物按钮一致
+        wateringButton.gameObject.SetActive(needsWatering);
+        
     }
     
     /// <summary>
@@ -239,28 +188,41 @@ public class SelectedPlantInfo : MonoBehaviour
     {
         if (currentPlant == null) return;
         
-        // 尝试浇水
-        bool success = currentPlant.TryWatering();
+        // 尝试带视觉效果的浇水
+        bool success = currentPlant.TryWateringWithEffects(
+            onWateringStart: OnWateringStart,
+            onWateringComplete: OnWateringComplete
+        );
         
-        if (success)
+        if (!success)
         {
-            // 浇水成功
-            ShowToast(wateringSuccessText);
-            
-            // 更新UI显示
-            UpdatePlantInfo();
-            
-            // 播放浇水成功动画效果
-            PlayWateringSuccessEffect();
+            // 浇水失败（通常是因为植物已经满血）
+            // 不显示失败提示，只播放震动效果
         }
-        else
+    }
+    
+    /// <summary>
+    /// 浇水开始回调
+    /// </summary>
+    private void OnWateringStart()
+    {
+        // 浇水期间隐藏浇水按钮
+        if (wateringButton != null)
         {
-            // 浇水失败
-            ShowToast(wateringFailedText);
-            
-            // 播放按钮震动效果
-            PlayButtonShakeEffect();
+            wateringButton.gameObject.SetActive(false);
         }
+    }
+    
+    /// <summary>
+    /// 浇水完成回调
+    /// </summary>
+    private void OnWateringComplete()
+    {
+        // 更新UI显示（包括按钮状态）
+        UpdatePlantInfo();
+        
+        // 播放浇水成功动画效果
+        PlayWateringSuccessEffect();
     }
     
     /// <summary>
@@ -281,27 +243,8 @@ public class SelectedPlantInfo : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// 播放按钮震动效果
-    /// </summary>
-    private void PlayButtonShakeEffect()
-    {
-        if (wateringButton != null)
-        {
-            wateringButton.transform.DOShakePosition(0.5f, strength: 10f, vibrato: 10, randomness: 90f);
-        }
-    }
     
-    /// <summary>
-    /// 显示Toast提示
-    /// </summary>
-    private void ShowToast(string message)
-    {
-        if (ToastManager.Instance != null)
-        {
-            ToastManager.Instance.ShowToast(message);
-        }
-    }
+
     
     /// <summary>
     /// 定期更新植物信息（用于实时显示健康度变化）

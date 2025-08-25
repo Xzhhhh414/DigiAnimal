@@ -174,13 +174,8 @@ public class SelectedFoodInfo : MonoBehaviour
         // 设置食物名称
         if (foodName != null)
         {
-            // 获取游戏对象名称，去除Clone后缀
-            string objName = currentFood.gameObject.name;
-            if (objName.EndsWith("(Clone)"))
-            {
-                objName = objName.Substring(0, objName.Length - 7);
-            }
-            foodName.text = objName;
+            // 使用FoodController中的FoodName属性
+            foodName.text = currentFood.FoodName;
         }
         
         // 设置美味度星星

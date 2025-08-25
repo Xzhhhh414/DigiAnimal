@@ -51,6 +51,7 @@ MonoBehaviour:
   gameCanvas: {fileID: 0}
   selectedPetInfoPanel: {fileID: 0}
   selectedFoodInfoPanel: {fileID: 0}
+  selectedPlantInfoPanel: {fileID: 0}
 --- !u!114 &7036593405418518353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,7 +65,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   toolUsePanel: {fileID: 0}
-  cannotInteractMessage: "{PetName}\u73A9\u817B\u4E86\u2026"
+  cannotInteractMessage: "{PetName}\u4E0D\u60F3\u88AB\u6253\u6270\u2026"
   sleepingInteractionMessage: "{PetName}\u5728\u7761\u89C9\u5462"
   eatingInteractionMessage: "{PetName}\u5728\u5403\u996D\u5462"
   pattingInteractionMessage: "{PetName}\u5728\u88AB\u6478\u6478\u5462"

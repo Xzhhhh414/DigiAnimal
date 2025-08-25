@@ -7,7 +7,9 @@ public enum CustomEventType
     PetUnselected,   // 宠物取消选中事件
     FoodSelected,    // 食物被选中事件
     FoodUnselected,  // 食物取消选中事件
-    FoodStatusChanged // 食物状态改变事件（如空盘状态）
+    FoodStatusChanged, // 食物状态改变事件（如空盘状态）
+    PlantSelected,   // 植物被选中事件
+    PlantUnselected  // 植物取消选中事件
 }
 public class EventManager : Singleton<EventManager>
 {

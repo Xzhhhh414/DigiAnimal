@@ -31,8 +31,8 @@ public class CameraController : MonoBehaviour
     // 引用PetManager
     [SerializeField] private PetManager petManager;
     
-    // 引用FoodManager
-    [SerializeField] private FoodManager foodManager;
+    // 引用FurnitureManager（替代旧的FoodManager）
+    [SerializeField] private FurnitureManager furnitureManager;
     
     // 相机目标 - 可以在Inspector中配置而不是自动创建
     [SerializeField] private Transform cameraTarget;
@@ -95,10 +95,10 @@ public class CameraController : MonoBehaviour
             petManager = FindObjectOfType<PetManager>();
         }
         
-        // 如果没有指定FoodManager，尝试在场景中查找
-        if (foodManager == null)
+        // 如果没有指定FurnitureManager，尝试在场景中查找
+        if (furnitureManager == null)
         {
-            foodManager = FindObjectOfType<FoodManager>();
+            furnitureManager = FindObjectOfType<FurnitureManager>();
         }
         
         // 保存默认跟随目标
@@ -171,12 +171,12 @@ public class CameraController : MonoBehaviour
         // 检查是否有选中的宠物
         PetController2D selectedPet = petManager?.GetSelectedPet();
         
-        // 检查是否有选中的食物
-        FoodController selectedFood = foodManager?.GetSelectedFood();
+        // 检查是否有选中的家具
+        ISelectableFurniture selectedFurniture = furnitureManager?.GetSelectedFurniture();
         
         // 处理相机状态切换
-        // 如果有选中的食物，确保相机处于自由模式
-        if (selectedFood != null)
+        // 如果有选中的家具，确保相机处于自由模式
+        if (selectedFurniture != null)
         {
             // 只有当前不在自由模式时，才执行状态切换
             if (currentState != CameraState.Free)

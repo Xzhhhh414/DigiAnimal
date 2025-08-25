@@ -22,7 +22,7 @@ MonoBehaviour:
     petType: 0
     isStarterPet: 1
     isShopPet: 1
-    heartCost: 520
+    heartCost: 88
     baseEnergy: 100
     baseSatiety: 100
   - petId: Pet_CatBlack
@@ -34,7 +34,7 @@ MonoBehaviour:
     petType: 0
     isStarterPet: 1
     isShopPet: 1
-    heartCost: 520
+    heartCost: 88
     baseEnergy: 100
     baseSatiety: 100
   - petId: Pet_CatWhite
@@ -46,7 +46,7 @@ MonoBehaviour:
     petType: 0
     isStarterPet: 1
     isShopPet: 1
-    heartCost: 520
+    heartCost: 88
     baseEnergy: 100
     baseSatiety: 100
   - petId: Pet_CatGrey
@@ -58,6 +58,6 @@ MonoBehaviour:
     petType: 0
     isStarterPet: 0
     isShopPet: 1
-    heartCost: 520
+    heartCost: 88
     baseEnergy: 100
     baseSatiety: 100

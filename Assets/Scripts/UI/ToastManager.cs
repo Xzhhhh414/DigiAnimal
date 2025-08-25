@@ -299,4 +299,74 @@ public class ToastManager : MonoBehaviour
             HideToastAnimation();
         }
     }
+    
+    /// <summary>
+    /// 显示持续的Toast消息（不会自动消失）
+    /// </summary>
+    /// <param name="message">要显示的消息</param>
+    public void ShowPersistentToast(string message)
+    {
+        if (string.IsNullOrEmpty(message)) return;
+        
+        if (toastMessagePrefab == null || targetCanvas == null)
+        {
+            Debug.LogError("ToastManager: ToastMessage预制体或Canvas未设置！");
+            return;
+        }
+        
+        // 如果正在显示其他Toast，先停止之前的动画
+        if (isShowing && currentToastObject != null)
+        {
+            DOTween.Kill(canvasGroup);
+            if (hideDelayTweener != null && hideDelayTweener.IsActive())
+            {
+                hideDelayTweener.Kill();
+                hideDelayTweener = null;
+            }
+            DestroyCurrentToast();
+        }
+        
+        // 创建新的Toast对象
+        CreateToastObject();
+        
+        if (currentToastObject == null || toastText == null)
+        {
+            Debug.LogError("ToastManager: 创建Toast对象失败！");
+            return;
+        }
+        
+        // 设置文本内容
+        toastText.text = message;
+        
+        // 根据文本长度调整Toast大小
+        AdjustToastSize(message);
+        
+        // 开始显示动画（但不设置自动隐藏）
+        ShowPersistentToastAnimation();
+    }
+    
+    /// <summary>
+    /// 显示持续Toast的动画（不自动隐藏）
+    /// </summary>
+    private void ShowPersistentToastAnimation()
+    {
+        isShowing = true;
+        
+        // 设置初始状态
+        canvasGroup.alpha = 0;
+        
+        // 只做淡入动画，不设置自动隐藏
+        canvasGroup.DOFade(1, fadeInDuration);
+    }
+    
+    /// <summary>
+    /// 隐藏当前持续显示的Toast
+    /// </summary>
+    public void HidePersistentToast()
+    {
+        if (isShowing)
+        {
+            HideToastAnimation();
+        }
+    }
 } 

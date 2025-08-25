@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 2352427724875390821}
   - component: {fileID: -4360071572095935579}
   - component: {fileID: 4719808220960515927}
+  - component: {fileID: 218445422535254670}
+  - component: {fileID: 2850016804639488631}
   m_Layer: 6
   m_Name: Plant_02
   m_TagString: Untagged
@@ -147,3 +149,50 @@ MonoBehaviour:
   m_Area: 1
   m_IgnoreFromBuild: 0
   m_AffectedAgents: ffffffff
+--- !u!114 &218445422535254670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2980885832725105029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d70a12fa2fb5c1b46895e0c78d28778f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _healthLevel: 100
+  healthRecoveryValue: 10
+  wateringCanPrefab: {fileID: 4265860994396895707, guid: 113fa48fa79618b4786930b12c93342f, type: 3}
+  wateringCanOffset: {x: -0.5, y: 0.6, z: 0}
+  wateringDuration: 4
+  sparkleEffectPrefab: {fileID: 4265860994396895707, guid: 3368ae0fd070fc34b83e09866124c806, type: 3}
+  sparkleEffectOffset: {x: 0, y: 0.4, z: 0}
+  sparkleEffectDuration: 2
+  healthySprite: {fileID: -1724509442, guid: ab039c4773cc2444bac733288af7fcae, type: 3}
+  thirstySprite: {fileID: 1302922850, guid: ab039c4773cc2444bac733288af7fcae, type: 3}
+  witheredSprite: {fileID: 530140915, guid: ab039c4773cc2444bac733288af7fcae, type: 3}
+  plantName: "\u9752\u85E4\u82D7"
+  plantIcon: {fileID: 21300000, guid: 695faac3f6ed40045a65edcd975d2767, type: 3}
+  isSelected: 0
+  plantId: 
+  minDecreaseInterval: 180
+  maxDecreaseInterval: 300
+  healthDecreaseValue: 1
+--- !u!114 &2850016804639488631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2980885832725105029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e856fc47697dfda43869eee447cd358f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 0.28235295, g: 0.28235295, b: 0.28235295, a: 1}
+  outlineSize: 1
+  alphaCutoff: 0.1
+  pixelOutlineShader: {fileID: 0}
+  outlineOnAwake: 0
