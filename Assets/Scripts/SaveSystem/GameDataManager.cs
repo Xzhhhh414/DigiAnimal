@@ -261,23 +261,31 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     private void SyncFoodData(SaveData saveData)
     {
-        // 清空旧的食物数据
-        saveData.worldData.foods.Clear();
-        
         // 查找场景中所有的食物对象
         FoodController[] allFoods = FindObjectsOfType<FoodController>();
         
-        foreach (FoodController food in allFoods)
+        // 安全检查：只有在找到食物对象时才清空和重建数据
+        if (allFoods.Length > 0)
         {
-            if (food != null)
+            // 清空旧的食物数据
+            saveData.worldData.foods.Clear();
+            
+            foreach (FoodController food in allFoods)
             {
-                FoodSaveData foodSaveData = food.GetSaveData();
-                saveData.worldData.foods.Add(foodSaveData);
-                // Debug.Log($"[GameDataManager] 同步食物: {foodSaveData.foodId}, isEmpty={foodSaveData.isEmpty}");
+                if (food != null)
+                {
+                    FoodSaveData foodSaveData = food.GetSaveData();
+                    saveData.worldData.foods.Add(foodSaveData);
+                    // Debug.Log($"[GameDataManager] 同步食物: {foodSaveData.foodId}, isEmpty={foodSaveData.isEmpty}");
+                }
             }
+            
+            // Debug.Log($"[GameDataManager] 同步了 {saveData.worldData.foods.Count} 个食物的存档数据");
         }
-        
-        // Debug.Log($"[GameDataManager] 同步了 {saveData.worldData.foods.Count} 个食物的存档数据");
+        else
+        {
+            // Debug.Log($"[GameDataManager] 跳过食物数据同步 - 场景中未找到食物对象，保持现有存档数据 ({saveData.worldData.foods.Count} 个食物)");
+        }
     }
     
     /// <summary>
@@ -285,23 +293,31 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     private void SyncPlantData(SaveData saveData)
     {
-        // 清空旧的植物数据
-        saveData.worldData.plants.Clear();
-        
         // 查找场景中所有的植物对象
         PlantController[] allPlants = FindObjectsOfType<PlantController>();
         
-        foreach (PlantController plant in allPlants)
+        // 安全检查：只有在找到植物对象时才清空和重建数据
+        if (allPlants.Length > 0)
         {
-            if (plant != null)
+            // 清空旧的植物数据
+            saveData.worldData.plants.Clear();
+            
+            foreach (PlantController plant in allPlants)
             {
-                PlantSaveData plantSaveData = plant.GetSaveData();
-                saveData.worldData.plants.Add(plantSaveData);
-                // Debug.Log($"[GameDataManager] 同步植物: {plantSaveData.plantId}, healthLevel={plantSaveData.healthLevel}");
+                if (plant != null)
+                {
+                    PlantSaveData plantSaveData = plant.GetSaveData();
+                    saveData.worldData.plants.Add(plantSaveData);
+                    // Debug.Log($"[GameDataManager] 同步植物: {plantSaveData.plantId}, healthLevel={plantSaveData.healthLevel}");
+                }
             }
+            
+            // Debug.Log($"[GameDataManager] 同步了 {saveData.worldData.plants.Count} 个植物的存档数据");
         }
-        
-        // Debug.Log($"[GameDataManager] 同步了 {saveData.worldData.plants.Count} 个植物的存档数据");
+        else
+        {
+            // Debug.Log($"[GameDataManager] 跳过植物数据同步 - 场景中未找到植物对象，保持现有存档数据 ({saveData.worldData.plants.Count} 个植物)");
+        }
     }
     
     /// <summary>

@@ -182,5 +182,5 @@ MonoBehaviour:
   fadeOutDuration: 0.3
   minWidth: 400
   maxWidth: 1000
-  paddingHorizontal: 75
+  paddingHorizontal: 120
   fixedHeight: 175

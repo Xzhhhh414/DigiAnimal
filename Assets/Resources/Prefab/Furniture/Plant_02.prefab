@@ -176,6 +176,7 @@ MonoBehaviour:
   plantIcon: {fileID: 21300000, guid: 695faac3f6ed40045a65edcd975d2767, type: 3}
   isSelected: 0
   plantId: 
+  configId: 
   minDecreaseInterval: 180
   maxDecreaseInterval: 300
   healthDecreaseValue: 1

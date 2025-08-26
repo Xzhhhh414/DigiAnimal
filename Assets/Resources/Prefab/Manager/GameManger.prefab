@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4623433669036567871}
   - component: {fileID: 3045847506654479961}
   - component: {fileID: 4651001465556447005}
+  - component: {fileID: 8829179028145990613}
   m_Layer: 0
   m_Name: GameManger
   m_TagString: Untagged
@@ -122,3 +123,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   transitionOverlayPrefab: {fileID: 1884217224353576464, guid: 0e8dfdaf8c9243648990073aed5fa0b6, type: 3}
+--- !u!114 &8829179028145990613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4353075851608123511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2506cae1703e6849bb9b881c5782541, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  database: {fileID: 11400000, guid: 13a05889cda7a4243ada07a0e8bae358, type: 2}
+  furnitureParent: {fileID: 0}
+  defaultFurnitureItems:
+  - furnitureConfigId: CatFood
+    position: {x: 2.35, y: 6.5, z: 0}
+  - furnitureConfigId: Plant_01
+    position: {x: -1.5, y: 3, z: 0}
+  - furnitureConfigId: Plant_01
+    position: {x: 7.1, y: 6.35, z: 0}
+  - furnitureConfigId: Plant_02
+    position: {x: 2.5, y: 1, z: 0}
+  enableDebugLog: 0

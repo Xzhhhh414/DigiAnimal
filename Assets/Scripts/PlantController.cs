@@ -1,12 +1,15 @@
 using UnityEngine;
 using System.Collections;
 
-public class PlantController : MonoBehaviour, ISelectableFurniture
+public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFurniture
 {
     // 植物健康度 (0-100)
     [SerializeField]
     [Range(0, 100)]
-    private int _healthLevel = 100;
+    private int _healthLevel = 100; // 默认值，仅在新建植物时使用
+    
+    // 标记是否已从存档加载，避免默认值覆盖存档数据
+    private bool hasLoadedFromSave = false;
     
     // 浇水时每秒恢复的健康度
     [SerializeField]
@@ -55,6 +58,10 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
     [SerializeField]
     private string plantId = "";
     
+    // 家具配置ID（来自FurnitureDatabase）
+    [SerializeField]
+    private string configId = "";
+    
     // 健康度下降设置
     [Header("健康度下降设置")]
     [SerializeField]
@@ -66,6 +73,12 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
     
     // 是否正在加载存档数据（用于避免在加载时触发自动保存）
     private bool isLoadingFromSave = false;
+    
+    // 离线时间计算相关
+    private System.DateTime lastHealthUpdateTime = System.DateTime.Now;
+    private System.DateTime pauseTime = System.DateTime.MinValue;
+    private bool wasApplicationPaused = false;
+    private float offlineTimeStampUpdateTimer = 0f;
     
     // 像素描边管理器
     private PixelOutlineManager pixelOutlineManager;
@@ -90,20 +103,49 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
         pixelOutlineManager = GetComponent<PixelOutlineManager>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         
-        // 生成植物ID
+        // 生成植物ID（如果为空）
         if (string.IsNullOrEmpty(plantId))
         {
             GeneratePlantId();
+        }
+        else
+        {
+            Debug.Log($"[PlantController] 使用现有植物ID: {plantId}");
         }
     }
     
     void Start()
     {
+        // 等待一帧，确保GameInitializer有机会加载存档数据
+        StartCoroutine(DelayedInitialization());
+    }
+    
+    /// <summary>
+    /// 延迟初始化，确保存档加载优先级
+    /// </summary>
+    private System.Collections.IEnumerator DelayedInitialization()
+    {
+        // 等待一帧，让GameInitializer有机会执行
+        yield return null;
+        
+        // 如果没有从存档加载，则使用默认值
+        if (!hasLoadedFromSave)
+        {
+            // 新植物，使用默认健康度100
+            Debug.Log($"[PlantController] ⚠️ 植物 {PlantName} 未从存档加载，使用默认健康度: {_healthLevel}");
+        }
+        
         // 初始化植物外观
         UpdatePlantAppearance();
         
         // 开始健康度下降协程
         StartHealthDecreaseCoroutine();
+    }
+    
+    void Update()
+    {
+        // 更新离线时间戳（每秒更新一次）
+        UpdateOfflineTimeStamps();
     }
     
     #if UNITY_EDITOR
@@ -154,7 +196,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
                     GameDataManager.Instance.OnPlantDataChanged();
                 }
                 
-                // Debug.Log($"植物 {PlantName} 健康度变化: {oldValue} -> {_healthLevel}");
+                //Debug.Log($"[PlantController] 植物 {PlantName} 健康度变化: {oldValue} -> {_healthLevel} (isLoadingFromSave: {isLoadingFromSave}, hasLoadedFromSave: {hasLoadedFromSave})");
             }
         }
     }
@@ -184,6 +226,75 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
     {
         get { return plantIcon; }
     }
+    
+    #region ISpawnableFurniture 接口实现
+    
+    /// <summary>
+    /// 家具唯一ID（ISpawnableFurniture接口）
+    /// </summary>
+    public string FurnitureId
+    {
+        get { return plantId; }
+        set { plantId = value; }
+    }
+    
+    /// <summary>
+    /// 家具类型（ISpawnableFurniture接口）
+    /// </summary>
+    public FurnitureType SpawnableFurnitureType => global::FurnitureType.Plant;
+    
+    /// <summary>
+    /// 家具名称（ISpawnableFurniture接口）
+    /// </summary>
+    string ISpawnableFurniture.FurnitureName
+    {
+        get { return plantName; }
+        set { plantName = value; }
+    }
+    
+    /// <summary>
+    /// 家具位置（ISpawnableFurniture接口）
+    /// </summary>
+    public Vector3 Position
+    {
+        get { return transform.position; }
+        set { transform.position = value; }
+    }
+    
+
+    
+    /// <summary>
+    /// 从存档数据初始化家具（ISpawnableFurniture接口）
+    /// </summary>
+    public void InitializeFromSaveData(object saveData)
+    {
+        if (saveData is PlantSaveData plantSaveData)
+        {
+            LoadFromSaveData(plantSaveData);
+        }
+        else
+        {
+            Debug.LogError($"[PlantController] 无效的存档数据类型: {saveData?.GetType()}");
+        }
+    }
+    
+    /// <summary>
+    /// 获取存档数据（ISpawnableFurniture接口）
+    /// </summary>
+    object ISpawnableFurniture.GetSaveData()
+    {
+        return GetSaveData();
+    }
+    
+    /// <summary>
+    /// 生成家具ID（ISpawnableFurniture接口）
+    /// </summary>
+    public void GenerateFurnitureId()
+    {
+        GeneratePlantId();
+    }
+    
+    #endregion
     
     /// <summary>
     /// 获取当前植物状态
@@ -440,6 +551,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
     {
         Vector3 pos = transform.position;
         plantId = $"{plantName}_{pos.x:F2}_{pos.y:F2}";
+        Debug.Log($"[PlantController] 生成植物ID: {plantId} (名称: {plantName}, 位置: {pos})");
     }
     
     /// <summary>
@@ -451,10 +563,12 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
         {
             plantId = this.plantId,
             plantName = this.plantName,
+            configId = this.configId,
             healthLevel = this._healthLevel,
             position = transform.position,
             wateringHeartCost = 0, // 浇水免费，但保持存档兼容性
-            healthRecoveryValue = this.healthRecoveryValue
+            healthRecoveryValue = this.healthRecoveryValue,
+            lastHealthUpdateTime = lastHealthUpdateTime.ToString("yyyy-MM-dd HH:mm:ss")
         };
     }
     
@@ -468,9 +582,11 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
         try
         {
             isLoadingFromSave = true;
+            hasLoadedFromSave = true; // 标记已从存档加载
             
             plantId = saveData.plantId;
             plantName = saveData.plantName;
+            configId = saveData.configId;
             HealthLevel = saveData.healthLevel; // 这会触发外观更新
             // wateringHeartCost 已移除，浇水免费
             healthRecoveryValue = saveData.healthRecoveryValue;
@@ -478,12 +594,40 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
             // 设置位置
             transform.position = saveData.position;
             
-            // Debug.Log($"植物 {PlantName} 加载存档数据完成，健康度: {_healthLevel}");
+            // 确保植物ID与存档一致（避免下次匹配失败）
+            if (plantId != saveData.plantId)
+            {
+                Debug.Log($"[PlantController] 更新植物ID: {plantId} -> {saveData.plantId}");
+                plantId = saveData.plantId;
+            }
+            
+            // 应用离线时间变化
+            System.DateTime lastHealthUpdate = ParseDateTime(saveData.lastHealthUpdateTime);
+            ApplyOfflineTimeChanges(lastHealthUpdate);
+            
+            Debug.Log($"[PlantController] 植物 {PlantName} 加载存档数据完成，健康度: {_healthLevel} (存档值: {saveData.healthLevel})");
         }
         finally
         {
             isLoadingFromSave = false;
         }
+    }
+    
+    /// <summary>
+    /// 解析日期时间字符串，失败时返回MinValue
+    /// </summary>
+    private System.DateTime ParseDateTime(string dateTimeString)
+    {
+        if (string.IsNullOrEmpty(dateTimeString))
+            return System.DateTime.MinValue;
+            
+        if (System.DateTime.TryParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", null, System.Globalization.DateTimeStyles.None, out System.DateTime result))
+        {
+            return result;
+        }
+        
+        // Debug.LogWarning($"[PlantController] 无法解析时间字符串: {dateTimeString}，使用默认值");
+        return System.DateTime.MinValue;
     }
     
     // OnMouseDown 已移除，现在统一由FurnitureManager.Update()处理点击检测
@@ -552,4 +696,137 @@ public class PlantController : MonoBehaviour, ISelectableFurniture
     {
         return PlantIcon;
     }
+    
+    #region 离线时间计算相关
+    
+    /// <summary>
+    /// 更新离线时间戳（每秒更新一次）
+    /// </summary>
+    private void UpdateOfflineTimeStamps()
+    {
+        offlineTimeStampUpdateTimer += Time.deltaTime;
+        
+        // 每秒更新一次时间戳
+        if (offlineTimeStampUpdateTimer >= 1.0f)
+        {
+            lastHealthUpdateTime = System.DateTime.Now;
+            offlineTimeStampUpdateTimer -= 1.0f;
+        }
+    }
+    
+    /// <summary>
+    /// 应用程序暂停时调用
+    /// </summary>
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            // 游戏暂停（切换到后台）
+            pauseTime = System.DateTime.Now;
+            wasApplicationPaused = true;
+        }
+        else if (wasApplicationPaused)
+        {
+            // 游戏恢复（从后台回到前台）
+            System.DateTime resumeTime = System.DateTime.Now;
+            ApplyBackgroundTimeChanges(pauseTime, resumeTime);
+            wasApplicationPaused = false;
+        }
+    }
+    
+    /// <summary>
+    /// 应用程序焦点变化时调用
+    /// </summary>
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus)
+        {
+            // 游戏失去焦点
+            pauseTime = System.DateTime.Now;
+            wasApplicationPaused = true;
+        }
+        else if (wasApplicationPaused)
+        {
+            // 游戏获得焦点
+            System.DateTime resumeTime = System.DateTime.Now;
+            ApplyBackgroundTimeChanges(pauseTime, resumeTime);
+            wasApplicationPaused = false;
+        }
+    }
+    
+    /// <summary>
+    /// 应用后台时间变化（与完全离线类似，但时间较短）
+    /// </summary>
+    private void ApplyBackgroundTimeChanges(System.DateTime pauseTime, System.DateTime resumeTime)
+    {
+        System.TimeSpan backgroundTime = resumeTime - pauseTime;
+        double backgroundSeconds = backgroundTime.TotalSeconds;
+        
+        // 只有后台时间超过5秒才进行计算，避免频繁切换的影响
+        if (backgroundSeconds < 5.0)
+            return;
+            
+        // Debug.Log($"植物 {PlantName} 在后台 {backgroundSeconds:F0} 秒，开始计算健康度变化");
+        
+        // 应用后台健康度变化
+        if (backgroundSeconds > 0)
+        {
+            // 计算后台期间的健康度变化
+            // 使用平均间隔时间来估算下降次数
+            float avgDecreaseInterval = (minDecreaseInterval + maxDecreaseInterval) / 2f;
+            int healthDecrease = (int)(backgroundSeconds / avgDecreaseInterval) * healthDecreaseValue;
+            
+            if (healthDecrease > 0)
+            {
+                HealthLevel = Mathf.Max(0, HealthLevel - healthDecrease);
+                // Debug.Log($"植物 {PlantName} 后台时间计算完成：健康度-{healthDecrease}");
+            }
+        }
+        
+        // 更新时间戳
+        lastHealthUpdateTime = System.DateTime.Now;
+    }
+    
+    /// <summary>
+    /// 应用离线时间变化（游戏启动时调用）
+    /// </summary>
+    public void ApplyOfflineTimeChanges(System.DateTime lastHealthUpdate)
+    {
+        System.DateTime now = System.DateTime.Now;
+        
+        // 应用离线健康度变化
+        if (lastHealthUpdate != System.DateTime.MinValue)
+        {
+            System.TimeSpan healthOfflineTime = now - lastHealthUpdate;
+            double offlineSeconds = healthOfflineTime.TotalSeconds;
+            
+            if (offlineSeconds > 0)
+            {
+                // 计算离线期间的健康度变化
+                // 使用平均间隔时间来估算下降次数
+                float avgDecreaseInterval = (minDecreaseInterval + maxDecreaseInterval) / 2f;
+                int healthDecrease = (int)(offlineSeconds / avgDecreaseInterval) * healthDecreaseValue;
+                
+                if (healthDecrease > 0)
+                {
+                    int oldHealth = HealthLevel;
+                    HealthLevel = Mathf.Max(0, HealthLevel - healthDecrease);
+                    Debug.Log($"[PlantController] 植物 {PlantName} 离线 {offlineSeconds:F0} 秒，健康度: {oldHealth} -> {HealthLevel} (减少 {healthDecrease} 点)");
+                }
+            }
+        }
+        
+        // 更新时间戳
+        lastHealthUpdateTime = now;
+    }
+    
+    /// <summary>
+    /// 获取离线时间数据（供存档系统使用）
+    /// </summary>
+    public System.DateTime GetOfflineTimeData()
+    {
+        return lastHealthUpdateTime;
+    }
+    
+    #endregion
 }

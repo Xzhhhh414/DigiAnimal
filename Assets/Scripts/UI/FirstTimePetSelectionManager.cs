@@ -5,6 +5,19 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 /// <summary>
+/// 默认家具配置项（用于新账号初始化）
+/// </summary>
+[System.Serializable]
+public class DefaultFurnitureConfig
+{
+    //[Header("家具配置")]
+    public string furnitureConfigId = "";   // 对应FurnitureDatabase中的configId
+    
+    //[Header("位置设置")]
+    public Vector3 position = Vector3.zero; // 家具生成位置
+}
+
+/// <summary>
 /// 初次游戏宠物选择管理器 - 处理初次游戏时的宠物选择界面
 /// 挂载位置：Start场景 -> GameStartManager对象下
 /// 功能：检测是否初次游戏，控制宠物选择界面的显示/隐藏，处理宠物创建和场景切换
@@ -29,6 +42,9 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     
     [Header("场景切换")]
     [SerializeField] private string gameplaySceneName = "Gameplay";   // 游戏场景名称
+    
+    [Header("默认家具配置")]
+    [SerializeField] private List<DefaultFurnitureConfig> defaultFurnitureList = new List<DefaultFurnitureConfig>();
     
     // 当前选中的宠物索引
     private int selectedPetIndex = -1;
@@ -555,16 +571,26 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             // 添加到存档
             saveData.petsData.Add(newPetData);
             
-            // 设置新玩家的默认系统设置
-            if (saveData.petsData.Count == 1) // 如果这是第一个宠物
+            // 设置新玩家的默认系统设置和默认家具
+            if (saveData.petsData.Count == 1) // 如果这是第一个宠物（新账号）
             {
+                // 系统设置
                 saveData.playerData.dynamicIslandEnabled = true; // 默认开启灵动岛
                 saveData.playerData.selectedDynamicIslandPetId = newPetData.petId; // 默认选择第一个宠物
                 saveData.playerData.lockScreenWidgetEnabled = false; // 锁屏小组件默认关闭
                 saveData.playerData.selectedLockScreenPetId = newPetData.petId; // 默认选择第一个宠物
                 
-                // Debug.Log($"[FirstTimePetSelectionManager] 设置新玩家默认系统设置: 灵动岛=开启, 选中宠物={newPetData.petId}");
+                // 创建默认家具数据
+                CreateDefaultFurnitureData(saveData);
+                
+                // Debug.Log($"[FirstTimePetSelectionManager] 设置新玩家默认系统设置和家具");
             }
+            
+            // 保存前的数据检查
+            // Debug.Log($"[FirstTimePetSelectionManager] 保存前数据检查 - 植物:{saveData.worldData?.plants?.Count ?? -1}, 食物:{saveData.worldData?.foods?.Count ?? -1}");
+            
+            // 将修改后的数据设置回SaveManager
+            SaveManager.Instance.SetCurrentSaveData(saveData);
             
             // 保存存档
             bool saveSuccess = SaveManager.Instance.Save();
@@ -573,6 +599,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             {
                 // 宠物创建成功
                 success = true;
+                // Debug.Log("[FirstTimePetSelectionManager] 存档保存成功");
             }
             else
             {
@@ -712,5 +739,95 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         
         // 确保FirstTimePetSelectionManager对象不会跟随到下一个场景
         // 由于FirstTimePetSelectionManager没有使用DontDestroyOnLoad，理论上应该会被自动销毁
+    }
+    
+    /// <summary>
+    /// 创建默认家具数据（新账号使用）
+    /// </summary>
+    private void CreateDefaultFurnitureData(SaveData saveData)
+    {
+        // 确保worldData存在
+        if (saveData.worldData == null)
+        {
+            saveData.worldData = new WorldSaveData();
+        }
+        
+        // 确保plants列表存在
+        if (saveData.worldData.plants == null)
+        {
+            saveData.worldData.plants = new List<PlantSaveData>();
+        }
+        
+        // 确保foods列表存在
+        if (saveData.worldData.foods == null)
+        {
+            saveData.worldData.foods = new List<FoodSaveData>();
+        }
+        
+        // 根据配置创建家具数据
+        if (defaultFurnitureList.Count > 0)
+        {
+            foreach (var furnitureConfig in defaultFurnitureList)
+            {
+                CreateFurnitureByConfigId(saveData, furnitureConfig);
+            }
+        }
+        else
+        {
+            // 如果没有配置，使用默认布局
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "PlantPrefab", position = new Vector3(-2f, 0f, 0f) });
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "PlantPrefab", position = new Vector3(0f, 0f, 0f) });
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "PlantPrefab", position = new Vector3(2f, 0f, 0f) });
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "FoodBowlPrefab", position = new Vector3(-1f, -1f, 0f) });
+        }
+        
+        // Debug.Log($"[FirstTimePetSelectionManager] 创建默认家具数据完成 - 植物:{saveData.worldData.plants.Count}, 食物:{saveData.worldData.foods.Count}");
+    }
+    
+    /// <summary>
+    /// 根据ConfigId创建对应的家具数据
+    /// </summary>
+    private void CreateFurnitureByConfigId(SaveData saveData, DefaultFurnitureConfig config)
+    {
+        if (string.IsNullOrEmpty(config.furnitureConfigId))
+        {
+            Debug.LogWarning("[FirstTimePetSelectionManager] 家具ConfigId为空，跳过创建");
+            return;
+        }
+        
+        string furnitureId = GenerateUniqueFurnitureId(saveData);
+        
+        // 根据ConfigId判断家具类型并创建对应的存档数据
+        if (config.furnitureConfigId.ToLower().Contains("plant"))
+        {
+            // 创建植物数据
+            // 参数顺序：id, name, configId, health, position, cost, recovery
+            PlantSaveData plantData = new PlantSaveData(furnitureId, "默认植物", config.furnitureConfigId, 100, config.position, 0, 25);
+            plantData.lastHealthUpdateTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            saveData.worldData.plants.Add(plantData);
+            // Debug.Log($"[FirstTimePetSelectionManager] 创建植物数据: 默认植物 (ConfigId: {config.furnitureConfigId}) at {config.position}");
+        }
+        else if (config.furnitureConfigId.ToLower().Contains("food"))
+        {
+            // 创建食物数据
+            // 参数顺序：id, type, configId, empty, position, tasty, satietyRecoveryValue
+            FoodSaveData foodData = new FoodSaveData(furnitureId, "猫粮", config.furnitureConfigId, false, config.position, 3, 25);
+            saveData.worldData.foods.Add(foodData);
+            // Debug.Log($"[FirstTimePetSelectionManager] 创建食物数据: 猫粮 (ConfigId: {config.furnitureConfigId}) at {config.position}");
+        }
+        else
+        {
+            Debug.LogWarning($"[FirstTimePetSelectionManager] 未知的家具类型: {config.furnitureConfigId}");
+        }
+    }
+    
+    /// <summary>
+    /// 生成唯一的家具ID
+    /// </summary>
+    private string GenerateUniqueFurnitureId(SaveData saveData)
+    {
+        string id = $"furniture_{saveData.nextFurnitureIdCounter}";
+        saveData.nextFurnitureIdCounter++;
+        return id;
     }
 } 

@@ -86,21 +86,29 @@ public class GameInitializer : MonoBehaviour
             // 6. 生成宠物
             yield return SpawnPets(saveData);
             
-            // 7. 加载食物状态
-            yield return LoadFoodStates(saveData);
-            
-            // 8. 加载植物状态
-            yield return LoadPlantStates(saveData);
+            // 7. 生成家具（植物和食物等）
+            yield return SpawnFurniture(saveData);
             
             // 9. 重新启用自动保存
             GameDataManager.Instance.SetAutoSaveEnabled(originalAutoSaveState);
             // Debug.Log("[GameInitializer] 已重新启用自动保存");
             
-            // 9. 如果没有宠物且启用了默认宠物创建，创建默认宠物
-            if (saveData.petsData.Count == 0 && createDefaultPetIfEmpty)
+            // 9. 如果是新账号，创建默认内容（现在只处理宠物，家具在Start场景已创建）
+            bool isNewAccount = saveData.petsData.Count == 0;
+            
+                    // Debug.Log($"[GameInitializer] 新账号检查 - 宠物:{saveData.petsData.Count}, 植物:{saveData.worldData.plants?.Count ?? 0}, 食物:{saveData.worldData.foods?.Count ?? 0}");
+        // Debug.Log($"[GameInitializer] 是否新账号:{isNewAccount}");
+            
+            if (isNewAccount)
             {
-                yield return CreateDefaultPet();
+                // 创建默认宠物（只在直接进入Gameplay场景时需要）
+                if (createDefaultPetIfEmpty)
+                {
+                    yield return CreateDefaultPet();
+                }
             }
+            
+            // 家具数据现在在Start场景创建，这里不再需要额外创建
             
             initializationSuccess = true;
         }
@@ -432,36 +440,191 @@ public class GameInitializer : MonoBehaviour
     }
     
     /// <summary>
-    /// 根据ID或位置查找植物对象
+    /// 生成家具（新的统一家具生成系统）
     /// </summary>
-    private PlantController FindPlantByIdOrPosition(PlantController[] allPlants, PlantSaveData saveData)
+    private IEnumerator SpawnFurniture(SaveData saveData)
     {
-        // 首先尝试通过ID匹配
-        foreach (PlantController plant in allPlants)
+        if (FurnitureSpawner.Instance == null)
         {
-            if (plant.PlantId == saveData.plantId)
-            {
-                return plant;
-            }
+            Debug.LogError("[GameInitializer] FurnitureSpawner未初始化！");
+            yield break;
         }
         
-        // 如果ID匹配失败，尝试通过位置和名称匹配
-        foreach (PlantController plant in allPlants)
+        // 1. 先加载ID计数器
+        int savedCounter = saveData.nextFurnitureIdCounter;
+        FurnitureSpawner.Instance.LoadIdCounter(savedCounter);
+        // Debug.Log($"[GameInitializer] 加载家具ID计数器: {savedCounter}");
+        
+        // 2. 清理现有的场景预置家具（如果有的话）
+        yield return ClearSceneFurniture();
+        
+        // 3. 生成植物
+        // Debug.Log($"[GameInitializer] 植物数据检查 - worldData: {saveData?.worldData != null}, plants: {saveData?.worldData?.plants != null}, count: {saveData?.worldData?.plants?.Count ?? -1}");
+        
+        if (saveData?.worldData?.plants != null && saveData.worldData.plants.Count > 0)
         {
-            Vector3 plantPos = plant.transform.position;
-            Vector3 savePos = saveData.position;
+            // Debug.Log($"[GameInitializer] 开始生成 {saveData.worldData.plants.Count} 个植物...");
             
-            // 检查位置是否接近（误差范围0.5单位）
-            if (Vector3.Distance(plantPos, savePos) < 0.5f)
+            foreach (var plantData in saveData.worldData.plants)
             {
-                string plantName = plant.gameObject.name.Replace("(Clone)", "");
-                if (plantName == saveData.plantName || plant.PlantName == saveData.plantName)
+                // Debug.Log($"[GameInitializer] 正在生成植物: ID={plantData.plantId}, ConfigId={plantData.configId}, Position={plantData.position}");
+                var spawnedFurniture = FurnitureSpawner.Instance.SpawnFurnitureFromSaveData(plantData);
+                
+                if (spawnedFurniture != null)
                 {
-                    return plant;
+                    // Debug.Log($"[GameInitializer] 植物生成成功: {spawnedFurniture.FurnitureName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameInitializer] 植物生成失败: {plantData.plantId}");
+                }
+                
+                yield return null; // 每生成一个家具后让出一帧
+            }
+        }
+        else
+        {
+            // Debug.Log("[GameInitializer] 跳过植物生成 - 没有植物数据");
+        }
+        
+        // 4. 生成食物
+        // Debug.Log($"[GameInitializer] 食物数据检查 - worldData: {saveData?.worldData != null}, foods: {saveData?.worldData?.foods != null}, count: {saveData?.worldData?.foods?.Count ?? -1}");
+        
+        if (saveData?.worldData?.foods != null && saveData.worldData.foods.Count > 0)
+        {
+            // Debug.Log($"[GameInitializer] 开始生成 {saveData.worldData.foods.Count} 个食物...");
+            
+            foreach (var foodData in saveData.worldData.foods)
+            {
+                // Debug.Log($"[GameInitializer] 正在生成食物: ID={foodData.foodId}, ConfigId={foodData.configId}, Position={foodData.position}");
+                var spawnedFurniture = FurnitureSpawner.Instance.SpawnFurnitureFromSaveData(foodData);
+                
+                if (spawnedFurniture != null)
+                {
+                    // Debug.Log($"[GameInitializer] 食物生成成功: {spawnedFurniture.FurnitureName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameInitializer] 食物生成失败: {foodData.foodId}");
+                }
+                
+                yield return null; // 每生成一个家具后让出一帧
+            }
+        }
+        else
+        {
+            // Debug.Log("[GameInitializer] 跳过食物生成 - 没有食物数据");
+        }
+        
+        // TODO: 在这里添加其他类型家具的生成逻辑
+        // 例如：装饰品等
+        
+        // Debug.Log("[GameInitializer] 家具生成完成");
+    }
+    
+
+    
+    /// <summary>
+    /// 清理场景中预置的家具对象
+    /// </summary>
+    private IEnumerator ClearSceneFurniture()
+    {
+        // 清理场景中预置的植物对象
+        PlantController[] existingPlants = FindObjectsOfType<PlantController>();
+        if (existingPlants.Length > 0)
+        {
+            Debug.Log($"[GameInitializer] 清理 {existingPlants.Length} 个场景预置植物");
+            
+            foreach (var plant in existingPlants)
+            {
+                if (plant != null)
+                {
+                    DestroyImmediate(plant.gameObject);
                 }
             }
         }
         
+        // 清理场景中预置的食物对象
+        FoodController[] existingFoods = FindObjectsOfType<FoodController>();
+        if (existingFoods.Length > 0)
+        {
+            Debug.Log($"[GameInitializer] 清理 {existingFoods.Length} 个场景预置食物");
+            
+            foreach (var food in existingFoods)
+            {
+                if (food != null)
+                {
+                    DestroyImmediate(food.gameObject);
+                }
+            }
+        }
+        
+        // TODO: 清理其他类型的预置家具
+        
+        yield return null;
+    }
+    
+    /// <summary>
+    /// 根据ID或位置查找植物对象
+    /// </summary>
+    private PlantController FindPlantByIdOrPosition(PlantController[] allPlants, PlantSaveData saveData)
+    {
+        Debug.Log($"[GameInitializer] 尝试匹配植物存档: ID={saveData.plantId}, Name={saveData.plantName}, Pos={saveData.position}");
+        
+        PlantController bestMatch = null;
+        float bestDistance = float.MaxValue;
+        
+        // 优先使用位置匹配，因为位置是最稳定的标识
+        foreach (PlantController plant in allPlants)
+        {
+            Vector3 plantPos = plant.transform.position;
+            Vector3 savePos = saveData.position;
+            float distance = Vector3.Distance(plantPos, savePos);
+            
+            Debug.Log($"[GameInitializer] 检查植物: 名称={plant.PlantName}, ID={plant.PlantId}, 位置={plantPos}, 距离={distance:F3}");
+            
+            // 如果距离很近（小于0.1单位），优先考虑
+            if (distance < 0.1f)
+            {
+                Debug.Log($"[GameInitializer] ✅ 通过精确位置找到匹配植物: {plant.PlantName} (距离: {distance:F3})");
+                return plant;
+            }
+            
+            // 如果距离在合理范围内（小于1.0单位），记录为候选
+            if (distance < 1.0f && distance < bestDistance)
+            {
+                bestMatch = plant;
+                bestDistance = distance;
+            }
+        }
+        
+        // 如果找到了候选植物，进行名称验证
+        if (bestMatch != null)
+        {
+            string plantName = bestMatch.gameObject.name.Replace("(Clone)", "");
+            Debug.Log($"[GameInitializer] 检查最佳候选植物: 场景名称={plantName}, 植物名称={bestMatch.PlantName}, 存档名称={saveData.plantName}, 距离={bestDistance:F3}");
+            
+            // 名称匹配验证（更宽松的匹配条件）
+            if (plantName.Contains(saveData.plantName) || 
+                saveData.plantName.Contains(plantName) || 
+                bestMatch.PlantName == saveData.plantName)
+            {
+                Debug.Log($"[GameInitializer] ✅ 通过位置和名称找到匹配植物: {bestMatch.PlantName} (距离: {bestDistance:F3})");
+                return bestMatch;
+            }
+        }
+        
+        // 最后尝试ID匹配（作为备用方案）
+        foreach (PlantController plant in allPlants)
+        {
+            if (!string.IsNullOrEmpty(plant.PlantId) && plant.PlantId == saveData.plantId)
+            {
+                Debug.Log($"[GameInitializer] ✅ 通过ID找到匹配植物: {plant.PlantName}");
+                return plant;
+            }
+        }
+        
+        Debug.Log($"[GameInitializer] ❌ 未找到匹配的植物对象 (检查了 {allPlants.Length} 个植物)");
         return null;
     }
 } 

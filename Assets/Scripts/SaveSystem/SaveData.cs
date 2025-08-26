@@ -18,6 +18,9 @@ public class SaveData
     // 最后保存时间
     public string lastSaveTime;
     
+    // 家具ID计数器（用于生成唯一的家具ID）
+    public int nextFurnitureIdCounter = 1;
+    
     public SaveData()
     {
         playerData = new PlayerSaveData();
@@ -232,6 +235,7 @@ public class FoodSaveData
 {
     public string foodId;           // 食物唯一标识（基于场景中的GameObject名称或位置）
     public string foodType;         // 食物类型（如"CatFood"）
+    public string configId;         // 家具数据库中的ConfigId
     public bool isEmpty;            // 是否为空盘状态
     public Vector3 position;        // 食物位置
     public int tasty;               // 美味度
@@ -241,16 +245,18 @@ public class FoodSaveData
     {
         foodId = "";
         foodType = "";
+        configId = "";
         isEmpty = false;
         position = Vector3.zero;
         tasty = 3;
         satietyRecoveryValue = 25;
     }
     
-    public FoodSaveData(string id, string type, bool empty, Vector3 pos, int tastyValue, int satietyValue)
+    public FoodSaveData(string id, string type, string config, bool empty, Vector3 pos, int tastyValue, int satietyValue)
     {
         foodId = id;
         foodType = type;
+        configId = config;
         isEmpty = empty;
         position = pos;
         tasty = tastyValue;
@@ -266,28 +272,40 @@ public class PlantSaveData
 {
     public string plantId;                  // 植物唯一ID
     public string plantName;                // 植物名称
+    public string configId;                 // 家具数据库中的ConfigId
     public int healthLevel;                 // 健康度 (0-100)
     public Vector3 position;                // 植物位置
     public int wateringHeartCost;           // 浇水消耗的爱心
     public int healthRecoveryValue;         // 每次浇水恢复的健康度
     
+    // 离线时间计算相关
+    public string lastHealthUpdateTime;     // 上次健康度更新时间
+    
     public PlantSaveData()
     {
         plantId = "";
         plantName = "盆栽植物";
+        configId = "";
         healthLevel = 100;
         position = Vector3.zero;
         wateringHeartCost = 3;
         healthRecoveryValue = 25;
+        
+        // 初始化离线时间字段
+        lastHealthUpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     }
     
-    public PlantSaveData(string id, string name, int health, Vector3 pos, int cost, int recovery)
+    public PlantSaveData(string id, string name, string config, int health, Vector3 pos, int cost, int recovery)
     {
         plantId = id;
         plantName = name;
+        configId = config;
         healthLevel = health;
         position = pos;
         wateringHeartCost = cost;
         healthRecoveryValue = recovery;
+        
+        // 初始化离线时间字段
+        lastHealthUpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     }
 } 

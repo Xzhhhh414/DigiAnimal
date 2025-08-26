@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FoodController : MonoBehaviour, ISelectableFurniture
+public class FoodController : MonoBehaviour, ISelectableFurniture, ISpawnableFurniture
 {
     // 食物是否正在被使用
     [SerializeField]
@@ -46,6 +46,10 @@ public class FoodController : MonoBehaviour, ISelectableFurniture
     [Header("存档设置")]
     [SerializeField]
     private string foodId = "";
+    
+    // 家具配置ID（来自FurnitureDatabase）
+    [SerializeField]
+    private string configId = "";
     
     // 是否正在加载存档数据（用于避免在加载时触发自动保存）
     private bool isLoadingFromSave = false;
@@ -229,6 +233,7 @@ public class FoodController : MonoBehaviour, ISelectableFurniture
         return new FoodSaveData(
             FoodId,
             gameObject.name.Replace("(Clone)", ""),
+            configId,
             IsEmpty,
             transform.position,
             Tasty,
@@ -251,6 +256,11 @@ public class FoodController : MonoBehaviour, ISelectableFurniture
         try
         {
             foodId = saveData.foodId;
+            configId = saveData.configId;
+            
+            // 设置位置
+            transform.position = saveData.position;
+            
             // Debug.Log($"[FoodController] {gameObject.name} 设置 IsEmpty 从 {_isEmpty} 到 {saveData.isEmpty}");
             IsEmpty = saveData.isEmpty; // 这会自动更新动画参数和视觉状态
             Tasty = saveData.tasty;
@@ -304,5 +314,52 @@ public class FoodController : MonoBehaviour, ISelectableFurniture
     public Sprite GetIcon()
     {
         return FoodIcon;
+    }
+    
+    // ===== ISpawnableFurniture 接口实现 =====
+    
+    public string FurnitureId 
+    { 
+        get => foodId; 
+        set => foodId = value; 
+    }
+    
+    public FurnitureType SpawnableFurnitureType => global::FurnitureType.Food;
+    
+    string ISpawnableFurniture.FurnitureName 
+    { 
+        get => FoodName; 
+        set => foodName = value; 
+    }
+    
+    public Vector3 Position 
+    { 
+        get => transform.position; 
+        set => transform.position = value; 
+    }
+    
+    GameObject ISpawnableFurniture.GameObject => gameObject;
+    
+    public void InitializeFromSaveData(object saveData)
+    {
+        if (saveData is FoodSaveData foodSaveData)
+        {
+            LoadFromSaveData(foodSaveData);
+        }
+    }
+    
+    object ISpawnableFurniture.GetSaveData()
+    {
+        return GetSaveData();
+    }
+    
+    public void GenerateFurnitureId()
+    {
+        // 这个方法现在会由FurnitureSpawner调用，不需要自己生成ID
+        // 保留原有的GenerateFoodId逻辑作为备用
+        if (string.IsNullOrEmpty(foodId))
+        {
+            foodId = GenerateFoodId();
+        }
     }
 } 
