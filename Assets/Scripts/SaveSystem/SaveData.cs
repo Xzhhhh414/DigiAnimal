@@ -155,17 +155,11 @@ public class PetSaveData
 }
 
 /// <summary>
-/// 世界存档数据（为未来扩展准备）
+/// 世界存档数据
 /// </summary>
 [Serializable]
 public class WorldSaveData
 {
-    // 玩具数据
-    public List<ToySaveData> toys;
-    
-    // 家具数据
-    public List<FurnitureSaveData> furniture;
-    
     // 食物数据
     public List<FoodSaveData> foods;
     
@@ -177,55 +171,13 @@ public class WorldSaveData
     
     public WorldSaveData()
     {
-        toys = new List<ToySaveData>();
-        furniture = new List<FurnitureSaveData>();
         foods = new List<FoodSaveData>();
         plants = new List<PlantSaveData>();
         currentScene = "Gameplay";
     }
 }
 
-/// <summary>
-/// 玩具存档数据（预留）
-/// </summary>
-[Serializable]
-public class ToySaveData
-{
-    public string toyId;
-    public string toyType;
-    public Vector3 position;
-    public Dictionary<string, object> properties;
-    
-    public ToySaveData()
-    {
-        toyId = "";
-        toyType = "";
-        position = Vector3.zero;
-        properties = new Dictionary<string, object>();
-    }
-}
 
-/// <summary>
-/// 家具存档数据（预留）
-/// </summary>
-[Serializable]
-public class FurnitureSaveData
-{
-    public string furnitureId;
-    public string furnitureType;
-    public Vector3 position;
-    public Vector3 rotation;
-    public Dictionary<string, object> properties;
-    
-    public FurnitureSaveData()
-    {
-        furnitureId = "";
-        furnitureType = "";
-        position = Vector3.zero;
-        rotation = Vector3.zero;
-        properties = new Dictionary<string, object>();
-    }
-}
 
 /// <summary>
 /// 食物存档数据
@@ -271,7 +223,6 @@ public class FoodSaveData
 public class PlantSaveData
 {
     public string plantId;                  // 植物唯一ID
-    public string plantName;                // 植物名称
     public string configId;                 // 家具数据库中的ConfigId
     public int healthLevel;                 // 健康度 (0-100)
     public Vector3 position;                // 植物位置
@@ -284,7 +235,6 @@ public class PlantSaveData
     public PlantSaveData()
     {
         plantId = "";
-        plantName = "盆栽植物";
         configId = "";
         healthLevel = 100;
         position = Vector3.zero;
@@ -295,10 +245,9 @@ public class PlantSaveData
         lastHealthUpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     }
     
-    public PlantSaveData(string id, string name, string config, int health, Vector3 pos, int cost, int recovery)
+    public PlantSaveData(string id, string config, int health, Vector3 pos, int cost, int recovery)
     {
         plantId = id;
-        plantName = name;
         configId = config;
         healthLevel = health;
         position = pos;

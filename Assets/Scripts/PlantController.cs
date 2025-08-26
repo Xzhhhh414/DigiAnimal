@@ -551,7 +551,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
     {
         Vector3 pos = transform.position;
         plantId = $"{plantName}_{pos.x:F2}_{pos.y:F2}";
-        Debug.Log($"[PlantController] 生成植物ID: {plantId} (名称: {plantName}, 位置: {pos})");
+        //Debug.Log($"[PlantController] 生成植物ID: {plantId} (名称: {plantName}, 位置: {pos})");
     }
     
     /// <summary>
@@ -562,7 +562,6 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
         return new PlantSaveData
         {
             plantId = this.plantId,
-            plantName = this.plantName,
             configId = this.configId,
             healthLevel = this._healthLevel,
             position = transform.position,
@@ -585,7 +584,6 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
             hasLoadedFromSave = true; // 标记已从存档加载
             
             plantId = saveData.plantId;
-            plantName = saveData.plantName;
             configId = saveData.configId;
             HealthLevel = saveData.healthLevel; // 这会触发外观更新
             // wateringHeartCost 已移除，浇水免费
@@ -597,7 +595,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
             // 确保植物ID与存档一致（避免下次匹配失败）
             if (plantId != saveData.plantId)
             {
-                Debug.Log($"[PlantController] 更新植物ID: {plantId} -> {saveData.plantId}");
+                //Debug.Log($"[PlantController] 更新植物ID: {plantId} -> {saveData.plantId}");
                 plantId = saveData.plantId;
             }
             
@@ -605,7 +603,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
             System.DateTime lastHealthUpdate = ParseDateTime(saveData.lastHealthUpdateTime);
             ApplyOfflineTimeChanges(lastHealthUpdate);
             
-            Debug.Log($"[PlantController] 植物 {PlantName} 加载存档数据完成，健康度: {_healthLevel} (存档值: {saveData.healthLevel})");
+            //Debug.Log($"[PlantController] 植物 {PlantName} 加载存档数据完成，健康度: {_healthLevel} (存档值: {saveData.healthLevel})");
         }
         finally
         {

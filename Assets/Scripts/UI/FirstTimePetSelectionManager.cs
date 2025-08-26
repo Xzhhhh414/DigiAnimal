@@ -801,8 +801,8 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         if (config.furnitureConfigId.ToLower().Contains("plant"))
         {
             // 创建植物数据
-            // 参数顺序：id, name, configId, health, position, cost, recovery
-            PlantSaveData plantData = new PlantSaveData(furnitureId, "默认植物", config.furnitureConfigId, 100, config.position, 0, 25);
+            // 参数顺序：id, configId, health, position, cost, recovery
+            PlantSaveData plantData = new PlantSaveData(furnitureId, config.furnitureConfigId, 100, config.position, 0, 25);
             plantData.lastHealthUpdateTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             saveData.worldData.plants.Add(plantData);
             // Debug.Log($"[FirstTimePetSelectionManager] 创建植物数据: 默认植物 (ConfigId: {config.furnitureConfigId}) at {config.position}");

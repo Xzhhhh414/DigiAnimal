@@ -397,47 +397,7 @@ public class GameInitializer : MonoBehaviour
         return null;
     }
     
-    /// <summary>
-    /// 加载植物状态
-    /// </summary>
-    private IEnumerator LoadPlantStates(SaveData saveData)
-    {
-        if (saveData?.worldData?.plants == null || saveData.worldData.plants.Count == 0)
-        {
-            // DebugLog("没有植物数据需要加载");
-            yield break;
-        }
-        
-        // 创建植物数据的副本，避免在遍历过程中被修改
-        var plantDataCopy = new List<PlantSaveData>(saveData.worldData.plants);
-        
-        // Debug.Log($"[GameInitializer] 开始加载 {plantDataCopy.Count} 个植物的状态...");
-        
-        // 查找场景中所有的植物对象
-        PlantController[] allPlants = FindObjectsOfType<PlantController>();
-        
-        foreach (PlantSaveData plantSaveData in plantDataCopy)
-        {
-            // 根据位置和名称查找对应的植物对象
-            PlantController matchedPlant = FindPlantByIdOrPosition(allPlants, plantSaveData);
-            
-            if (matchedPlant != null)
-            {
-                // Debug.Log($"[GameInitializer] 找到匹配植物 {matchedPlant.name}，加载状态: healthLevel={plantSaveData.healthLevel}");
-                matchedPlant.LoadFromSaveData(plantSaveData);
-                // Debug.Log($"[GameInitializer] 加载完成，当前植物健康度: {matchedPlant.HealthLevel}");
-            }
-            else
-            {
-                Debug.LogWarning($"[GameInitializer] 未找到匹配的植物对象: {plantSaveData.plantId}");
-            }
-            
-            // 每处理一个植物对象后让出一帧，避免阻塞
-            yield return null;
-        }
-        
-        // Debug.Log("[GameInitializer] 植物状态加载完成");
-    }
+
     
     /// <summary>
     /// 生成家具（新的统一家具生成系统）
@@ -564,67 +524,5 @@ public class GameInitializer : MonoBehaviour
         yield return null;
     }
     
-    /// <summary>
-    /// 根据ID或位置查找植物对象
-    /// </summary>
-    private PlantController FindPlantByIdOrPosition(PlantController[] allPlants, PlantSaveData saveData)
-    {
-        Debug.Log($"[GameInitializer] 尝试匹配植物存档: ID={saveData.plantId}, Name={saveData.plantName}, Pos={saveData.position}");
-        
-        PlantController bestMatch = null;
-        float bestDistance = float.MaxValue;
-        
-        // 优先使用位置匹配，因为位置是最稳定的标识
-        foreach (PlantController plant in allPlants)
-        {
-            Vector3 plantPos = plant.transform.position;
-            Vector3 savePos = saveData.position;
-            float distance = Vector3.Distance(plantPos, savePos);
-            
-            Debug.Log($"[GameInitializer] 检查植物: 名称={plant.PlantName}, ID={plant.PlantId}, 位置={plantPos}, 距离={distance:F3}");
-            
-            // 如果距离很近（小于0.1单位），优先考虑
-            if (distance < 0.1f)
-            {
-                Debug.Log($"[GameInitializer] ✅ 通过精确位置找到匹配植物: {plant.PlantName} (距离: {distance:F3})");
-                return plant;
-            }
-            
-            // 如果距离在合理范围内（小于1.0单位），记录为候选
-            if (distance < 1.0f && distance < bestDistance)
-            {
-                bestMatch = plant;
-                bestDistance = distance;
-            }
-        }
-        
-        // 如果找到了候选植物，进行名称验证
-        if (bestMatch != null)
-        {
-            string plantName = bestMatch.gameObject.name.Replace("(Clone)", "");
-            Debug.Log($"[GameInitializer] 检查最佳候选植物: 场景名称={plantName}, 植物名称={bestMatch.PlantName}, 存档名称={saveData.plantName}, 距离={bestDistance:F3}");
-            
-            // 名称匹配验证（更宽松的匹配条件）
-            if (plantName.Contains(saveData.plantName) || 
-                saveData.plantName.Contains(plantName) || 
-                bestMatch.PlantName == saveData.plantName)
-            {
-                Debug.Log($"[GameInitializer] ✅ 通过位置和名称找到匹配植物: {bestMatch.PlantName} (距离: {bestDistance:F3})");
-                return bestMatch;
-            }
-        }
-        
-        // 最后尝试ID匹配（作为备用方案）
-        foreach (PlantController plant in allPlants)
-        {
-            if (!string.IsNullOrEmpty(plant.PlantId) && plant.PlantId == saveData.plantId)
-            {
-                Debug.Log($"[GameInitializer] ✅ 通过ID找到匹配植物: {plant.PlantName}");
-                return plant;
-            }
-        }
-        
-        Debug.Log($"[GameInitializer] ❌ 未找到匹配的植物对象 (检查了 {allPlants.Length} 个植物)");
-        return null;
-    }
+
 } 
