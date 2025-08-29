@@ -151,7 +151,7 @@ public class TVController : MonoBehaviour, ISelectableFurniture, ISpawnableFurni
         // 创建屏幕特效
         CreateScreenEffect();
         
-        Debug.Log($"[TVController] 电视机开启: {tvName}");
+        //Debug.Log($"[TVController] 电视机开启: {tvName}");
     }
     
     /// <summary>
@@ -164,7 +164,7 @@ public class TVController : MonoBehaviour, ISelectableFurniture, ISpawnableFurni
         // 销毁屏幕特效
         DestroyScreenEffect();
         
-        Debug.Log($"[TVController] 电视机关闭: {tvName}");
+        //Debug.Log($"[TVController] 电视机关闭: {tvName}");
     }
     
     /// <summary>
@@ -195,7 +195,7 @@ public class TVController : MonoBehaviour, ISelectableFurniture, ISpawnableFurni
         // 创建特效实例
         currentScreenEffect = Instantiate(screenEffectPrefab, spawnTransform.position, spawnTransform.rotation, spawnTransform);
         
-        Debug.Log($"[TVController] 创建屏幕特效: {currentScreenEffect.name}");
+        //Debug.Log($"[TVController] 创建屏幕特效: {currentScreenEffect.name}");
     }
     
     /// <summary>
@@ -205,7 +205,7 @@ public class TVController : MonoBehaviour, ISelectableFurniture, ISpawnableFurni
     {
         if (currentScreenEffect != null)
         {
-            Debug.Log($"[TVController] 销毁屏幕特效: {currentScreenEffect.name}");
+            //Debug.Log($"[TVController] 销毁屏幕特效: {currentScreenEffect.name}");
             Destroy(currentScreenEffect);
             currentScreenEffect = null;
         }
@@ -242,7 +242,7 @@ public class TVController : MonoBehaviour, ISelectableFurniture, ISpawnableFurni
             DestroyScreenEffect();
         }
         
-        Debug.Log($"[TVController] 加载存档数据: ID={furnitureId}, 状态={saveData.isOn}");
+        //Debug.Log($"[TVController] 加载存档数据: ID={furnitureId}, 状态={saveData.isOn}");
     }
     
     private System.Collections.IEnumerator DelayedTurnOn()

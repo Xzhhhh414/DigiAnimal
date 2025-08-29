@@ -189,7 +189,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         // 创建音浪特效
         CreateSoundWaveEffect();
         
-        Debug.Log($"[SpeakerController] 开始播放: {GetCurrentTrackName()}");
+        //Debug.Log($"[SpeakerController] 开始播放: {GetCurrentTrackName()}");
     }
     
     /// <summary>
@@ -208,7 +208,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         // 销毁音浪特效
         DestroySoundWaveEffect();
         
-        Debug.Log($"[SpeakerController] 暂停播放: {GetCurrentTrackName()} (位置: {pausedTime:F1}s)");
+        //Debug.Log($"[SpeakerController] 暂停播放: {GetCurrentTrackName()} (位置: {pausedTime:F1}s)");
     }
     
     /// <summary>
@@ -223,7 +223,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         // 销毁音浪特效
         DestroySoundWaveEffect();
         
-        Debug.Log($"[SpeakerController] 停止播放: {GetCurrentTrackName()}");
+        //Debug.Log($"[SpeakerController] 停止播放: {GetCurrentTrackName()}");
     }
     
     /// <summary>
@@ -245,7 +245,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         currentTrackIndex = (currentTrackIndex - 1 + musicTracks.Count) % musicTracks.Count;
         pausedTime = 0f; // 重置播放位置
         
-        Debug.Log($"[SpeakerController] 切换到上一首: {GetCurrentTrackName()}");
+        //Debug.Log($"[SpeakerController] 切换到上一首: {GetCurrentTrackName()}");
         
         // 如果之前在播放，继续播放新歌
         if (wasPlaying)
@@ -273,7 +273,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         currentTrackIndex = (currentTrackIndex + 1) % musicTracks.Count;
         pausedTime = 0f; // 重置播放位置
         
-        Debug.Log($"[SpeakerController] 切换到下一首: {GetCurrentTrackName()}");
+        //Debug.Log($"[SpeakerController] 切换到下一首: {GetCurrentTrackName()}");
         
         // 如果之前在播放，继续播放新歌
         if (wasPlaying)
@@ -332,7 +332,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
             StartCoroutine(DelayedPlayMusic());
         }
         
-        Debug.Log($"[SpeakerController] 加载存档数据: ID={furnitureId}, 曲目={currentTrackIndex}, 播放={saveData.wasPlaying}");
+        //Debug.Log($"[SpeakerController] 加载存档数据: ID={furnitureId}, 曲目={currentTrackIndex}, 播放={saveData.wasPlaying}");
     }
     
     private System.Collections.IEnumerator DelayedPlayMusic()
@@ -380,7 +380,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         // 创建特效实例
         currentSoundWaveEffect = Instantiate(soundWaveEffectPrefab, spawnTransform.position, spawnTransform.rotation, spawnTransform);
         
-        Debug.Log($"[SpeakerController] 创建音浪特效: {currentSoundWaveEffect.name}");
+        //Debug.Log($"[SpeakerController] 创建音浪特效: {currentSoundWaveEffect.name}");
     }
     
     /// <summary>
@@ -390,7 +390,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
     {
         if (currentSoundWaveEffect != null)
         {
-            Debug.Log($"[SpeakerController] 销毁音浪特效: {currentSoundWaveEffect.name}");
+            //Debug.Log($"[SpeakerController] 销毁音浪特效: {currentSoundWaveEffect.name}");
             Destroy(currentSoundWaveEffect);
             currentSoundWaveEffect = null;
         }

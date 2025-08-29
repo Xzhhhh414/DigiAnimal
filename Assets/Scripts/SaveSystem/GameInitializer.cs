@@ -543,6 +543,11 @@ public class GameInitializer : MonoBehaviour
         // TODO: 在这里添加其他类型家具的生成逻辑
         // 例如：装饰品等
         
+        // 7. 家具生成完成后，重新烘焙NavMesh
+        // 注意：如果DynamicNavMeshManager在GameManager上（跨场景持久化），
+        // 则应该在GameManager中处理NavMesh烘焙，而不是在这里
+        RequestNavMeshRebake();
+        
         // Debug.Log("[GameInitializer] 家具生成完成");
     }
     
@@ -851,6 +856,23 @@ public class GameInitializer : MonoBehaviour
         string id = $"furniture_{saveData.nextFurnitureIdCounter}";
         saveData.nextFurnitureIdCounter++;
         return id;
+    }
+    
+    /// <summary>
+    /// 请求重新烘焙NavMesh
+    /// </summary>
+    private void RequestNavMeshRebake()
+    {
+        // 查找DynamicNavMeshManager
+        if (DynamicNavMeshManager.Instance != null)
+        {
+            //Debug.Log("[GameInitializer] 请求重新烘焙NavMesh...");
+            DynamicNavMeshManager.Instance.RequestNavMeshBake();
+        }
+        else
+        {
+            Debug.LogWarning("[GameInitializer] 未找到DynamicNavMeshManager，跳过NavMesh烘焙");
+        }
     }
 
 } 
