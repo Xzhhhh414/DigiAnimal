@@ -92,6 +92,9 @@ public class FurnitureManager : MonoBehaviour
                 case "Plant":
                     EventManager.Instance.TriggerEvent(CustomEventType.PlantUnselected);
                     break;
+                case "Speaker":
+                    EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected);
+                    break;
                 // 后续可以添加更多家具类型
             }
         }
@@ -112,6 +115,9 @@ public class FurnitureManager : MonoBehaviour
                 break;
             case "Plant":
                 EventManager.Instance.TriggerEvent(CustomEventType.PlantSelected, furniture as PlantController);
+                break;
+            case "Speaker":
+                EventManager.Instance.TriggerEvent(CustomEventType.SpeakerSelected, furniture as SpeakerController);
                 break;
             // 后续可以添加更多家具类型
         }
@@ -138,6 +144,9 @@ public class FurnitureManager : MonoBehaviour
                     break;
                 case "Plant":
                     EventManager.Instance.TriggerEvent(CustomEventType.PlantUnselected);
+                    break;
+                case "Speaker":
+                    EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected);
                     break;
                 // 后续可以添加更多家具类型
             }

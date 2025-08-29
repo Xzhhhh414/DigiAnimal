@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 2352427724875390821}
   - component: {fileID: 7180943206165078608}
   - component: {fileID: -4571844622303855598}
+  - component: {fileID: 1211702062647114819}
+  - component: {fileID: 7797723668743509848}
+  - component: {fileID: 1543505033704387347}
   m_Layer: 6
   m_Name: Speaker
   m_TagString: Untagged
@@ -147,3 +150,139 @@ MonoBehaviour:
   m_Area: 1
   m_IgnoreFromBuild: 0
   m_AffectedAgents: ffffffff
+--- !u!114 &1211702062647114819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2980885832725105029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2199733fae2d534cadb409fec896a04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speakerName: "\u8FF7\u4F60\u7EC4\u5408\u97F3\u54CD"
+  speakerIcon: {fileID: 21300000, guid: 00ffbc5b015a55d458fd46092c2cbac9, type: 3}
+  configId: speaker_basic
+  saveDataId: 
+  audioSource: {fileID: 7797723668743509848}
+  musicTracks:
+  - {fileID: 8300000, guid: aa3da78f3729d414c8527eef3b26cada, type: 3}
+  - {fileID: 8300000, guid: d41b9f9255565d249a41ac5144d420ca, type: 3}
+  - {fileID: 8300000, guid: ca562b0876d038042839e86a9f56a1c0, type: 3}
+  soundWaveEffectPrefab: {fileID: 4265860994396895707, guid: dd3347762ec7af94f98a69afc40ca1ce, type: 3}
+  effectSpawnPoint: {fileID: 4721595379761432643}
+--- !u!82 &7797723668743509848
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2980885832725105029}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 1
+  BypassListenerEffects: 1
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &1543505033704387347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2980885832725105029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e856fc47697dfda43869eee447cd358f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineColor: {r: 0.28235295, g: 0.28235295, b: 0.28235295, a: 1}
+  outlineSize: 1
+  alphaCutoff: 0.1
+  pixelOutlineShader: {fileID: 0}
+  outlineOnAwake: 0

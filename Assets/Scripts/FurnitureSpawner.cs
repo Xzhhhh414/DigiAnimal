@@ -151,8 +151,21 @@ public class FurnitureSpawner : MonoBehaviour
                 return null;
             }
         }
+        else if (saveData is SpeakerSaveData speakerData)
+        {
+            if (!string.IsNullOrEmpty(speakerData.configId))
+            {
+                DebugLog($"从音响存档数据中提取ConfigId: {speakerData.configId}");
+                return speakerData.configId;
+            }
+            else
+            {
+                Debug.LogWarning($"[FurnitureSpawner] 音响存档数据中ConfigId为空: {speakerData.speakerId}");
+                return null;
+            }
+        }
         
-        // DebugLog($"未知的存档数据类型: {saveData?.GetType().Name}");
+        DebugLog($"未知的存档数据类型: {saveData?.GetType().Name}");
         return null;
     }
     
@@ -264,7 +277,7 @@ public class FurnitureSpawner : MonoBehaviour
     /// <summary>
     /// 生成唯一家具ID（带冲突检测）
     /// </summary>
-    private string GenerateUniqueFurnitureId()
+    public string GenerateUniqueFurnitureId()
     {
         string id;
         int attempts = 0;

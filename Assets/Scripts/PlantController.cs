@@ -62,6 +62,10 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
     [SerializeField]
     private string configId = "";
     
+    // 默认家具标识符（如果是默认创建的家具）
+    [SerializeField]
+    private string saveDataId = "";
+    
     // 健康度下降设置
     [Header("健康度下降设置")]
     [SerializeField]
@@ -563,6 +567,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
         {
             plantId = this.plantId,
             configId = this.configId,
+            saveDataId = this.saveDataId,  // 添加 saveDataId
             healthLevel = this._healthLevel,
             position = transform.position,
             wateringHeartCost = 0, // 浇水免费，但保持存档兼容性
@@ -585,6 +590,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
             
             plantId = saveData.plantId;
             configId = saveData.configId;
+            saveDataId = saveData.saveDataId;  // 加载 saveDataId
             HealthLevel = saveData.healthLevel; // 这会触发外观更新
             // wateringHeartCost 已移除，浇水免费
             healthRecoveryValue = saveData.healthRecoveryValue;
@@ -809,7 +815,7 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
                 {
                     int oldHealth = HealthLevel;
                     HealthLevel = Mathf.Max(0, HealthLevel - healthDecrease);
-                    Debug.Log($"[PlantController] 植物 {PlantName} 离线 {offlineSeconds:F0} 秒，健康度: {oldHealth} -> {HealthLevel} (减少 {healthDecrease} 点)");
+                    //Debug.Log($"[PlantController] 植物 {PlantName} 离线 {offlineSeconds:F0} 秒，健康度: {oldHealth} -> {HealthLevel} (减少 {healthDecrease} 点)");
                 }
             }
         }

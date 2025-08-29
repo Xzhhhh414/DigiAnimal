@@ -17,6 +17,9 @@ public class GameInitializer : MonoBehaviour
     [Header("调试设置")]
     [SerializeField] private bool enableDebugLog = true;
     
+    [Header("默认家具配置")]
+    [SerializeField] private DefaultFurnitureConfigAsset defaultFurnitureConfig; // ScriptableObject配置文件
+    
     // 初始化状态
     private bool isInitialized = false;
     
@@ -75,7 +78,12 @@ public class GameInitializer : MonoBehaviour
         {
             // DebugLog($"存档加载成功，宠物数量: {saveData.petsData.Count}");
             
-            // 4. 暂时禁用自动保存，避免在初始化过程中覆盖存档数据
+            // 4. 为老账号补充缺失的默认家具（如果有新增的默认家具）
+            //Debug.Log("[GameInitializer] 开始检查并补充默认家具...");
+            SupplementMissingDefaultFurniture(saveData);
+            //Debug.Log("[GameInitializer] 默认家具补充检查完成");
+            
+            // 5. 暂时禁用自动保存，避免在初始化过程中覆盖存档数据
             bool originalAutoSaveState = GameDataManager.Instance.IsAutoSaveEnabled;
             GameDataManager.Instance.SetAutoSaveEnabled(false);
             // Debug.Log("[GameInitializer] 已暂时禁用自动保存");
@@ -162,11 +170,11 @@ public class GameInitializer : MonoBehaviour
         // 确保IOSDataBridge存在（用于iOS数据同步）
         if (IOSDataBridge.Instance == null)
         {
-            DebugLog("警告: IOSDataBridge初始化失败，iOS数据同步将不可用");
+            //DebugLog("警告: IOSDataBridge初始化失败，iOS数据同步将不可用");
         }
         else
         {
-            DebugLog("IOSDataBridge已初始化");
+            //DebugLog("IOSDataBridge已初始化");
         }
         
         // DebugLog("所有核心管理器检查完成");
@@ -476,6 +484,35 @@ public class GameInitializer : MonoBehaviour
             // Debug.Log("[GameInitializer] 跳过食物生成 - 没有食物数据");
         }
         
+        // 5. 生成音响
+        //Debug.Log($"[GameInitializer] 音响数据检查 - worldData: {saveData?.worldData != null}, speakers: {saveData?.worldData?.speakers != null}, count: {saveData?.worldData?.speakers?.Count ?? -1}");
+        
+        if (saveData?.worldData?.speakers != null && saveData.worldData.speakers.Count > 0)
+        {
+            //Debug.Log($"[GameInitializer] 开始生成 {saveData.worldData.speakers.Count} 个音响...");
+            
+            foreach (var speakerData in saveData.worldData.speakers)
+            {
+                //Debug.Log($"[GameInitializer] 正在生成音响: ID={speakerData.speakerId}, ConfigId={speakerData.configId}, Position={speakerData.position}");
+                var spawnedFurniture = FurnitureSpawner.Instance.SpawnFurnitureFromSaveData(speakerData);
+                
+                if (spawnedFurniture != null)
+                {
+                    //Debug.Log($"[GameInitializer] 音响生成成功: {spawnedFurniture.FurnitureName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameInitializer] 音响生成失败: {speakerData.speakerId}");
+                }
+                
+                yield return null; // 每生成一个家具后让出一帧
+            }
+        }
+        else
+        {
+            //Debug.Log("[GameInitializer] 跳过音响生成 - 没有音响数据");
+        }
+        
         // TODO: 在这里添加其他类型家具的生成逻辑
         // 例如：装饰品等
         
@@ -493,7 +530,7 @@ public class GameInitializer : MonoBehaviour
         PlantController[] existingPlants = FindObjectsOfType<PlantController>();
         if (existingPlants.Length > 0)
         {
-            Debug.Log($"[GameInitializer] 清理 {existingPlants.Length} 个场景预置植物");
+            //Debug.Log($"[GameInitializer] 清理 {existingPlants.Length} 个场景预置植物");
             
             foreach (var plant in existingPlants)
             {
@@ -508,7 +545,7 @@ public class GameInitializer : MonoBehaviour
         FoodController[] existingFoods = FindObjectsOfType<FoodController>();
         if (existingFoods.Length > 0)
         {
-            Debug.Log($"[GameInitializer] 清理 {existingFoods.Length} 个场景预置食物");
+           //Debug.Log($"[GameInitializer] 清理 {existingFoods.Length} 个场景预置食物");
             
             foreach (var food in existingFoods)
             {
@@ -519,10 +556,235 @@ public class GameInitializer : MonoBehaviour
             }
         }
         
+        // 清理场景中预置的音响对象
+        SpeakerController[] existingSpeakers = FindObjectsOfType<SpeakerController>();
+        if (existingSpeakers.Length > 0)
+        {
+            //Debug.Log($"[GameInitializer] 清理 {existingSpeakers.Length} 个场景预置音响");
+            
+            foreach (var speaker in existingSpeakers)
+            {
+                if (speaker != null)
+                {
+                    DestroyImmediate(speaker.gameObject);
+                }
+            }
+        }
+        
         // TODO: 清理其他类型的预置家具
         
         yield return null;
     }
     
+    /// <summary>
+    /// 为老账号补充缺失的默认家具
+    /// </summary>
+    private void SupplementMissingDefaultFurniture(SaveData saveData)
+    {
+        List<DefaultFurnitureConfig> furnitureConfigList = GetDefaultFurnitureList();
+        
+        if (furnitureConfigList == null || furnitureConfigList.Count == 0)
+        {
+           //Debug.Log("[GameInitializer] 没有找到默认家具配置，跳过补充");
+            return;
+        }
+        
+        // 确保worldData和相关列表存在
+        EnsureWorldDataExists(saveData);
+        
+        int addedCount = 0;
+        
+        // 遍历每个默认家具配置
+        foreach (var defaultConfig in furnitureConfigList)
+        {
+            if (string.IsNullOrEmpty(defaultConfig.furnitureConfigId))
+                continue;
+                
+            // 检查是否已存在该saveDataId的默认家具
+            if (!HasFurnitureWithDefaultId(saveData, defaultConfig.saveDataId))
+            {
+                // 缺失该默认家具，需要补充
+                CreateFurnitureByConfigId(saveData, defaultConfig);
+                addedCount++;
+                
+                //Debug.Log($"[GameInitializer] 为老账号补充家具: {defaultConfig.saveDataId} (ConfigId: {defaultConfig.furnitureConfigId}) at {defaultConfig.position}");
+            }
+        }
+        
+        if (addedCount > 0)
+        {
+            //Debug.Log($"[GameInitializer] 老账号补充完成，共添加 {addedCount} 个家具");
+            
+            // 保存修改后的存档
+            SaveManager.Instance.SetCurrentSaveData(saveData);
+            bool saveSuccess = SaveManager.Instance.Save();
+            
+            if (saveSuccess)
+            {
+                //Debug.Log("[GameInitializer] 默认家具补充保存成功");
+            }
+            else
+            {
+                Debug.LogError("[GameInitializer] 默认家具补充保存失败");
+            }
+        }
+        else
+        {
+            //Debug.Log("[GameInitializer] 老账号无需补充家具");
+        }
+    }
+    
+    /// <summary>
+    /// 检查存档中是否已存在指定saveDataId的默认家具
+    /// </summary>
+    private bool HasFurnitureWithDefaultId(SaveData saveData, string saveDataId)
+    {
+        if (string.IsNullOrEmpty(saveDataId))
+            return false;
+            
+        // 检查植物
+        if (saveData.worldData?.plants != null)
+        {
+            foreach (var plant in saveData.worldData.plants)
+            {
+                if (!string.IsNullOrEmpty(plant.saveDataId) && plant.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        // 检查食物
+        if (saveData.worldData?.foods != null)
+        {
+            foreach (var food in saveData.worldData.foods)
+            {
+                if (!string.IsNullOrEmpty(food.saveDataId) && food.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        // 检查音响
+        if (saveData.worldData?.speakers != null)
+        {
+            foreach (var speaker in saveData.worldData.speakers)
+            {
+                if (!string.IsNullOrEmpty(speaker.saveDataId) && speaker.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// 根据ConfigId创建对应的家具数据
+    /// </summary>
+    private void CreateFurnitureByConfigId(SaveData saveData, DefaultFurnitureConfig config)
+    {
+        if (string.IsNullOrEmpty(config.furnitureConfigId))
+        {
+            Debug.LogWarning("[GameInitializer] 家具ConfigId为空，跳过创建");
+            return;
+        }
+        
+        //Debug.Log($"[GameInitializer] 正在创建家具: DefaultId='{config.saveDataId}', ConfigId='{config.furnitureConfigId}', Position={config.position}");
+        
+        string furnitureId = GenerateUniqueFurnitureId(saveData);
+        
+        // 根据ConfigId判断家具类型并创建对应的存档数据
+        if (config.furnitureConfigId.ToLower().Contains("plant"))
+        {
+            // 创建植物数据
+            PlantSaveData plantData = new PlantSaveData(furnitureId, config.furnitureConfigId, config.saveDataId, 100, config.position, 0, 25);
+            plantData.lastHealthUpdateTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            saveData.worldData.plants.Add(plantData);
+            //Debug.Log($"[GameInitializer] 创建植物数据: {config.saveDataId} (ConfigId: {config.furnitureConfigId}) at {config.position}");
+        }
+        else if (config.furnitureConfigId.ToLower().Contains("food"))
+        {
+            // 创建食物数据
+            FoodSaveData foodData = new FoodSaveData(furnitureId, "猫粮", config.furnitureConfigId, config.saveDataId, false, config.position, 3, 25);
+            saveData.worldData.foods.Add(foodData);
+            //Debug.Log($"[GameInitializer] 创建食物数据: {config.saveDataId} (ConfigId: {config.furnitureConfigId}) at {config.position}");
+        }
+        else if (config.furnitureConfigId.ToLower().Contains("speaker"))
+        {
+            // 创建音响数据
+            SpeakerSaveData speakerData = new SpeakerSaveData(furnitureId, config.furnitureConfigId, config.saveDataId, config.position, 0, 0f, false);
+            saveData.worldData.speakers.Add(speakerData);
+            //Debug.Log($"[GameInitializer] 创建音响数据: {config.saveDataId} (ConfigId: {config.furnitureConfigId}) at {config.position}");
+        }
+        else
+        {
+            Debug.LogWarning($"[GameInitializer] 未知的家具类型: {config.furnitureConfigId}");
+        }
+    }
+    
+    /// <summary>
+    /// 确保WorldData和相关列表存在
+    /// </summary>
+    private void EnsureWorldDataExists(SaveData saveData)
+    {
+        if (saveData.worldData == null)
+        {
+            saveData.worldData = new WorldSaveData();
+        }
+        
+        if (saveData.worldData.plants == null)
+        {
+            saveData.worldData.plants = new List<PlantSaveData>();
+        }
+        
+        if (saveData.worldData.foods == null)
+        {
+            saveData.worldData.foods = new List<FoodSaveData>();
+        }
+        
+        if (saveData.worldData.speakers == null)
+        {
+            saveData.worldData.speakers = new List<SpeakerSaveData>();
+        }
+    }
+    
+    /// <summary>
+    /// 获取默认家具配置列表
+    /// </summary>
+    private List<DefaultFurnitureConfig> GetDefaultFurnitureList()
+    {
+        if (defaultFurnitureConfig != null)
+        {
+            var configItems = defaultFurnitureConfig.GetDefaultFurnitureItems();
+            if (configItems != null && configItems.Count > 0)
+            {
+                //Debug.Log($"[GameInitializer] 从ScriptableObject读取到 {configItems.Count} 个默认家具配置");
+                return configItems;
+            }
+            else
+            {
+                Debug.LogWarning("[GameInitializer] ScriptableObject配置为空");
+            }
+        }
+        else
+        {
+            Debug.LogError("[GameInitializer] 未配置DefaultFurnitureConfigAsset！请在Inspector中设置");
+        }
+        
+        return null;
+    }
+
+    /// <summary>
+    /// 生成唯一的家具ID
+    /// </summary>
+    private string GenerateUniqueFurnitureId(SaveData saveData)
+    {
+        string id = $"furniture_{saveData.nextFurnitureIdCounter}";
+        saveData.nextFurnitureIdCounter++;
+        return id;
+    }
 
 } 

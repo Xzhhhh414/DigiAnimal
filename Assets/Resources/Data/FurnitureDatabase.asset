@@ -9,13 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2ca06821da7b604496473a596538543, type: 3}
+  m_Script: {fileID: 11500000, guid: c5fb269b696962c4a912a161745124f4, type: 3}
   m_Name: FurnitureDatabase
   m_EditorClassIdentifier: 
   furnitureConfigs:
+  - configId: CatFood
+    prefab: {fileID: 7282321258246438361, guid: 207435b28e031c34892e1015459e1853, type: 3}
   - configId: Plant_01
     prefab: {fileID: 2980885832725105029, guid: 0454d79f1f4d5554b81bf3e9eee551ef, type: 3}
   - configId: Plant_02
     prefab: {fileID: 2980885832725105029, guid: 871c2d931ab251d4fb1f12bd27929578, type: 3}
-  - configId: CatFood
-    prefab: {fileID: 7282321258246438361, guid: 207435b28e031c34892e1015459e1853, type: 3}
+  - configId: Speaker
+    prefab: {fileID: 2980885832725105029, guid: 50a3f496165e8a441b4b5227b46c5968, type: 3}

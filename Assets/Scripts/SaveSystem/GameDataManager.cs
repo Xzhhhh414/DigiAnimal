@@ -187,6 +187,9 @@ public class GameDataManager : MonoBehaviour
         // 同步植物数据
         SyncPlantData(saveData);
         
+        // 同步音响数据
+        SyncSpeakerData(saveData);
+        
         // 保存到文件
         if (immediate)
         {
@@ -317,6 +320,42 @@ public class GameDataManager : MonoBehaviour
         else
         {
             // Debug.Log($"[GameDataManager] 跳过植物数据同步 - 场景中未找到植物对象，保持现有存档数据 ({saveData.worldData.plants.Count} 个植物)");
+        }
+    }
+    
+    /// <summary>
+    /// 同步音响数据到存档
+    /// </summary>
+    private void SyncSpeakerData(SaveData saveData)
+    {
+        // 查找场景中所有的音响对象
+        SpeakerController[] allSpeakers = FindObjectsOfType<SpeakerController>();
+        
+        // 安全检查：只有在找到音响对象时才清空和重建数据
+        if (allSpeakers.Length > 0)
+        {
+            // 清空旧的音响数据
+            saveData.worldData.speakers.Clear();
+            
+            // 重新收集当前场景中的音响数据
+            foreach (SpeakerController speaker in allSpeakers)
+            {
+                if (speaker != null)
+                {
+                    SpeakerSaveData speakerData = speaker.GetSaveData() as SpeakerSaveData;
+                    if (speakerData != null)
+                    {
+                        saveData.worldData.speakers.Add(speakerData);
+                        // Debug.Log($"[GameDataManager] 同步音响数据: ID={speakerData.speakerId}, 曲目={speakerData.currentTrackIndex}, 播放状态={speakerData.wasPlaying}");
+                    }
+                }
+            }
+            
+            // Debug.Log($"[GameDataManager] 音响数据同步完成，共 {saveData.worldData.speakers.Count} 个音响");
+        }
+        else
+        {
+            // Debug.Log($"[GameDataManager] 跳过音响数据同步 - 场景中未找到音响对象，保持现有存档数据 ({saveData.worldData.speakers.Count} 个音响)");
         }
     }
     

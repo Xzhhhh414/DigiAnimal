@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private SelectedPetInfo selectedPetInfoPanel;
     [SerializeField] private SelectedFoodInfo selectedFoodInfoPanel;
     [SerializeField] private SelectedPlantInfo selectedPlantInfoPanel;
+    [SerializeField] private SelectedSpeakerInfo selectedSpeakerInfoPanel;
     
     // 单例模式 - 添加静态引用初始化
     private static UIManager _instance;
@@ -163,6 +164,13 @@ public class UIManager : MonoBehaviour
             selectedPlantInfoPanel.gameObject.SetActive(false);
         }
         
+        // 隐藏选中音响信息面板
+        if (selectedSpeakerInfoPanel != null && selectedSpeakerInfoPanel.gameObject.activeSelf)
+        {
+            hiddenUIStates[selectedSpeakerInfoPanel.gameObject] = true;
+            selectedSpeakerInfoPanel.gameObject.SetActive(false);
+        }
+        
         // 隐藏底部面板中的工具包按钮（已集成到BottomPanelController中）
         // ToolkitButtonController已弃用，功能已合并到BottomPanelController
         
@@ -307,6 +315,17 @@ public class UIManager : MonoBehaviour
                 // 在Start场景中找不到是正常的，不输出日志
             }
         }
+        
+        // 查找SelectedSpeakerInfo面板（如果没有通过Inspector设置）
+        if (selectedSpeakerInfoPanel == null)
+        {
+            selectedSpeakerInfoPanel = FindObjectOfType<SelectedSpeakerInfo>();
+            
+            if (selectedSpeakerInfoPanel == null)
+            {
+                // 在Start场景中找不到是正常的，不输出日志
+            }
+        }
     }
     
     // 显示选中宠物信息面板
@@ -365,6 +384,20 @@ public class UIManager : MonoBehaviour
         {
             selectedPlantInfoPanel.HidePlantInfo();
         }
+    }
+    
+    // 显示选中音响信息面板
+    public void ShowSelectedSpeakerInfo(SpeakerController speaker)
+    {
+        // 音响面板现在通过事件系统自动处理显示，这里不需要额外操作
+        // 保留方法以保持API兼容性
+    }
+    
+    // 隐藏选中音响信息面板
+    public void HideSelectedSpeakerInfo()
+    {
+        // 音响面板现在通过事件系统自动处理隐藏，这里不需要额外操作
+        // 保留方法以保持API兼容性
     }
     
     // 检查当前鼠标/触摸点是否在UI元素上

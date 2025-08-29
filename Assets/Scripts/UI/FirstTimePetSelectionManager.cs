@@ -5,17 +5,44 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 /// <summary>
-/// 默认家具配置项（用于新账号初始化）
+/// 默认家具配置项
 /// </summary>
 [System.Serializable]
 public class DefaultFurnitureConfig
 {
     //[Header("家具配置")]
+    public string saveDataId = "";           // 默认家具的唯一标识符（用于检查是否已创建）
     public string furnitureConfigId = "";   // 对应FurnitureDatabase中的configId
     
     //[Header("位置设置")]
     public Vector3 position = Vector3.zero; // 家具生成位置
 }
+
+/// <summary>
+/// 默认家具配置 ScriptableObject
+/// 用于在不同场景间共享默认家具配置
+/// </summary>
+[CreateAssetMenu(fileName = "DefaultFurnitureConfig", menuName = "DigiAnimal/Default Furniture Config")]
+public class DefaultFurnitureConfigAsset : ScriptableObject
+{
+    [Header("默认家具列表")]
+    [SerializeField] private List<DefaultFurnitureConfig> defaultFurnitureItems = new List<DefaultFurnitureConfig>();
+    
+    /// <summary>
+    /// 获取默认家具配置列表
+    /// </summary>
+    public List<DefaultFurnitureConfig> GetDefaultFurnitureItems()
+    {
+        return defaultFurnitureItems;
+    }
+    
+    /// <summary>
+    /// 获取默认家具数量
+    /// </summary>
+    public int Count => defaultFurnitureItems?.Count ?? 0;
+}
+
+
 
 /// <summary>
 /// 初次游戏宠物选择管理器 - 处理初次游戏时的宠物选择界面
@@ -44,7 +71,7 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     [SerializeField] private string gameplaySceneName = "Gameplay";   // 游戏场景名称
     
     [Header("默认家具配置")]
-    [SerializeField] private List<DefaultFurnitureConfig> defaultFurnitureList = new List<DefaultFurnitureConfig>();
+    [SerializeField] private DefaultFurnitureConfigAsset defaultFurnitureConfig; // ScriptableObject配置文件
     
     // 当前选中的宠物索引
     private int selectedPetIndex = -1;
@@ -580,10 +607,17 @@ public class FirstTimePetSelectionManager : MonoBehaviour
                 saveData.playerData.lockScreenWidgetEnabled = false; // 锁屏小组件默认关闭
                 saveData.playerData.selectedLockScreenPetId = newPetData.petId; // 默认选择第一个宠物
                 
-                // 创建默认家具数据
+                // 创建默认家具数据（新账号）
                 CreateDefaultFurnitureData(saveData);
                 
                 // Debug.Log($"[FirstTimePetSelectionManager] 设置新玩家默认系统设置和家具");
+            }
+            else
+            {
+                // 老账号：检查并补充缺失的默认家具
+                SupplementMissingDefaultFurniture(saveData);
+                
+                // Debug.Log($"[FirstTimePetSelectionManager] 为老账号补充缺失的默认家具");
             }
             
             // 保存前的数据检查
@@ -704,6 +738,54 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 公共方法：为现有账号补充缺失的默认家具
+    /// 这个方法应该在游戏启动时调用，用于为老账号添加新版本中的默认家具
+    /// </summary>
+    public static void SupplementMissingDefaultFurnitureForExistingAccount()
+    {
+        // 检查是否有存档
+        if (SaveManager.Instance == null)
+        {
+            Debug.LogWarning("[FirstTimePetSelectionManager] SaveManager未初始化，无法补充默认家具");
+            return;
+        }
+        
+        SaveData saveData = SaveManager.Instance.LoadSave();
+        if (saveData == null || saveData.petsData == null || saveData.petsData.Count == 0)
+        {
+            //Debug.Log("[FirstTimePetSelectionManager] 无存档或无宠物数据，跳过补充默认家具");
+            return;
+        }
+        
+        // 查找场景中的FirstTimePetSelectionManager实例来获取默认家具配置
+        FirstTimePetSelectionManager instance = FindObjectOfType<FirstTimePetSelectionManager>();
+        if (instance == null)
+        {
+            //Debug.Log("[FirstTimePetSelectionManager] 未找到FirstTimePetSelectionManager实例，跳过补充默认家具");
+            return;
+        }
+        
+        // 调用实例方法进行补充
+        bool hasChanges = instance.SupplementMissingDefaultFurnitureInternal(saveData);
+        
+        if (hasChanges)
+        {
+            // 保存修改后的存档
+            SaveManager.Instance.SetCurrentSaveData(saveData);
+            bool saveSuccess = SaveManager.Instance.Save();
+            
+            if (saveSuccess)
+            {
+                //Debug.Log("[FirstTimePetSelectionManager] 默认家具补充完成并保存成功");
+            }
+            else
+            {
+                //Debug.LogError("[FirstTimePetSelectionManager] 默认家具补充保存失败");
+            }
+        }
+    }
+    
+    /// <summary>
     /// 确保UIManager存在
     /// </summary>
     private void EnsureUIManagerExists()
@@ -765,9 +847,10 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         }
         
         // 根据配置创建家具数据
-        if (defaultFurnitureList.Count > 0)
+        var furnitureConfigList = GetDefaultFurnitureList();
+        if (furnitureConfigList != null && furnitureConfigList.Count > 0)
         {
-            foreach (var furnitureConfig in defaultFurnitureList)
+            foreach (var furnitureConfig in furnitureConfigList)
             {
                 CreateFurnitureByConfigId(saveData, furnitureConfig);
             }
@@ -775,10 +858,10 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         else
         {
             // 如果没有配置，使用默认布局
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "PlantPrefab", position = new Vector3(-2f, 0f, 0f) });
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "PlantPrefab", position = new Vector3(0f, 0f, 0f) });
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "PlantPrefab", position = new Vector3(2f, 0f, 0f) });
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { furnitureConfigId = "FoodBowlPrefab", position = new Vector3(-1f, -1f, 0f) });
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_plant_1", furnitureConfigId = "PlantPrefab", position = new Vector3(-2f, 0f, 0f) });
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_plant_2", furnitureConfigId = "PlantPrefab", position = new Vector3(0f, 0f, 0f) });
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_plant_3", furnitureConfigId = "PlantPrefab", position = new Vector3(2f, 0f, 0f) });
+            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_food_1", furnitureConfigId = "FoodBowlPrefab", position = new Vector3(-1f, -1f, 0f) });
         }
         
         // Debug.Log($"[FirstTimePetSelectionManager] 创建默认家具数据完成 - 植物:{saveData.worldData.plants.Count}, 食物:{saveData.worldData.foods.Count}");
@@ -795,25 +878,35 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             return;
         }
         
+        //Debug.Log($"[FirstTimePetSelectionManager] 正在创建家具: DefaultId={config.saveDataId}, ConfigId={config.furnitureConfigId}, Position={config.position}");
+        
         string furnitureId = GenerateUniqueFurnitureId(saveData);
         
         // 根据ConfigId判断家具类型并创建对应的存档数据
         if (config.furnitureConfigId.ToLower().Contains("plant"))
         {
             // 创建植物数据
-            // 参数顺序：id, configId, health, position, cost, recovery
-            PlantSaveData plantData = new PlantSaveData(furnitureId, config.furnitureConfigId, 100, config.position, 0, 25);
+            // 参数顺序：id, configId, saveDataId, health, position, cost, recovery
+            PlantSaveData plantData = new PlantSaveData(furnitureId, config.furnitureConfigId, config.saveDataId, 100, config.position, 0, 25);
             plantData.lastHealthUpdateTime = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             saveData.worldData.plants.Add(plantData);
-            // Debug.Log($"[FirstTimePetSelectionManager] 创建植物数据: 默认植物 (ConfigId: {config.furnitureConfigId}) at {config.position}");
+            //Debug.Log($"[FirstTimePetSelectionManager] 创建植物数据: 默认植物 (ConfigId: {config.furnitureConfigId}, DefaultId: {config.saveDataId}) at {config.position}");
         }
         else if (config.furnitureConfigId.ToLower().Contains("food"))
         {
             // 创建食物数据
-            // 参数顺序：id, type, configId, empty, position, tasty, satietyRecoveryValue
-            FoodSaveData foodData = new FoodSaveData(furnitureId, "猫粮", config.furnitureConfigId, false, config.position, 3, 25);
+            // 参数顺序：id, type, config, defId, empty, pos, tastyValue, satietyValue
+            FoodSaveData foodData = new FoodSaveData(furnitureId, "猫粮", config.furnitureConfigId, config.saveDataId, false, config.position, 3, 25);
             saveData.worldData.foods.Add(foodData);
-            // Debug.Log($"[FirstTimePetSelectionManager] 创建食物数据: 猫粮 (ConfigId: {config.furnitureConfigId}) at {config.position}");
+            //Debug.Log($"[FirstTimePetSelectionManager] 创建食物数据: 猫粮 (ConfigId: {config.furnitureConfigId}, DefaultId: {config.saveDataId}) at {config.position}");
+        }
+        else if (config.furnitureConfigId.ToLower().Contains("speaker"))
+        {
+            // 创建音响数据
+            // 参数顺序：id, configId, saveDataId, position, trackIndex, pauseTime, playing
+            SpeakerSaveData speakerData = new SpeakerSaveData(furnitureId, config.furnitureConfigId, config.saveDataId, config.position, 0, 0f, false);
+            saveData.worldData.speakers.Add(speakerData);
+            //Debug.Log($"[FirstTimePetSelectionManager] 创建音响数据: 音响 (ConfigId: {config.furnitureConfigId}, DefaultId: {config.saveDataId}) at {config.position}");
         }
         else
         {
@@ -829,5 +922,155 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         string id = $"furniture_{saveData.nextFurnitureIdCounter}";
         saveData.nextFurnitureIdCounter++;
         return id;
+    }
+    
+    /// <summary>
+    /// 为老账号补充缺失的默认家具（私有方法，用于创建新宠物时调用）
+    /// </summary>
+    private void SupplementMissingDefaultFurniture(SaveData saveData)
+    {
+        SupplementMissingDefaultFurnitureInternal(saveData);
+    }
+    
+    /// <summary>
+    /// 为老账号补充缺失的默认家具的内部实现
+    /// </summary>
+    /// <param name="saveData">存档数据</param>
+    /// <returns>是否有添加新家具</returns>
+    private bool SupplementMissingDefaultFurnitureInternal(SaveData saveData)
+    {
+        var furnitureConfigList = GetDefaultFurnitureList();
+        if (furnitureConfigList == null || furnitureConfigList.Count == 0)
+        {
+            //Debug.Log("[FirstTimePetSelectionManager] 没有配置默认家具列表，跳过补充");
+            return false;
+        }
+        
+        // 确保worldData和相关列表存在
+        EnsureWorldDataExists(saveData);
+        
+        int addedCount = 0;
+        
+        // 遍历每个默认家具配置
+        foreach (var defaultConfig in furnitureConfigList)
+        {
+            if (string.IsNullOrEmpty(defaultConfig.furnitureConfigId))
+                continue;
+                
+            // 检查是否已存在该saveDataId的默认家具
+            if (!HasFurnitureWithDefaultId(saveData, defaultConfig.saveDataId))
+            {
+                // 缺失该默认家具，需要补充
+                CreateFurnitureByConfigId(saveData, defaultConfig);
+                addedCount++;
+                
+                //Debug.Log($"[FirstTimePetSelectionManager] 为老账号补充家具: {defaultConfig.saveDataId} (ConfigId: {defaultConfig.furnitureConfigId}) at {defaultConfig.position}");
+            }
+        }
+        
+        if (addedCount > 0)
+        {
+            //Debug.Log($"[FirstTimePetSelectionManager] 老账号补充完成，共添加 {addedCount} 个家具");
+            return true;
+        }
+        else
+        {
+            //Debug.Log("[FirstTimePetSelectionManager] 老账号无需补充家具");
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// 检查存档中是否已存在指定saveDataId的默认家具
+    /// </summary>
+    private bool HasFurnitureWithDefaultId(SaveData saveData, string saveDataId)
+    {
+        if (string.IsNullOrEmpty(saveDataId))
+            return false;
+            
+        // 检查植物
+        if (saveData.worldData?.plants != null)
+        {
+            foreach (var plant in saveData.worldData.plants)
+            {
+                if (!string.IsNullOrEmpty(plant.saveDataId) && plant.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        // 检查食物
+        if (saveData.worldData?.foods != null)
+        {
+            foreach (var food in saveData.worldData.foods)
+            {
+                if (!string.IsNullOrEmpty(food.saveDataId) && food.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        // 检查音响
+        if (saveData.worldData?.speakers != null)
+        {
+            foreach (var speaker in saveData.worldData.speakers)
+            {
+                if (!string.IsNullOrEmpty(speaker.saveDataId) && speaker.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// 获取默认家具配置列表（供其他类使用）
+    /// </summary>
+    public List<DefaultFurnitureConfig> GetDefaultFurnitureList()
+    {
+        if (defaultFurnitureConfig != null)
+        {
+            var items = defaultFurnitureConfig.GetDefaultFurnitureItems();
+            //Debug.Log($"[FirstTimePetSelectionManager] 获取到 {items?.Count ?? 0} 个默认家具配置");
+            
+            // 配置加载成功
+            
+            return items;
+        }
+        
+        Debug.LogWarning("[FirstTimePetSelectionManager] 未配置DefaultFurnitureConfigAsset！");
+        return new List<DefaultFurnitureConfig>();
+    }
+    
+    /// <summary>
+    /// 确保WorldData和相关列表存在
+    /// </summary>
+    private void EnsureWorldDataExists(SaveData saveData)
+    {
+        // 确保worldData存在
+        if (saveData.worldData == null)
+        {
+            saveData.worldData = new WorldSaveData();
+        }
+        
+        // 确保各种家具列表存在
+        if (saveData.worldData.plants == null)
+        {
+            saveData.worldData.plants = new List<PlantSaveData>();
+        }
+        
+        if (saveData.worldData.foods == null)
+        {
+            saveData.worldData.foods = new List<FoodSaveData>();
+        }
+        
+        if (saveData.worldData.speakers == null)
+        {
+            saveData.worldData.speakers = new List<SpeakerSaveData>();
+        }
     }
 } 

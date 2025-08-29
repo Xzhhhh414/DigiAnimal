@@ -166,6 +166,9 @@ public class WorldSaveData
     // 植物数据
     public List<PlantSaveData> plants;
     
+    // 音响数据
+    public List<SpeakerSaveData> speakers;
+    
     // 场景设置
     public string currentScene;
     
@@ -173,6 +176,7 @@ public class WorldSaveData
     {
         foods = new List<FoodSaveData>();
         plants = new List<PlantSaveData>();
+        speakers = new List<SpeakerSaveData>();
         currentScene = "Gameplay";
     }
 }
@@ -188,6 +192,7 @@ public class FoodSaveData
     public string foodId;           // 食物唯一标识（基于场景中的GameObject名称或位置）
     public string foodType;         // 食物类型（如"CatFood"）
     public string configId;         // 家具数据库中的ConfigId
+    public string saveDataId;        // 默认家具标识符（如果是默认创建的家具）
     public bool isEmpty;            // 是否为空盘状态
     public Vector3 position;        // 食物位置
     public int tasty;               // 美味度
@@ -198,6 +203,7 @@ public class FoodSaveData
         foodId = "";
         foodType = "";
         configId = "";
+        saveDataId = "";
         isEmpty = false;
         position = Vector3.zero;
         tasty = 3;
@@ -209,10 +215,27 @@ public class FoodSaveData
         foodId = id;
         foodType = type;
         configId = config;
+        saveDataId = ""; // 默认为空，只有默认家具才会设置
         isEmpty = empty;
         position = pos;
         tasty = tastyValue;
         satietyRecoveryValue = satietyValue;
+        
+
+    }
+    
+    public FoodSaveData(string id, string type, string config, string defId, bool empty, Vector3 pos, int tastyValue, int satietyValue)
+    {
+        foodId = id;
+        foodType = type;
+        configId = config;
+        saveDataId = defId;
+        isEmpty = empty;
+        position = pos;
+        tasty = tastyValue;
+        satietyRecoveryValue = satietyValue;
+        
+
     }
 }
 
@@ -224,6 +247,7 @@ public class PlantSaveData
 {
     public string plantId;                  // 植物唯一ID
     public string configId;                 // 家具数据库中的ConfigId
+    public string saveDataId;                // 默认家具标识符（如果是默认创建的家具）
     public int healthLevel;                 // 健康度 (0-100)
     public Vector3 position;                // 植物位置
     public int wateringHeartCost;           // 浇水消耗的爱心
@@ -236,6 +260,7 @@ public class PlantSaveData
     {
         plantId = "";
         configId = "";
+        saveDataId = "";
         healthLevel = 100;
         position = Vector3.zero;
         wateringHeartCost = 3;
@@ -249,6 +274,7 @@ public class PlantSaveData
     {
         plantId = id;
         configId = config;
+        saveDataId = ""; // 默认为空，只有默认家具才会设置
         healthLevel = health;
         position = pos;
         wateringHeartCost = cost;
@@ -256,5 +282,71 @@ public class PlantSaveData
         
         // 初始化离线时间字段
         lastHealthUpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+    }
+    
+    public PlantSaveData(string id, string config, string defId, int health, Vector3 pos, int cost, int recovery)
+    {
+        plantId = id;
+        configId = config;
+        saveDataId = defId;
+        healthLevel = health;
+        position = pos;
+        wateringHeartCost = cost;
+        healthRecoveryValue = recovery;
+        
+        // 初始化离线时间字段
+        lastHealthUpdateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        
+
+    }
+}
+
+/// <summary>
+/// 音响存档数据
+/// </summary>
+[Serializable]
+public class SpeakerSaveData
+{
+    public string speakerId;           // 音响唯一ID
+    public string configId;            // 配置ID，对应FurnitureDatabase中的配置
+    public string saveDataId;           // 默认家具标识符（如果是默认创建的家具）
+    public Vector3 position;           // 音响位置
+    public int currentTrackIndex;      // 当前曲目索引
+    public float pausedTime;           // 暂停时的播放位置
+    public bool wasPlaying;            // 保存时是否在播放
+    
+    public SpeakerSaveData()
+    {
+        speakerId = "";
+        configId = "";
+        saveDataId = "";
+        position = Vector3.zero;
+        currentTrackIndex = 0;
+        pausedTime = 0f;
+        wasPlaying = false;
+    }
+    
+    public SpeakerSaveData(string id, string config, Vector3 pos, int trackIndex, float pauseTime, bool playing)
+    {
+        speakerId = id;
+        configId = config;
+        saveDataId = ""; // 默认为空，只有默认家具才会设置
+        position = pos;
+        currentTrackIndex = trackIndex;
+        pausedTime = pauseTime;
+        wasPlaying = playing;
+    }
+    
+    public SpeakerSaveData(string id, string config, string defId, Vector3 pos, int trackIndex, float pauseTime, bool playing)
+    {
+        speakerId = id;
+        configId = config;
+        saveDataId = defId;
+        position = pos;
+        currentTrackIndex = trackIndex;
+        pausedTime = pauseTime;
+        wasPlaying = playing;
+        
+
     }
 } 

@@ -47,6 +47,10 @@ public class FoodController : MonoBehaviour, ISelectableFurniture, ISpawnableFur
     [SerializeField]
     private string foodId = "";
     
+    // 默认家具标识符（如果是默认创建的家具）
+    [SerializeField]
+    private string saveDataId = "";
+    
     // 家具配置ID（来自FurnitureDatabase）
     [SerializeField]
     private string configId = "";
@@ -234,6 +238,7 @@ public class FoodController : MonoBehaviour, ISelectableFurniture, ISpawnableFur
             FoodId,
             gameObject.name.Replace("(Clone)", ""),
             configId,
+            saveDataId,  // 添加 saveDataId 参数
             IsEmpty,
             transform.position,
             Tasty,
@@ -257,6 +262,7 @@ public class FoodController : MonoBehaviour, ISelectableFurniture, ISpawnableFur
         {
             foodId = saveData.foodId;
             configId = saveData.configId;
+            saveDataId = saveData.saveDataId;  // 加载 saveDataId
             
             // 设置位置
             transform.position = saveData.position;
