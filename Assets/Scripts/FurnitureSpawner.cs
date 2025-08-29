@@ -164,6 +164,19 @@ public class FurnitureSpawner : MonoBehaviour
                 return null;
             }
         }
+        else if (saveData is TVSaveData tvData)
+        {
+            if (!string.IsNullOrEmpty(tvData.configId))
+            {
+                DebugLog($"从电视机存档数据中提取ConfigId: {tvData.configId}");
+                return tvData.configId;
+            }
+            else
+            {
+                Debug.LogWarning($"[FurnitureSpawner] 电视机存档数据中ConfigId为空: {tvData.tvId}");
+                return null;
+            }
+        }
         
         DebugLog($"未知的存档数据类型: {saveData?.GetType().Name}");
         return null;

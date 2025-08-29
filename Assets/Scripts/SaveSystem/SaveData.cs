@@ -169,6 +169,9 @@ public class WorldSaveData
     // 音响数据
     public List<SpeakerSaveData> speakers;
     
+    // 电视机数据
+    public List<TVSaveData> tvs;
+    
     // 场景设置
     public string currentScene;
     
@@ -177,6 +180,7 @@ public class WorldSaveData
         foods = new List<FoodSaveData>();
         plants = new List<PlantSaveData>();
         speakers = new List<SpeakerSaveData>();
+        tvs = new List<TVSaveData>();
         currentScene = "Gameplay";
     }
 }
@@ -346,7 +350,36 @@ public class SpeakerSaveData
         currentTrackIndex = trackIndex;
         pausedTime = pauseTime;
         wasPlaying = playing;
-        
+    }
+}
 
+/// <summary>
+/// 电视机存档数据
+/// </summary>
+[System.Serializable]
+public class TVSaveData
+{
+    public string tvId;           // 电视机唯一ID
+    public string configId;       // 配置ID（对应FurnitureDatabase中的configId）
+    public string saveDataId;     // 默认家具标识符
+    public Vector3 position;      // 位置
+    public bool isOn;             // 开关状态
+    
+    public TVSaveData()
+    {
+        tvId = "";
+        configId = "";
+        saveDataId = "";
+        position = Vector3.zero;
+        isOn = false;
+    }
+    
+    public TVSaveData(string id, string config, string defId, Vector3 pos, bool powerState)
+    {
+        tvId = id;
+        configId = config;
+        saveDataId = defId;
+        position = pos;
+        isOn = powerState;
     }
 } 

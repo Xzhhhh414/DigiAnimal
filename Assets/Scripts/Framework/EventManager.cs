@@ -11,7 +11,9 @@ public enum CustomEventType
     PlantSelected,   // 植物被选中事件
     PlantUnselected, // 植物取消选中事件
     SpeakerSelected, // 音响被选中事件
-    SpeakerUnselected // 音响取消选中事件
+    SpeakerUnselected, // 音响取消选中事件
+    TVSelected,      // 电视机被选中事件
+    TVUnselected     // 电视机取消选中事件
 }
 public class EventManager : Singleton<EventManager>
 {

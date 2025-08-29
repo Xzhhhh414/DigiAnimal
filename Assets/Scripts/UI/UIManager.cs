@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private SelectedFoodInfo selectedFoodInfoPanel;
     [SerializeField] private SelectedPlantInfo selectedPlantInfoPanel;
     [SerializeField] private SelectedSpeakerInfo selectedSpeakerInfoPanel;
+    [SerializeField] private SelectedTVInfo selectedTVInfoPanel;
     
     // 单例模式 - 添加静态引用初始化
     private static UIManager _instance;
@@ -169,6 +170,13 @@ public class UIManager : MonoBehaviour
         {
             hiddenUIStates[selectedSpeakerInfoPanel.gameObject] = true;
             selectedSpeakerInfoPanel.gameObject.SetActive(false);
+        }
+        
+        // 隐藏选中电视机信息面板
+        if (selectedTVInfoPanel != null && selectedTVInfoPanel.gameObject.activeSelf)
+        {
+            hiddenUIStates[selectedTVInfoPanel.gameObject] = true;
+            selectedTVInfoPanel.gameObject.SetActive(false);
         }
         
         // 隐藏底部面板中的工具包按钮（已集成到BottomPanelController中）
@@ -326,6 +334,17 @@ public class UIManager : MonoBehaviour
                 // 在Start场景中找不到是正常的，不输出日志
             }
         }
+        
+        // 查找SelectedTVInfo面板（如果没有通过Inspector设置）
+        if (selectedTVInfoPanel == null)
+        {
+            selectedTVInfoPanel = FindObjectOfType<SelectedTVInfo>();
+            
+            if (selectedTVInfoPanel == null)
+            {
+                // 在Start场景中找不到是正常的，不输出日志
+            }
+        }
     }
     
     // 显示选中宠物信息面板
@@ -397,6 +416,20 @@ public class UIManager : MonoBehaviour
     public void HideSelectedSpeakerInfo()
     {
         // 音响面板现在通过事件系统自动处理隐藏，这里不需要额外操作
+        // 保留方法以保持API兼容性
+    }
+    
+    // 显示选中电视机信息面板
+    public void ShowSelectedTVInfo(TVController tv)
+    {
+        // 电视机面板现在通过事件系统自动处理显示，这里不需要额外操作
+        // 保留方法以保持API兼容性
+    }
+    
+    // 隐藏选中电视机信息面板
+    public void HideSelectedTVInfo()
+    {
+        // 电视机面板现在通过事件系统自动处理隐藏，这里不需要额外操作
         // 保留方法以保持API兼容性
     }
     

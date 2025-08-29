@@ -21,3 +21,5 @@ MonoBehaviour:
     prefab: {fileID: 2980885832725105029, guid: 871c2d931ab251d4fb1f12bd27929578, type: 3}
   - configId: Speaker
     prefab: {fileID: 2980885832725105029, guid: 50a3f496165e8a441b4b5227b46c5968, type: 3}
+  - configId: TV
+    prefab: {fileID: 2980885832725105029, guid: bd206d541615c97449b94186e445728b, type: 3}

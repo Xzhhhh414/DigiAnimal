@@ -513,6 +513,33 @@ public class GameInitializer : MonoBehaviour
             //Debug.Log("[GameInitializer] 跳过音响生成 - 没有音响数据");
         }
         
+        // 6. 生成电视机
+        //Debug.Log($"[GameInitializer] 电视机数据检查 - worldData: {saveData?.worldData != null}, tvs: {saveData?.worldData?.tvs != null}, count: {saveData?.worldData?.tvs?.Count ?? -1}");
+        
+        if (saveData?.worldData?.tvs != null && saveData.worldData.tvs.Count > 0)
+        {
+            //Debug.Log($"[GameInitializer] 开始生成 {saveData.worldData.tvs.Count} 个电视机...");
+            
+            foreach (var tvData in saveData.worldData.tvs)
+            {
+                //Debug.Log($"[GameInitializer] 正在生成电视机: ID={tvData.tvId}, ConfigId={tvData.configId}, Position={tvData.position}");
+                var spawnedFurniture = FurnitureSpawner.Instance.SpawnFurnitureFromSaveData(tvData);
+                
+                if (spawnedFurniture != null)
+                {
+                    //Debug.Log($"[GameInitializer] 电视机生成成功: {spawnedFurniture.FurnitureName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameInitializer] 电视机生成失败: {tvData.tvId}");
+                }
+            }
+        }
+        else
+        {
+            //Debug.Log("[GameInitializer] 跳过电视机生成 - 没有电视机数据");
+        }
+        
         // TODO: 在这里添加其他类型家具的生成逻辑
         // 例如：装饰品等
         
@@ -567,6 +594,21 @@ public class GameInitializer : MonoBehaviour
                 if (speaker != null)
                 {
                     DestroyImmediate(speaker.gameObject);
+                }
+            }
+        }
+        
+        // 清理场景中预置的电视机对象
+        TVController[] existingTVs = FindObjectsOfType<TVController>();
+        if (existingTVs.Length > 0)
+        {
+            //Debug.Log($"[GameInitializer] 清理 {existingTVs.Length} 个场景预置电视机");
+            
+            foreach (var tv in existingTVs)
+            {
+                if (tv != null)
+                {
+                    DestroyImmediate(tv.gameObject);
                 }
             }
         }
@@ -678,6 +720,18 @@ public class GameInitializer : MonoBehaviour
             }
         }
         
+        // 检查电视机
+        if (saveData.worldData?.tvs != null)
+        {
+            foreach (var tv in saveData.worldData.tvs)
+            {
+                if (!string.IsNullOrEmpty(tv.saveDataId) && tv.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
         return false;
     }
     
@@ -719,6 +773,13 @@ public class GameInitializer : MonoBehaviour
             saveData.worldData.speakers.Add(speakerData);
             //Debug.Log($"[GameInitializer] 创建音响数据: {config.saveDataId} (ConfigId: {config.furnitureConfigId}) at {config.position}");
         }
+        else if (config.furnitureConfigId.ToLower().Contains("tv"))
+        {
+            // 创建电视机数据
+            TVSaveData tvData = new TVSaveData(furnitureId, config.furnitureConfigId, config.saveDataId, config.position, false);
+            saveData.worldData.tvs.Add(tvData);
+            //Debug.Log($"[GameInitializer] 创建电视机数据: {config.saveDataId} (ConfigId: {config.furnitureConfigId}) at {config.position}");
+        }
         else
         {
             Debug.LogWarning($"[GameInitializer] 未知的家具类型: {config.furnitureConfigId}");
@@ -748,6 +809,11 @@ public class GameInitializer : MonoBehaviour
         if (saveData.worldData.speakers == null)
         {
             saveData.worldData.speakers = new List<SpeakerSaveData>();
+        }
+        
+        if (saveData.worldData.tvs == null)
+        {
+            saveData.worldData.tvs = new List<TVSaveData>();
         }
     }
     

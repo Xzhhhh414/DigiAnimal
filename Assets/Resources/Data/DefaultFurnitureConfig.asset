@@ -28,3 +28,6 @@ MonoBehaviour:
   - saveDataId: 5
     furnitureConfigId: Speaker
     position: {x: 0, y: 8.8, z: 0}
+  - saveDataId: 6
+    furnitureConfigId: TV
+    position: {x: 2.35, y: 9.25, z: 0}

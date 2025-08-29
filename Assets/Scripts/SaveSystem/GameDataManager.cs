@@ -189,6 +189,7 @@ public class GameDataManager : MonoBehaviour
         
         // 同步音响数据
         SyncSpeakerData(saveData);
+        SyncTVData(saveData);
         
         // 保存到文件
         if (immediate)
@@ -356,6 +357,42 @@ public class GameDataManager : MonoBehaviour
         else
         {
             // Debug.Log($"[GameDataManager] 跳过音响数据同步 - 场景中未找到音响对象，保持现有存档数据 ({saveData.worldData.speakers.Count} 个音响)");
+        }
+    }
+    
+    /// <summary>
+    /// 同步电视机数据到存档
+    /// </summary>
+    private void SyncTVData(SaveData saveData)
+    {
+        // 查找场景中所有的电视机对象
+        TVController[] allTVs = FindObjectsOfType<TVController>();
+        
+        // 安全检查：只有在找到电视机对象时才清空和重建数据
+        if (allTVs.Length > 0)
+        {
+            // 清空旧的电视机数据
+            saveData.worldData.tvs.Clear();
+            
+            // 重新收集所有电视机的数据
+            foreach (var tv in allTVs)
+            {
+                if (tv != null)
+                {
+                    var tvData = tv.GetSaveData() as TVSaveData;
+                    if (tvData != null)
+                    {
+                        saveData.worldData.tvs.Add(tvData);
+                        // Debug.Log($"[GameDataManager] 同步电视机数据: ID={tvData.tvId}, 开关状态={tvData.isOn}");
+                    }
+                }
+            }
+            
+            // Debug.Log($"[GameDataManager] 电视机数据同步完成，共 {saveData.worldData.tvs.Count} 个电视机");
+        }
+        else
+        {
+            // Debug.Log($"[GameDataManager] 跳过电视机数据同步 - 场景中未找到电视机对象，保持现有存档数据 ({saveData.worldData.tvs.Count} 个电视机)");
         }
     }
     

@@ -56,6 +56,7 @@ public enum FurnitureType
     Plant,      // 植物
     Food,       // 食物
     Speaker,    // 音响
+    TV,         // 电视机
     Decoration, // 装饰品
     // 可以继续添加其他家具类型
 }
