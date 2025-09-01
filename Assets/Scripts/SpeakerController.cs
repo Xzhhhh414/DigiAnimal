@@ -41,15 +41,15 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
     public void OnSelected()
     {
         IsSelected = true;
-        // 触发音响选中事件
-        EventManager.Instance.TriggerEvent(CustomEventType.SpeakerSelected, this);
+        // 注意：不要在这里直接触发事件，由FurnitureManager统一管理
+        // EventManager.Instance.TriggerEvent(CustomEventType.SpeakerSelected, this);
     }
     
     public void OnDeselected()
     {
         IsSelected = false;
-        // 触发音响取消选中事件
-        EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected, this);
+        // 注意：不要在这里直接触发事件，由FurnitureManager统一管理
+        // EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected, this);
     }
     
     public Sprite GetIcon()

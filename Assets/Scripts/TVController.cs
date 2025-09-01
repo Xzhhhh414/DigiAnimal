@@ -33,15 +33,15 @@ public class TVController : MonoBehaviour, ISelectableFurniture, ISpawnableFurni
     public void OnSelected()
     {
         IsSelected = true;
-        // 触发电视机选中事件
-        EventManager.Instance.TriggerEvent(CustomEventType.TVSelected, this);
+        // 注意：不要在这里直接触发事件，由FurnitureManager统一管理
+        // EventManager.Instance.TriggerEvent(CustomEventType.TVSelected, this);
     }
     
     public void OnDeselected()
     {
         IsSelected = false;
-        // 触发电视机取消选中事件
-        EventManager.Instance.TriggerEvent(CustomEventType.TVUnselected, this);
+        // 注意：不要在这里直接触发事件，由FurnitureManager统一管理
+        // EventManager.Instance.TriggerEvent(CustomEventType.TVUnselected, this);
     }
     
     public Sprite GetIcon()

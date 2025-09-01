@@ -93,7 +93,10 @@ public class FurnitureManager : MonoBehaviour
                     EventManager.Instance.TriggerEvent(CustomEventType.PlantUnselected);
                     break;
                 case "Speaker":
-                    EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected);
+                    EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected, selectedFurniture as SpeakerController);
+                    break;
+                case "TV":
+                    EventManager.Instance.TriggerEvent(CustomEventType.TVUnselected, selectedFurniture as TVController);
                     break;
                 // 后续可以添加更多家具类型
             }
@@ -119,6 +122,9 @@ public class FurnitureManager : MonoBehaviour
             case "Speaker":
                 EventManager.Instance.TriggerEvent(CustomEventType.SpeakerSelected, furniture as SpeakerController);
                 break;
+            case "TV":
+                EventManager.Instance.TriggerEvent(CustomEventType.TVSelected, furniture as TVController);
+                break;
             // 后续可以添加更多家具类型
         }
         
@@ -133,10 +139,9 @@ public class FurnitureManager : MonoBehaviour
         if (selectedFurniture != null)
         {
             string furnitureType = selectedFurniture.FurnitureType;
+            ISelectableFurniture oldFurniture = selectedFurniture; // 保存引用用于事件参数
             selectedFurniture.OnDeselected();
             selectedFurniture = null;
-            
-            // 根据家具类型触发对应的取消选中事件和关闭对应UI
             switch (furnitureType)
             {
                 case "Food":
@@ -146,7 +151,10 @@ public class FurnitureManager : MonoBehaviour
                     EventManager.Instance.TriggerEvent(CustomEventType.PlantUnselected);
                     break;
                 case "Speaker":
-                    EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected);
+                    EventManager.Instance.TriggerEvent(CustomEventType.SpeakerUnselected, oldFurniture as SpeakerController);
+                    break;
+                case "TV":
+                    EventManager.Instance.TriggerEvent(CustomEventType.TVUnselected, oldFurniture as TVController);
                     break;
                 // 后续可以添加更多家具类型
             }
@@ -250,6 +258,8 @@ public class FurnitureManager : MonoBehaviour
                 // Debug.Log("FurnitureManager: 点击空白处，取消家具选中");
                 UnselectCurrentFurniture();
             }
+            
+
         }
     }
 }

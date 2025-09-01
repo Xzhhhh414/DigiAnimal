@@ -4,43 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-/// <summary>
-/// 默认家具配置项
-/// </summary>
-[System.Serializable]
-public class DefaultFurnitureConfig
-{
-    //[Header("家具配置")]
-    public string saveDataId = "";           // 默认家具的唯一标识符（用于检查是否已创建）
-    public string furnitureConfigId = "";   // 对应FurnitureDatabase中的configId
-    
-    //[Header("位置设置")]
-    public Vector3 position = Vector3.zero; // 家具生成位置
-}
-
-/// <summary>
-/// 默认家具配置 ScriptableObject
-/// 用于在不同场景间共享默认家具配置
-/// </summary>
-[CreateAssetMenu(fileName = "DefaultFurnitureConfig", menuName = "DigiAnimal/Default Furniture Config")]
-public class DefaultFurnitureConfigAsset : ScriptableObject
-{
-    [Header("默认家具列表")]
-    [SerializeField] private List<DefaultFurnitureConfig> defaultFurnitureItems = new List<DefaultFurnitureConfig>();
-    
-    /// <summary>
-    /// 获取默认家具配置列表
-    /// </summary>
-    public List<DefaultFurnitureConfig> GetDefaultFurnitureItems()
-    {
-        return defaultFurnitureItems;
-    }
-    
-    /// <summary>
-    /// 获取默认家具数量
-    /// </summary>
-    public int Count => defaultFurnitureItems?.Count ?? 0;
-}
+// DefaultFurnitureConfig 相关类已移动到单独的脚本文件 DefaultFurnitureConfigAsset.cs
 
 
 
@@ -846,8 +810,22 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             saveData.worldData.foods = new List<FoodSaveData>();
         }
         
+        // 确保speakers列表存在
+        if (saveData.worldData.speakers == null)
+        {
+            saveData.worldData.speakers = new List<SpeakerSaveData>();
+        }
+        
+        // 确保tvs列表存在
+        if (saveData.worldData.tvs == null)
+        {
+            saveData.worldData.tvs = new List<TVSaveData>();
+        }
+        
         // 根据配置创建家具数据
         var furnitureConfigList = GetDefaultFurnitureList();
+        //Debug.Log($"[FirstTimePetSelectionManager] 获取到 {furnitureConfigList?.Count ?? 0} 个默认家具配置");
+        
         if (furnitureConfigList != null && furnitureConfigList.Count > 0)
         {
             foreach (var furnitureConfig in furnitureConfigList)
@@ -857,11 +835,8 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         }
         else
         {
-            // 如果没有配置，使用默认布局
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_plant_1", furnitureConfigId = "PlantPrefab", position = new Vector3(-2f, 0f, 0f) });
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_plant_2", furnitureConfigId = "PlantPrefab", position = new Vector3(0f, 0f, 0f) });
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_plant_3", furnitureConfigId = "PlantPrefab", position = new Vector3(2f, 0f, 0f) });
-            CreateFurnitureByConfigId(saveData, new DefaultFurnitureConfig { saveDataId = "default_food_1", furnitureConfigId = "FoodBowlPrefab", position = new Vector3(-1f, -1f, 0f) });
+            Debug.LogError("[FirstTimePetSelectionManager] 无法加载默认家具配置！请检查DefaultFurnitureConfig.asset文件是否存在且配置正确");
+            // 不创建任何默认家具，让开发者知道配置有问题
         }
         
         // Debug.Log($"[FirstTimePetSelectionManager] 创建默认家具数据完成 - 植物:{saveData.worldData.plants.Count}, 食物:{saveData.worldData.foods.Count}");
@@ -907,6 +882,14 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             SpeakerSaveData speakerData = new SpeakerSaveData(furnitureId, config.furnitureConfigId, config.saveDataId, config.position, 0, 0f, false);
             saveData.worldData.speakers.Add(speakerData);
             //Debug.Log($"[FirstTimePetSelectionManager] 创建音响数据: 音响 (ConfigId: {config.furnitureConfigId}, DefaultId: {config.saveDataId}) at {config.position}");
+        }
+        else if (config.furnitureConfigId.ToLower().Contains("tv"))
+        {
+            // 创建电视机数据
+            // 参数顺序：id, configId, saveDataId, position, isOn
+            TVSaveData tvData = new TVSaveData(furnitureId, config.furnitureConfigId, config.saveDataId, config.position, false);
+            saveData.worldData.tvs.Add(tvData);
+            //Debug.Log($"[FirstTimePetSelectionManager] 创建电视机数据: 电视机 (ConfigId: {config.furnitureConfigId}, DefaultId: {config.saveDataId}) at {config.position}");
         }
         else
         {
@@ -1024,6 +1007,18 @@ public class FirstTimePetSelectionManager : MonoBehaviour
             }
         }
         
+        // 检查电视机
+        if (saveData.worldData?.tvs != null)
+        {
+            foreach (var tv in saveData.worldData.tvs)
+            {
+                if (!string.IsNullOrEmpty(tv.saveDataId) && tv.saveDataId == saveDataId)
+                {
+                    return true;
+                }
+            }
+        }
+        
         return false;
     }
     
@@ -1032,17 +1027,34 @@ public class FirstTimePetSelectionManager : MonoBehaviour
     /// </summary>
     public List<DefaultFurnitureConfig> GetDefaultFurnitureList()
     {
+        // 首先尝试从Inspector配置的ScriptableObject加载
         if (defaultFurnitureConfig != null)
         {
             var items = defaultFurnitureConfig.GetDefaultFurnitureItems();
-            //Debug.Log($"[FirstTimePetSelectionManager] 获取到 {items?.Count ?? 0} 个默认家具配置");
-            
-            // 配置加载成功
-            
-            return items;
+            if (items != null && items.Count > 0)
+            {
+                //Debug.Log($"[FirstTimePetSelectionManager] 从Inspector配置获取到 {items.Count} 个默认家具配置");
+                return items;
+            }
         }
         
-        Debug.LogWarning("[FirstTimePetSelectionManager] 未配置DefaultFurnitureConfigAsset！");
+        // 如果Inspector配置无效，尝试从Resources加载
+        Debug.LogWarning("[FirstTimePetSelectionManager] Inspector配置无效，尝试从Resources加载");
+        
+        DefaultFurnitureConfigAsset resourceConfig = Resources.Load<DefaultFurnitureConfigAsset>("Data/DefaultFurnitureConfig");
+        if (resourceConfig != null)
+        {
+            var items = resourceConfig.GetDefaultFurnitureItems();
+            if (items != null && items.Count > 0)
+            {
+                //Debug.Log($"[FirstTimePetSelectionManager] 从Resources获取到 {items.Count} 个默认家具配置");
+                return items;
+            }
+        }
+        
+        // 如果都失败了，返回空列表并记录错误
+        Debug.LogError("[FirstTimePetSelectionManager] 无法从任何源加载默认家具配置！");
+        Debug.LogError("请检查：1. Inspector中是否正确配置了DefaultFurnitureConfig引用 2. Resources/Data/DefaultFurnitureConfig.asset是否存在");
         return new List<DefaultFurnitureConfig>();
     }
     
@@ -1071,6 +1083,11 @@ public class FirstTimePetSelectionManager : MonoBehaviour
         if (saveData.worldData.speakers == null)
         {
             saveData.worldData.speakers = new List<SpeakerSaveData>();
+        }
+        
+        if (saveData.worldData.tvs == null)
+        {
+            saveData.worldData.tvs = new List<TVSaveData>();
         }
     }
 } 

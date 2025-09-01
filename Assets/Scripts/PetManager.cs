@@ -4,6 +4,19 @@ using UnityEngine;
 
 public class PetManager : MonoBehaviour
 {
+    // 单例模式
+    private static PetManager _instance;
+    public static PetManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<PetManager>();
+            }
+            return _instance;
+        }
+    }
     // 当前选中的宠物
     private PetController2D selectedPet;
     
@@ -14,7 +27,16 @@ public class PetManager : MonoBehaviour
     
     void Awake()
     {
-        // 初始化，不再自动选择宠物
+        // 单例模式设置
+        if (_instance == null)
+        {
+            _instance = this;
+        }
+        else if (_instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
     
     void Update()
@@ -58,7 +80,7 @@ public class PetManager : MonoBehaviour
             }
         }
         
-        // 新增：点击空白处取消选中当前宠物
+        // 如果没有点击到宠物，取消当前宠物选中
         if (selectedPet != null)
         {
             UnselectCurrentPet();

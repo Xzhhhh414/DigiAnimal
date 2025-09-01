@@ -57,6 +57,7 @@ public class SelectedSpeakerInfo : MonoBehaviour
         // 监听其他家具选中事件，用于关闭音响面板
         EventManager.Instance.AddListener<PlantController>(CustomEventType.PlantSelected, OnOtherFurnitureSelected);
         EventManager.Instance.AddListener<FoodController>(CustomEventType.FoodSelected, OnOtherFurnitureSelected);
+        EventManager.Instance.AddListener<TVController>(CustomEventType.TVSelected, OnOtherFurnitureSelected);
         EventManager.Instance.AddListener<PetController2D>(CustomEventType.PetSelected, OnPetSelected);
     }
     
@@ -69,6 +70,7 @@ public class SelectedSpeakerInfo : MonoBehaviour
             EventManager.Instance.RemoveListener<SpeakerController>(CustomEventType.SpeakerUnselected, OnSpeakerUnselected);
             EventManager.Instance.RemoveListener<PlantController>(CustomEventType.PlantSelected, OnOtherFurnitureSelected);
             EventManager.Instance.RemoveListener<FoodController>(CustomEventType.FoodSelected, OnOtherFurnitureSelected);
+            EventManager.Instance.RemoveListener<TVController>(CustomEventType.TVSelected, OnOtherFurnitureSelected);
             EventManager.Instance.RemoveListener<PetController2D>(CustomEventType.PetSelected, OnPetSelected);
         }
     }

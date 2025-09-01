@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 4379f12fa676d41c4ac61ca2dc7a2248, type: 3}
   m_Name: DefaultFurnitureConfig
-  m_EditorClassIdentifier: Assembly-CSharp::DefaultFurnitureConfigAsset
+  m_EditorClassIdentifier: 
   defaultFurnitureItems:
   - saveDataId: 1
     furnitureConfigId: CatFood

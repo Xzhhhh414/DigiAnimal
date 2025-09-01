@@ -198,7 +198,7 @@ public class SelectedTVInfo : MonoBehaviour
         // 更新UI显示
         UpdateUI();
         
-        Debug.Log($"[SelectedTVInfo] 电视机开关切换: {(currentTV.IsOn ? "开启" : "关闭")}");
+        //Debug.Log($"[SelectedTVInfo] 电视机开关切换: {(currentTV.IsOn ? "开启" : "关闭")}");
     }
     
     #endregion
