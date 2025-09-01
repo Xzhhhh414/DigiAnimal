@@ -118,6 +118,30 @@ DynamicNavMeshManager.Instance.RequestNavMeshBakeForFurnitureMove();
 DynamicNavMeshManager.Instance.RefreshNavMeshSurface();
 ```
 
+## 智能障碍物检测
+
+DynamicNavMeshManager会智能分析每个家具对象，决定是否应该作为NavMesh障碍物：
+
+### 检测规则
+
+**简单直接的判断逻辑：只根据碰撞体的`isTrigger`属性决定**
+
+1. **触发器碰撞体**（`isTrigger = true`）：
+   - 被识别为可行走区域，不会作为NavMesh障碍物
+   - 例如：CatFood的BoxCollider2D设为触发器用于点击交互
+
+2. **非触发器碰撞体**（`isTrigger = false`）：
+   - 被识别为障碍物，会阻挡宠物导航
+   - 例如：植物、音响、电视等实体家具
+
+3. **无碰撞体对象**：
+   - 默认作为可行走区域，不会添加NavMeshObstacle
+
+### 处理结果
+
+- **可行走对象**：移除NavMeshObstacle组件，允许宠物通过
+- **障碍物对象**：添加NavMeshObstacle组件，在NavMesh中创建洞
+
 ## API参考
 
 ### DynamicNavMeshManager主要方法
@@ -145,6 +169,29 @@ bool needUpdate = DynamicNavMeshManager.Instance.IsNavMeshUpdateNeeded();
 - NavMeshAgent刷新数量
 
 **注意：** 如果您不想看到NavMeshPlus插件的详细烘焙日志（如"Walkable Bounds"、"Sources"等），请勾选 **Hide NavMesh Logs** 选项。这些日志对普通使用来说过于详细，但在深度调试NavMesh问题时可能有用。
+
+### 调试NavMesh障碍物问题
+
+如果发现动态创建的家具没有正确作为NavMesh障碍物，请检查以下调试日志：
+
+1. **障碍物检测日志**：
+   ```
+   [DynamicNavMeshManager] Plant_01(Clone) 被标记为可行走区域，跳过障碍物设置
+   [DynamicNavMeshManager] Speaker(Clone) 添加了NavMeshObstacle - Size: (1.0, 1.0, 1.0)
+   ```
+
+2. **烘焙后验证日志**：
+   ```
+   [DynamicNavMeshManager] 场景中共有 3 个NavMeshObstacle组件
+   [DynamicNavMeshManager] 障碍物 Speaker(Clone): Size=(1.0, 1.0, 1.0), Carving=true
+   ```
+
+3. **常见问题排查**：
+   - **触发器设置**：确认`isTrigger`属性是否正确设置
+   - **NavMeshObstacle尺寸**：检查Size是否合理（不能为零）
+   - **Carving属性**：必须为true才能在NavMesh中创建洞
+   - **烘焙时机**：NavMeshObstacle在NavMesh烘焙完成后才能生效
+   - **碰撞体冲突**：系统不会强制添加3D碰撞体，避免与现有2D碰撞体冲突
 
 ### 编辑器测试
 在DynamicNavMeshManager组件的右键菜单中：

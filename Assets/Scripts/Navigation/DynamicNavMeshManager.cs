@@ -263,55 +263,265 @@ public class DynamicNavMeshManager : MonoBehaviour
         
         bool prepared = false;
         
-        // 确保对象有碰撞体（用于NavMesh烘焙）
-        Collider objCollider = obj.GetComponent<Collider>();
-        if (objCollider == null)
+        // 检查对象是否应该作为NavMesh障碍物
+        if (ShouldBeNavMeshObstacle(obj))
         {
-            // 尝试在子对象中查找碰撞体
-            objCollider = obj.GetComponentInChildren<Collider>();
-        }
-        
-        if (objCollider != null)
-        {
-            // 设置为Navigation Static，这样NavMesh烘焙时会考虑这个对象
-            NavMeshObstacle obstacle = obj.GetComponent<NavMeshObstacle>();
-            if (obstacle == null)
-            {
-                obstacle = obj.AddComponent<NavMeshObstacle>();
-                obstacle.carving = true; // 启用雕刻，这样会在NavMesh中创建洞
-            }
-            prepared = true;
-        }
-        else
-        {
-            // 检查是否已有任何类型的碰撞体（包括2D版本）
-            bool hasAnyCollider = obj.GetComponent<Collider>() != null || 
-                                 obj.GetComponent<Collider2D>() != null;
-            
-            if (!hasAnyCollider)
-            {
-                // 如果没有任何碰撞体，添加一个简单的Box Collider
-                BoxCollider boxCollider = obj.AddComponent<BoxCollider>();
-                boxCollider.isTrigger = false; // 确保不是触发器，这样可以阻挡导航
-                DebugLog($"为 {obj.name} 添加了BoxCollider用于NavMesh烘焙");
-            }
-            else
-            {
-                DebugLog($"{obj.name} 已有碰撞体（可能是2D版本），跳过添加BoxCollider");
-            }
+            // NavMeshObstacle不需要额外的3D碰撞体，它可以独立工作
+            DebugLog($"{obj.name} 被识别为障碍物 (isTrigger=false)");
             
             // 添加NavMeshObstacle（如果还没有的话）
             if (obj.GetComponent<NavMeshObstacle>() == null)
             {
                 NavMeshObstacle obstacle = obj.AddComponent<NavMeshObstacle>();
                 obstacle.carving = true; // 启用雕刻，这样会在NavMesh中创建洞
-                DebugLog($"为 {obj.name} 添加了NavMeshObstacle用于NavMesh烘焙");
+                obstacle.carvingMoveThreshold = 0.1f; // 设置移动阈值
+                obstacle.carvingTimeToStationary = 0.5f; // 设置静止时间
+                
+                // 自动计算障碍物尺寸
+                Bounds bounds = GetObjectBounds(obj);
+                if (bounds.size != Vector3.zero)
+                {
+                    obstacle.size = bounds.size;
+                    obstacle.center = bounds.center - obj.transform.position;
+                }
+                else
+                {
+                    // 默认尺寸
+                    obstacle.size = Vector3.one;
+                }
+                
+                DebugLog($"为 {obj.name} 添加了NavMeshObstacle - Size: {obstacle.size}, Center: {obstacle.center}, Carving: {obstacle.carving}");
             }
             
             prepared = true;
         }
+        else
+        {
+            // 如果对象不应该是障碍物，确保它没有NavMeshObstacle组件
+            NavMeshObstacle existingObstacle = obj.GetComponent<NavMeshObstacle>();
+            if (existingObstacle != null)
+            {
+                DestroyImmediate(existingObstacle);
+                DebugLog($"移除了 {obj.name} 的NavMeshObstacle（对象应该是可行走的）");
+            }
+            
+            DebugLog($"{obj.name} 被标记为可行走区域，跳过障碍物设置");
+        }
         
         return prepared;
+    }
+    
+    /// <summary>
+    /// 检查对象是否应该作为NavMesh障碍物
+    /// 只根据碰撞体的isTrigger属性判断：触发器=可行走，非触发器=障碍物
+    /// </summary>
+    private bool ShouldBeNavMeshObstacle(GameObject obj)
+    {
+        // 检查2D碰撞体设置
+        Collider2D collider2D = obj.GetComponent<Collider2D>();
+        if (collider2D != null)
+        {
+            // 如果是触发器，则不应该是NavMesh障碍
+            return !collider2D.isTrigger;
+        }
+        
+        // 检查3D碰撞体设置
+        Collider collider3D = obj.GetComponent<Collider>();
+        if (collider3D != null)
+        {
+            // 如果是触发器，则不应该是NavMesh障碍
+            return !collider3D.isTrigger;
+        }
+        
+        // 如果没有碰撞体，默认不作为障碍物
+        return false;
+    }
+    
+    /// <summary>
+    /// 获取对象的边界框
+    /// </summary>
+    private Bounds GetObjectBounds(GameObject obj)
+    {
+        Bounds bounds = new Bounds(obj.transform.position, Vector3.zero);
+        bool hasBounds = false;
+        
+        // 尝试从Renderer获取边界
+        Renderer renderer = obj.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            bounds = renderer.bounds;
+            hasBounds = true;
+        }
+        else
+        {
+            // 尝试从子对象的Renderer获取边界
+            Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+            foreach (var r in renderers)
+            {
+                if (!hasBounds)
+                {
+                    bounds = r.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(r.bounds);
+                }
+            }
+        }
+        
+        // 如果没有Renderer，尝试从碰撞体获取边界
+        if (!hasBounds)
+        {
+            Collider collider = obj.GetComponent<Collider>();
+            if (collider != null)
+            {
+                bounds = collider.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                Collider2D collider2D = obj.GetComponent<Collider2D>();
+                if (collider2D != null)
+                {
+                    bounds = collider2D.bounds;
+                    hasBounds = true;
+                }
+            }
+        }
+        
+        return bounds;
+    }
+    
+    /// <summary>
+    /// 验证NavMeshObstacle设置
+    /// </summary>
+    private void ValidateNavMeshObstacles()
+    {
+        NavMeshObstacle[] obstacles = FindObjectsOfType<NavMeshObstacle>();
+        DebugLog($"场景中共有 {obstacles.Length} 个NavMeshObstacle组件");
+        
+        foreach (var obstacle in obstacles)
+        {
+            if (obstacle.carving)
+            {
+                DebugLog($"障碍物 {obstacle.gameObject.name}: Size={obstacle.size}, Center={obstacle.center}, Carving=true");
+            }
+            else
+            {
+                DebugLog($"障碍物 {obstacle.gameObject.name}: Carving=false (不会在NavMesh中创建洞)");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 在NavMesh烘焙完成后设置NavMeshObstacle
+    /// </summary>
+    private void SetupNavMeshObstaclesAfterBaking()
+    {
+        // 查找所有动态生成的家具
+        var plants = FindObjectsOfType<PlantController>();
+        var foods = FindObjectsOfType<FoodController>();
+        var speakers = FindObjectsOfType<SpeakerController>();
+        var tvs = FindObjectsOfType<TVController>();
+        
+        int obstacleCount = 0;
+        
+        // 处理植物
+        foreach (var plant in plants)
+        {
+            if (SetupSingleNavMeshObstacle(plant.gameObject))
+                obstacleCount++;
+        }
+        
+        // 处理食物
+        foreach (var food in foods)
+        {
+            if (SetupSingleNavMeshObstacle(food.gameObject))
+                obstacleCount++;
+        }
+        
+        // 处理音响
+        foreach (var speaker in speakers)
+        {
+            if (SetupSingleNavMeshObstacle(speaker.gameObject))
+                obstacleCount++;
+        }
+        
+        // 处理电视机
+        foreach (var tv in tvs)
+        {
+            if (SetupSingleNavMeshObstacle(tv.gameObject))
+                obstacleCount++;
+        }
+        
+        DebugLog($"烘焙完成后设置了 {obstacleCount} 个NavMeshObstacle");
+    }
+    
+    /// <summary>
+    /// 为单个对象设置NavMeshObstacle
+    /// </summary>
+    private bool SetupSingleNavMeshObstacle(GameObject obj)
+    {
+        if (obj == null) return false;
+        
+        // 检查对象是否应该作为NavMesh障碍物
+        if (ShouldBeNavMeshObstacle(obj))
+        {
+            NavMeshObstacle obstacle = obj.GetComponent<NavMeshObstacle>();
+            if (obstacle != null)
+            {
+                // 重新配置现有的NavMeshObstacle
+                obstacle.carving = true;
+                obstacle.carvingMoveThreshold = 0.1f;
+                obstacle.carvingTimeToStationary = 0.5f;
+                
+                // 重新计算尺寸
+                Bounds bounds = GetObjectBounds(obj);
+                if (bounds.size != Vector3.zero)
+                {
+                    obstacle.size = bounds.size;
+                    obstacle.center = bounds.center - obj.transform.position;
+                }
+                
+                DebugLog($"重新配置 {obj.name} 的NavMeshObstacle - Size: {obstacle.size}");
+                return true;
+            }
+        }
+        else
+        {
+            // 移除不需要的NavMeshObstacle
+            NavMeshObstacle existingObstacle = obj.GetComponent<NavMeshObstacle>();
+            if (existingObstacle != null)
+            {
+                DestroyImmediate(existingObstacle);
+                DebugLog($"烘焙后移除了 {obj.name} 的NavMeshObstacle（应该是可行走的）");
+            }
+        }
+        
+        return false;
+    }
+    
+    /// <summary>
+    /// 检查对象是否有有效的NavMesh碰撞体
+    /// </summary>
+    private bool HasValidNavMeshCollider(GameObject obj)
+    {
+        // 检查3D碰撞体（非触发器）
+        Collider collider3D = obj.GetComponent<Collider>();
+        if (collider3D != null && !collider3D.isTrigger)
+        {
+            return true;
+        }
+        
+        // 检查子对象中的3D碰撞体
+        collider3D = obj.GetComponentInChildren<Collider>();
+        if (collider3D != null && !collider3D.isTrigger)
+        {
+            return true;
+        }
+        
+        return false;
     }
     
     /// <summary>
@@ -319,6 +529,12 @@ public class DynamicNavMeshManager : MonoBehaviour
     /// </summary>
     private void OnNavMeshBakeComplete()
     {
+        // 在NavMesh烘焙完成后，重新设置NavMeshObstacle
+        SetupNavMeshObstaclesAfterBaking();
+        
+        // 验证NavMeshObstacle设置
+        ValidateNavMeshObstacles();
+        
         // 通知所有NavMeshAgent更新路径
         RefreshAllNavMeshAgents();
         
@@ -373,6 +589,29 @@ public class DynamicNavMeshManager : MonoBehaviour
         {
             Debug.Log($"[DynamicNavMeshManager] {message}");
         }
+    }
+    
+    /// <summary>
+    /// 检查对象是否有任何类型的碰撞体（2D或3D）
+    /// </summary>
+    private bool HasAnyCollider(GameObject obj)
+    {
+        // 检查3D碰撞体
+        if (obj.GetComponent<Collider>() != null)
+            return true;
+        
+        // 检查2D碰撞体
+        if (obj.GetComponent<Collider2D>() != null)
+            return true;
+        
+        // 检查子对象中的碰撞体
+        if (obj.GetComponentInChildren<Collider>() != null)
+            return true;
+        
+        if (obj.GetComponentInChildren<Collider2D>() != null)
+            return true;
+        
+        return false;
     }
     
     #region 编辑器支持
