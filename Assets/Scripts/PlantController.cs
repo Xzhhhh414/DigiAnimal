@@ -593,7 +593,21 @@ public class PlantController : MonoBehaviour, ISelectableFurniture, ISpawnableFu
             saveDataId = saveData.saveDataId;  // 加载 saveDataId
             HealthLevel = saveData.healthLevel; // 这会触发外观更新
             // wateringHeartCost 已移除，浇水免费
-            healthRecoveryValue = saveData.healthRecoveryValue;
+            
+            // 对于默认家具，首次创建时保持prefab中的Inspector配置
+            // 只有非默认家具或已存在的家具才使用存档数据
+            bool isDefaultFurniture = !string.IsNullOrEmpty(saveData.saveDataId);
+            bool shouldPreserveInspectorValues = isDefaultFurniture && (saveData.healthRecoveryValue == 25);
+            
+            if (!shouldPreserveInspectorValues)
+            {
+                // 使用存档中的值
+                healthRecoveryValue = saveData.healthRecoveryValue;
+            }
+            else
+            {
+                //Debug.Log($"[PlantController] {gameObject.name} 是默认家具，保持Inspector配置: HealthRecovery={healthRecoveryValue}");
+            }
             
             // 设置位置
             transform.position = saveData.position;

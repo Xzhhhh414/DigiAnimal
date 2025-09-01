@@ -269,8 +269,22 @@ public class FoodController : MonoBehaviour, ISelectableFurniture, ISpawnableFur
             
             // Debug.Log($"[FoodController] {gameObject.name} 设置 IsEmpty 从 {_isEmpty} 到 {saveData.isEmpty}");
             IsEmpty = saveData.isEmpty; // 这会自动更新动画参数和视觉状态
-            Tasty = saveData.tasty;
-            satietyRecoveryValue = saveData.satietyRecoveryValue;
+            
+            // 对于默认家具，首次创建时保持prefab中的Inspector配置
+            // 只有非默认家具或已存在的家具才使用存档数据
+            bool isDefaultFurniture = !string.IsNullOrEmpty(saveData.saveDataId);
+            bool shouldPreserveInspectorValues = isDefaultFurniture && (saveData.tasty == 3 && saveData.satietyRecoveryValue == 25);
+            
+            if (!shouldPreserveInspectorValues)
+            {
+                // 使用存档中的值
+                Tasty = saveData.tasty;
+                satietyRecoveryValue = saveData.satietyRecoveryValue;
+            }
+            else
+            {
+                //Debug.Log($"[FoodController] {gameObject.name} 是默认家具，保持Inspector配置: Tasty={Tasty}, SatietyRecovery={satietyRecoveryValue}");
+            }
             // Debug.Log($"[FoodController] {gameObject.name} 加载完成，最终状态: isEmpty={_isEmpty}");
         }
         finally
