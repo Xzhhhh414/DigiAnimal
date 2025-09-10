@@ -162,7 +162,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _healthLevel: 100
-  healthRecoveryValue: 10
+  healthRecoveryValue: 15
   wateringCanPrefab: {fileID: 4265860994396895707, guid: 113fa48fa79618b4786930b12c93342f, type: 3}
   wateringCanOffset: {x: -0.5, y: 0.6, z: 0}
   wateringDuration: 4
@@ -177,8 +177,9 @@ MonoBehaviour:
   isSelected: 0
   plantId: 
   configId: 
-  minDecreaseInterval: 180
-  maxDecreaseInterval: 300
+  saveDataId: 
+  minDecreaseInterval: 400
+  maxDecreaseInterval: 600
   healthDecreaseValue: 1
 --- !u!114 &1863385939138002158
 MonoBehaviour:
