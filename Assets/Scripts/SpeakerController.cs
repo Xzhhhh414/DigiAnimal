@@ -25,6 +25,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
     private bool isPlaying = false;
     private int currentTrackIndex = 0;
     private float pausedTime = 0f; // 暂停时的播放位置
+    private bool wasPlayingLastFrame = false; // 上一帧是否正在播放，用于检测播放完毕
 
     // 特效管理
     private GameObject currentSoundWaveEffect; // 当前播放的音浪特效实例
@@ -143,6 +144,28 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         GenerateFurnitureId();
     }
     
+    private void Update()
+    {
+        // 检查音乐是否播放完毕，如果完毕则自动切换到下一首
+        if (isPlaying && audioSource != null && audioSource.clip != null)
+        {
+            // 如果上一帧在播放，但这一帧停止了，且不是被手动暂停的，说明音乐播放完毕
+            if (wasPlayingLastFrame && !audioSource.isPlaying)
+            {
+                // 音乐播放完毕，自动切换到下一首
+                NextTrack();
+            }
+            
+            // 记录当前帧的播放状态
+            wasPlayingLastFrame = audioSource.isPlaying;
+        }
+        else if (!isPlaying)
+        {
+            // 如果不是播放状态，重置标志
+            wasPlayingLastFrame = false;
+        }
+    }
+    
     private void OnDestroy()
     {
         // 确保在对象销毁时清理特效
@@ -204,6 +227,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         }
         
         isPlaying = false;
+        wasPlayingLastFrame = false; // 重置播放状态标志，避免误判为播放完毕
         
         // 销毁音浪特效
         DestroySoundWaveEffect();
@@ -219,6 +243,7 @@ public class SpeakerController : MonoBehaviour, ISelectableFurniture, ISpawnable
         audioSource.Stop();
         isPlaying = false;
         pausedTime = 0f;
+        wasPlayingLastFrame = false; // 重置播放状态标志
         
         // 销毁音浪特效
         DestroySoundWaveEffect();
