@@ -52,6 +52,8 @@ MonoBehaviour:
   selectedPetInfoPanel: {fileID: 0}
   selectedFoodInfoPanel: {fileID: 0}
   selectedPlantInfoPanel: {fileID: 0}
+  selectedSpeakerInfoPanel: {fileID: 0}
+  selectedTVInfoPanel: {fileID: 0}
 --- !u!114 &7036593405418518353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,4 +185,4 @@ MonoBehaviour:
   minWidth: 400
   maxWidth: 1000
   paddingHorizontal: 120
-  fixedHeight: 175
+  fixedHeight: 200

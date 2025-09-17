@@ -640,7 +640,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buildButton: {fileID: 5291929568365565183}
-  toastMessage: "\u623F\u5C4B\u5EFA\u9020\u529F\u80FD\u6B63\u5728\u65BD\u5DE5\u4E2D\uFF0C\u5373\u5C06\u5F00\u653E\uFF01"
+  toastMessage: "\u623F\u5C4B\u6539\u9020\u529F\u80FD\u6682\u672A\u5F00\u653E~"
 --- !u!1 &7935582978587356193
 GameObject:
   m_ObjectHideFlags: 0
