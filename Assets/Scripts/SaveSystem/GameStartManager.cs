@@ -36,9 +36,6 @@ public class GameStartManager : MonoBehaviour
     {
         InitializeUI();
         RefreshSaveInfo();
-        
-        // 检查是否应该自动跳转到游戏场景
-        CheckAutoJumpToGameplay();
     }
     
     /// <summary>
@@ -139,38 +136,6 @@ public class GameStartManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 检查是否应该自动跳转到游戏场景（仅在首次加载Start场景时，不是从设置返回时）
-    /// </summary>
-    private void CheckAutoJumpToGameplay()
-    {
-        // 如果是从Gameplay场景返回的（比如从设置界面返回），不自动跳转
-        if (GameState.IsReturningFromGameplay)
-        {
-            // 重置返回标志，避免影响后续操作
-            GameState.IsReturningFromGameplay = false;
-            return;
-        }
-        
-        // 检查是否有存档
-        SaveFileInfo saveInfo = SaveManager.Instance.GetSaveFileInfo();
-        
-        if (saveInfo != null && saveInfo.exists && saveInfo.petCount > 0)
-        {
-            // 有存档且有宠物，自动跳转到游戏场景
-            // 禁用开始游戏按钮，防止用户重复点击
-            if (startGameButton != null)
-            {
-                startGameButton.interactable = false;
-            }
-            
-            // 确保UIManager存在（只在真正进入游戏时创建）
-            EnsureUIManagerExists();
-            
-            StartTransitionToGameplay();
-        }
-    }
-    
-    /// <summary>
     /// 检查是否需要显示宠物选择界面
     /// </summary>
     private void CheckForFirstTimeSelection()
@@ -212,6 +177,8 @@ public class GameStartManager : MonoBehaviour
         else
         {
             // 已有存档，直接进入游戏
+            // 检测到现有存档，直接进入游戏
+            
             // 确保UIManager存在（只在真正进入游戏时创建）
             EnsureUIManagerExists();
             
