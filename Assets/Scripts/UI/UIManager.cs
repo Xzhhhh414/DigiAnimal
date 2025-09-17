@@ -122,7 +122,7 @@ public class UIManager : MonoBehaviour
     // 存储隐藏前的UI状态
     private Dictionary<GameObject, bool> hiddenUIStates = new Dictionary<GameObject, bool>();
     
-    // 隐藏所有UI（但保留工具使用面板）
+    // 隐藏所有UI（但保留工具使用面板和选中信息面板）
     private void HideAllUI()
     {
         // 清空之前的状态记录
@@ -144,40 +144,43 @@ public class UIManager : MonoBehaviour
             toolkitPanel.gameObject.SetActive(false);
         }
         
-        // 隐藏选中宠物信息面板
-        if (selectedPetInfoPanel != null && selectedPetInfoPanel.gameObject.activeSelf)
-        {
-            hiddenUIStates[selectedPetInfoPanel.gameObject] = true;
-            selectedPetInfoPanel.gameObject.SetActive(false);
-        }
+        // 保留选中信息面板的显示，让用户在使用工具时能看到选中对象的信息
+        // 注释掉以下选中信息面板的隐藏逻辑：
         
-        // 隐藏选中食物信息面板
-        if (selectedFoodInfoPanel != null && selectedFoodInfoPanel.gameObject.activeSelf)
-        {
-            hiddenUIStates[selectedFoodInfoPanel.gameObject] = true;
-            selectedFoodInfoPanel.gameObject.SetActive(false);
-        }
+        // // 隐藏选中宠物信息面板
+        // if (selectedPetInfoPanel != null && selectedPetInfoPanel.gameObject.activeSelf)
+        // {
+        //     hiddenUIStates[selectedPetInfoPanel.gameObject] = true;
+        //     selectedPetInfoPanel.gameObject.SetActive(false);
+        // }
         
-        // 隐藏选中植物信息面板
-        if (selectedPlantInfoPanel != null && selectedPlantInfoPanel.gameObject.activeSelf)
-        {
-            hiddenUIStates[selectedPlantInfoPanel.gameObject] = true;
-            selectedPlantInfoPanel.gameObject.SetActive(false);
-        }
+        // // 隐藏选中食物信息面板
+        // if (selectedFoodInfoPanel != null && selectedFoodInfoPanel.gameObject.activeSelf)
+        // {
+        //     hiddenUIStates[selectedFoodInfoPanel.gameObject] = true;
+        //     selectedFoodInfoPanel.gameObject.SetActive(false);
+        // }
         
-        // 隐藏选中音响信息面板
-        if (selectedSpeakerInfoPanel != null && selectedSpeakerInfoPanel.gameObject.activeSelf)
-        {
-            hiddenUIStates[selectedSpeakerInfoPanel.gameObject] = true;
-            selectedSpeakerInfoPanel.gameObject.SetActive(false);
-        }
+        // // 隐藏选中植物信息面板
+        // if (selectedPlantInfoPanel != null && selectedPlantInfoPanel.gameObject.activeSelf)
+        // {
+        //     hiddenUIStates[selectedPlantInfoPanel.gameObject] = true;
+        //     selectedPlantInfoPanel.gameObject.SetActive(false);
+        // }
         
-        // 隐藏选中电视机信息面板
-        if (selectedTVInfoPanel != null && selectedTVInfoPanel.gameObject.activeSelf)
-        {
-            hiddenUIStates[selectedTVInfoPanel.gameObject] = true;
-            selectedTVInfoPanel.gameObject.SetActive(false);
-        }
+        // // 隐藏选中音响信息面板
+        // if (selectedSpeakerInfoPanel != null && selectedSpeakerInfoPanel.gameObject.activeSelf)
+        // {
+        //     hiddenUIStates[selectedSpeakerInfoPanel.gameObject] = true;
+        //     selectedSpeakerInfoPanel.gameObject.SetActive(false);
+        // }
+        
+        // // 隐藏选中电视机信息面板
+        // if (selectedTVInfoPanel != null && selectedTVInfoPanel.gameObject.activeSelf)
+        // {
+        //     hiddenUIStates[selectedTVInfoPanel.gameObject] = true;
+        //     selectedTVInfoPanel.gameObject.SetActive(false);
+        // }
         
         // 隐藏底部面板中的工具包按钮（已集成到BottomPanelController中）
         // ToolkitButtonController已弃用，功能已合并到BottomPanelController

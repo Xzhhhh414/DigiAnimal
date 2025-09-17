@@ -698,7 +698,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u770B\u56FE\u731CFlashParty\u82F1\u96C4"
+  m_Text: "\u300AFlash Party\u300B\u82F1\u96C4\u8F6E\u64AD"
 --- !u!1 &5606512851939347183
 GameObject:
   m_ObjectHideFlags: 0
@@ -770,7 +770,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tvNameText: {fileID: 4504686794092770871}
-  contentText: {fileID: 5211006444780103027}
   tvImage: {fileID: 7917543756181466450}
   powerButton: {fileID: 5230561617985131590}
   powerButtonText: {fileID: 1423434603251395521}
