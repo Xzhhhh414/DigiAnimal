@@ -1,0 +1,20 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.zher.meow.widget'
+    compileSdkVersion 34
+    buildToolsVersion "34.0.0"
+
+    defaultConfig {
+        minSdkVersion 24
+        targetSdkVersion 34
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+}

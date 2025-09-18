@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DigiAnimal</string>
+    <string name="widget_name">DigiAnimal Pet Widget</string>
+    <string name="widget_description">显示你的虚拟宠物状态</string>
+    
+    <!-- 小组件文本 -->
+    <string name="widget_age_format">年龄 %d天</string>
+    <string name="widget_energy_format">精力 %d</string>
+    <string name="widget_satiety_format">饱食 %d</string>
+    
+    <!-- 按钮文本 -->
+    <string name="btn_sit">坐下</string>
+    <string name="btn_visit">去看看</string>
+    <string name="btn_run">跑步</string>
+    
+    <!-- 动画状态 -->
+    <string name="animation_playing">播放动画中...</string>
+    <string name="animation_completed">动画播放完成</string>
+    
+    <!-- 错误信息 -->
+    <string name="error_no_pet_data">无宠物数据</string>
+    <string name="error_animation_failed">动画播放失败</string>
+</resources>
