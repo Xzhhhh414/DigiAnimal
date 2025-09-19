@@ -51,11 +51,15 @@ public class AndroidWidgetPlugin {
                           ", 精力: " + petData.energy + 
                           ", 饱食: " + petData.satiety + 
                           ", 年龄: " + petData.ageInDays + "天");
+                
+                // 使用新的数据提供者处理游戏数据更新
+                WidgetDataProvider dataProvider = WidgetDataProvider.getInstance(context);
+                dataProvider.handleGameDataUpdate(petData);
             } else {
                 Log.w(TAG, "小组件数据中没有宠物数据");
             }
             
-            // 保存数据到SharedPreferences
+            // 保存数据到SharedPreferences (保留兼容性)
             saveWidgetData(jsonData);
             
             // 刷新所有小组件

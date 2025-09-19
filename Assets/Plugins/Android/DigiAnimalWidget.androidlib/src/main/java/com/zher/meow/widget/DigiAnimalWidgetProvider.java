@@ -35,6 +35,7 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
     public static final String ACTION_REFRESH_WIDGET = "com.zher.meow.widget.REFRESH_WIDGET";
     public static final String ACTION_REFRESH_DATA = "com.zher.meow.widget.REFRESH_DATA";
     public static final String ACTION_STOP_ANIMATION = "com.zher.meow.widget.STOP_ANIMATION";
+    public static final String ACTION_PERIODIC_UPDATE = "com.zher.meow.widget.PERIODIC_UPDATE";
     
     // Intent额外参数
     public static final String EXTRA_WIDGET_ID = "widget_id";
@@ -70,12 +71,18 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
     public void onEnabled(Context context) {
         super.onEnabled(context);
         // Log.i(TAG, "=== Widget ENABLED - First widget added to home screen ===");
+        
+        // 启动定期更新
+        setupPeriodicUpdate(context);
     }
 
     @Override
     public void onDisabled(Context context) {
         super.onDisabled(context);
         // Log.i(TAG, "=== Widget DISABLED - Last widget removed from home screen ===");
+        
+        // 取消定期更新
+        cancelPeriodicUpdate(context);
     }
 
     @Override
@@ -108,15 +115,33 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
                 updateWidget(context, appWidgetManager, widgetId);
             }
         } else if (ACTION_REFRESH_DATA.equals(action)) {
-            // Log.d(TAG, "处理刷新数据请求 - 仅刷新小组件，不启动游戏");
+            // Log.d(TAG, "处理刷新数据请求 - 智能选择最佳数据源");
             
-            // 直接刷新小组件，使用当前存储的数据
+            // 使用数据提供者获取当前最佳数据（自动判断游戏数据vs离线数据）
+            WidgetDataProvider dataProvider = WidgetDataProvider.getInstance(context);
+            PetData refreshedData = dataProvider.getCurrentPetData();
+            
+            // 刷新所有小组件
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             ComponentName provider = new ComponentName(context, DigiAnimalWidgetProvider.class);
             int[] widgetIds = appWidgetManager.getAppWidgetIds(provider);
             onUpdate(context, appWidgetManager, widgetIds);
             
-            // Log.d(TAG, "小组件刷新完成，未启动游戏");
+            // Log.d(TAG, "小组件刷新完成 - 数据源: " + (refreshedData != null ? refreshedData.petName : "默认数据"));
+        } else if (ACTION_PERIODIC_UPDATE.equals(action)) {
+            // Log.d(TAG, "处理定期更新请求");
+            
+            // 使用数据提供者进行定期离线更新
+            WidgetDataProvider dataProvider = WidgetDataProvider.getInstance(context);
+            dataProvider.periodicOfflineUpdate();
+            
+            // 刷新所有小组件
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            ComponentName provider = new ComponentName(context, DigiAnimalWidgetProvider.class);
+            int[] widgetIds = appWidgetManager.getAppWidgetIds(provider);
+            onUpdate(context, appWidgetManager, widgetIds);
+            
+            // Log.d(TAG, "定期更新完成");
         }
     }
     
@@ -130,15 +155,16 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
         // 创建RemoteViews
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.digianimal_widget_4x2);
         
-        // 从SharedPreferences读取宠物数据
-        WidgetData widgetData = loadWidgetData(context);
+        // 使用新的数据提供者获取最佳数据源
+        WidgetDataProvider dataProvider = WidgetDataProvider.getInstance(context);
+        PetData petData = dataProvider.getCurrentPetData();
         
-        if (widgetData != null && widgetData.selectedPetData != null) {
+        if (petData != null && DataFreshnessChecker.isDataValid(petData)) {
             // 更新宠物信息
-            updatePetInfo(context, views, widgetData.selectedPetData);
+            updatePetInfo(context, views, petData);
             
             // 更新宠物图片
-            updatePetImage(context, views, widgetData.selectedPetData);
+            updatePetImage(context, views, petData);
         } else {
             // 显示默认数据
             updateDefaultInfo(views, context);
@@ -889,6 +915,73 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
         } else {
             // 备用方案
             updateWidget(context, appWidgetManager, widgetId);
+        }
+    }
+    
+    /**
+     * 设置定期更新（每分钟）
+     */
+    private void setupPeriodicUpdate(Context context) {
+        try {
+            android.app.AlarmManager alarmManager = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager == null) {
+                Log.e(TAG, "无法获取AlarmManager");
+                return;
+            }
+            
+            Intent intent = new Intent(context, DigiAnimalWidgetProvider.class);
+            intent.setAction(ACTION_PERIODIC_UPDATE);
+            
+            android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(
+                context, 0, intent, 
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+            );
+            
+            // 每分钟更新一次 (60 * 1000 = 60000毫秒)
+            long intervalMillis = 60 * 1000;
+            long firstTimeMillis = System.currentTimeMillis() + intervalMillis;
+            
+            // 使用setRepeating设置重复闹钟
+            alarmManager.setRepeating(
+                android.app.AlarmManager.RTC_WAKEUP,
+                firstTimeMillis,
+                intervalMillis,
+                pendingIntent
+            );
+            
+            Log.d(TAG, "定期更新已设置: 每分钟更新一次");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "设置定期更新失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 取消定期更新
+     */
+    private void cancelPeriodicUpdate(Context context) {
+        try {
+            android.app.AlarmManager alarmManager = (android.app.AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            if (alarmManager == null) {
+                Log.e(TAG, "无法获取AlarmManager");
+                return;
+            }
+            
+            Intent intent = new Intent(context, DigiAnimalWidgetProvider.class);
+            intent.setAction(ACTION_PERIODIC_UPDATE);
+            
+            android.app.PendingIntent pendingIntent = android.app.PendingIntent.getBroadcast(
+                context, 0, intent, 
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+            );
+            
+            alarmManager.cancel(pendingIntent);
+            pendingIntent.cancel();
+            
+            Log.d(TAG, "定期更新已取消");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "取消定期更新失败: " + e.getMessage());
         }
     }
 }
