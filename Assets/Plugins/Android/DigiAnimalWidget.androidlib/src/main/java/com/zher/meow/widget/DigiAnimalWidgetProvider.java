@@ -213,6 +213,9 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.pet_satiety, satietyText);
         }
         
+        // 宠物状态 - 根据优先级显示状态文本
+        updatePetStatus(context, views, petData);
+        
         // Log.d(TAG, "宠物信息更新完成: " + petData.petName + ", 年龄:" + petData.ageInDays + "天");
     }
     
@@ -280,6 +283,9 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.pet_name, "我的宠物");
         views.setTextViewText(R.id.pet_satiety, "饱食 100");
         
+        // 隐藏状态显示（默认状态良好）
+        views.setViewVisibility(R.id.pet_status, android.view.View.GONE);
+        
         // 使用像素完美放大的默认图片 (sit_1)
         int defaultFrame = PetImageHelper.getSingleFrame(context, "Pet_CatBrown", "sit_1");
         Bitmap scaledBitmap = createPixelPerfectBitmap(context, defaultFrame);
@@ -334,6 +340,33 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
         views.setOnClickPendingIntent(R.id.btn_refresh, refreshPendingIntent);
+        
+        // 小组件空白区域点击 - 启动游戏
+        setupWidgetClickToLaunch(context, views, widgetId);
+    }
+    
+    /**
+     * 设置小组件点击启动游戏
+     */
+    private void setupWidgetClickToLaunch(Context context, RemoteViews views, int widgetId) {
+        try {
+            // 创建启动Unity游戏的Intent
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            if (launchIntent != null) {
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                
+                // 创建PendingIntent
+                PendingIntent launchPendingIntent = PendingIntent.getActivity(
+                    context, widgetId * 10 + 5, launchIntent, 
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                );
+                
+                // 为小组件的根布局设置点击事件
+                views.setOnClickPendingIntent(R.id.widget_root, launchPendingIntent);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "设置小组件点击启动失败: " + e.getMessage());
+        }
     }
     
     /**
@@ -570,6 +603,38 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
         int dstW = w * scale;
         int dstH = h * scale;
         return Bitmap.createScaledBitmap(src, dstW, dstH, false);
+    }
+
+    /**
+     * 更新宠物状态显示
+     * 优先级：精力≤10 > 饱食≤10 > isBored=true
+     */
+    private void updatePetStatus(Context context, RemoteViews views, PetData petData) {
+        String statusText = null;
+        
+        // 按优先级判断状态
+        if (petData.energy <= 10) {
+            statusText = "好困…";
+        } else if (petData.satiety <= 10) {
+            statusText = "好饿…";
+        } else if (petData.isBored) {
+            statusText = "玩累了…";
+        }
+        
+        if (statusText != null) {
+            // 显示状态文本（红色，字号14）
+            int redColor = 0xFFFF0000; // 红色
+            Bitmap statusBitmap = createTextBitmap(context, statusText, 14, redColor);
+            if (statusBitmap != null) {
+                views.setImageViewBitmap(R.id.pet_status, statusBitmap);
+                views.setViewVisibility(R.id.pet_status, android.view.View.VISIBLE);
+            } else {
+                views.setViewVisibility(R.id.pet_status, android.view.View.GONE);
+            }
+        } else {
+            // 没有状态需要显示，隐藏状态区域
+            views.setViewVisibility(R.id.pet_status, android.view.View.GONE);
+        }
     }
 
     /**
