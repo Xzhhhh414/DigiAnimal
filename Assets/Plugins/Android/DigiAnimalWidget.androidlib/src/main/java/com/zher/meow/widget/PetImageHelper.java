@@ -54,6 +54,23 @@ public class PetImageHelper {
     }
     
     /**
+     * 获取单个动画帧资源ID
+     */
+    public static int getSingleFrame(Context context, String prefabName, String frameName) {
+        String petType = extractPetType(prefabName);
+        String resourceName = petType.toLowerCase() + "_" + frameName;
+        
+        int resourceId = getDrawableResourceId(context, resourceName);
+        if (resourceId == 0) {
+            // 如果找不到资源，使用默认图片
+            resourceId = getDrawableResourceId(context, "pet_catbrown_sit_1");
+        }
+        
+        Log.d(TAG, "单帧: " + prefabName + " " + frameName + " -> " + resourceName + " (ID: " + resourceId + ")");
+        return resourceId;
+    }
+    
+    /**
      * 从prefabName提取宠物类型
      */
     private static String extractPetType(String prefabName) {

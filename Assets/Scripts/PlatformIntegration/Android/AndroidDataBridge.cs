@@ -69,6 +69,9 @@ public class AndroidDataBridge : MonoBehaviour
     private void Start()
     {
         InitializeAndroidBridge();
+        
+        // 检查是否从小组件刷新按钮启动
+        CheckForWidgetRefreshIntent();
     }
     
     private void Update()
@@ -97,8 +100,8 @@ public class AndroidDataBridge : MonoBehaviour
             unityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             unityActivity = unityClass.GetStatic<AndroidJavaObject>("currentActivity");
             
-            // 初始化Android插件
-            androidPlugin = new AndroidJavaObject("com.zher.meow.widget.AndroidWidgetPlugin", unityActivity);
+            // 不需要手动初始化AndroidWidgetPlugin，它会自动初始化
+            // androidPlugin = new AndroidJavaObject("com.zher.meow.widget.AndroidWidgetPlugin", unityActivity);
             
             Debug.Log("[AndroidDataBridge] Android桥接系统已初始化");
             isInitialized = true;
@@ -120,6 +123,52 @@ public class AndroidDataBridge : MonoBehaviour
     }
     
     /// <summary>
+    /// 检查是否从小组件刷新按钮启动
+    /// </summary>
+    private void CheckForWidgetRefreshIntent()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        try
+        {
+            AndroidJavaClass unityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            AndroidJavaObject unityActivity = unityClass.GetStatic<AndroidJavaObject>("currentActivity");
+            AndroidJavaObject intent = unityActivity.Call<AndroidJavaObject>("getIntent");
+            
+            if (intent != null)
+            {
+                string action = intent.Call<string>("getAction");
+                if (action == "com.zher.meow.REFRESH_DATA")
+                {
+                    Debug.Log("[AndroidDataBridge] 检测到小组件刷新请求");
+                    string refreshSource = intent.Call<string>("getStringExtra", "refresh_source");
+                    // 第三个参数需为long类型默认值，否则在某些设备上会触发JNI签名匹配失败
+                    long timestamp = intent.Call<long>("getLongExtra", "timestamp", 0L);
+                    
+                    Debug.Log($"[AndroidDataBridge] 刷新来源: {refreshSource}, 时间戳: {timestamp}");
+                    
+                    // 延迟一秒后强制刷新，确保Unity完全初始化
+                    StartCoroutine(DelayedForceRefresh());
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[AndroidDataBridge] 检查刷新Intent失败: {e.Message}");
+        }
+#endif
+    }
+    
+    /// <summary>
+    /// 延迟强制刷新
+    /// </summary>
+    private System.Collections.IEnumerator DelayedForceRefresh()
+    {
+        yield return new WaitForSeconds(1f);
+        Debug.Log("[AndroidDataBridge] 执行延迟强制刷新");
+        ForceSyncNow();
+    }
+    
+    /// <summary>
     /// 同步数据到Android
     /// </summary>
     public void SyncToAndroid()
@@ -135,7 +184,17 @@ public class AndroidDataBridge : MonoBehaviour
             
             // 获取当前选中的宠物ID（可以复用iOS的逻辑，或者单独设置Android的选中宠物）
             string selectedPetId = saveData.playerData.selectedDynamicIslandPetId; // 暂时复用iOS的设置
+            
+            // 如果没有选中iOS宠物，选择第一个可用的宠物
+            if (string.IsNullOrEmpty(selectedPetId) && saveData.petsData != null && saveData.petsData.Count > 0)
+            {
+                selectedPetId = saveData.petsData[0].petId;
+                Debug.Log($"[AndroidDataBridge] 没有选中iOS宠物，使用第一个宠物: {selectedPetId}");
+            }
+            
             bool widgetEnabled = true; // Android小组件默认启用
+            
+            Debug.Log($"[AndroidDataBridge] 最终选中的宠物ID: '{selectedPetId}', 小组件启用: {widgetEnabled}");
             
             // 检查是否需要更新
             bool needUpdate = false;
@@ -197,8 +256,14 @@ public class AndroidDataBridge : MonoBehaviour
                     var petData = ConvertToAndroidPetData(petSaveData);
                     syncData.selectedPetData = petData;
                     
+                    Debug.Log($"[AndroidDataBridge] 宠物数据: 名字={petData.petName}, 精力={petData.energy}, 饱食={petData.satiety}, 年龄={petData.ageInDays}天");
+                    
                     // 缓存宠物数据
                     cachedPetData[selectedPetId] = petData;
+                }
+                else
+                {
+                    Debug.LogWarning($"[AndroidDataBridge] 找不到宠物数据，宠物ID: {selectedPetId}");
                 }
             }
             
@@ -287,6 +352,10 @@ public class AndroidDataBridge : MonoBehaviour
     public void ForceSyncNow()
     {
         Debug.Log("[AndroidDataBridge] 强制同步数据");
+        // 清除缓存，强制更新
+        lastSyncedPetId = "";
+        lastWidgetEnabled = false;
+        cachedPetData.Clear();
         SyncToAndroid();
     }
     

@@ -1,144 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
     android:background="@drawable/widget_background"
-    android:padding="8dp">
+    android:padding="6dp">
 
-    <!-- 左侧：宠物图像区域 -->
-    <FrameLayout
-        android:layout_width="0dp"
+    <!-- 刷新按钮 - 左上角 -->
+    <ImageButton
+        android:id="@+id/btn_refresh"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="2dp"
+        android:background="@drawable/widget_button_background"
+        android:src="@drawable/ic_refresh"
+        android:scaleType="centerInside"
+        android:contentDescription="刷新数据" />
+
+    <!-- 主要内容区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1.2"
-        android:layout_marginEnd="8dp">
+        android:orientation="horizontal"
+        android:layout_marginTop="0dp">
+
+    <!-- 左侧：宠物图像和名称区域 -->
+    <LinearLayout
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="top"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="0dp">
         
+        <!-- 宠物图像（按位图原尺寸显示，避免系统再次缩放导致模糊） -->
         <ImageView
             android:id="@+id/pet_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerInside"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="center"
             android:src="@drawable/pet_catbrown_sit_1"
             android:contentDescription="Pet Image" />
             
-    </FrameLayout>
+        <!-- 宠物名称 - 显示在图片正下方（使用ImageView显示自定义字体位图） -->
+        <ImageView
+            android:id="@+id/pet_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="center"
+            android:layout_marginTop="-2dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription="宠物名字" />
+            
+    </LinearLayout>
 
     <!-- 中间：宠物信息区域 -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
-        android:layout_weight="1.8"
         android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:layout_marginEnd="8dp">
+        android:gravity="top"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginEnd="0dp">
+        
 
-        <!-- 年龄 -->
-        <TextView
+        <!-- 年龄（使用ImageView显示自定义字体位图） -->
+        <ImageView
             android:id="@+id/pet_age"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="年龄 1天"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:gravity="center_vertical"
-            android:fontFamily="sans-serif"
-            android:layout_marginBottom="2dp" />
+            android:layout_height="16dp"
+            android:scaleType="fitStart"
+            android:layout_marginBottom="20dp"
+            android:contentDescription="年龄" />
 
-        <!-- 精力 -->
-        <TextView
+        <!-- 精力（使用ImageView显示自定义字体位图） -->yij
+        <ImageView
             android:id="@+id/pet_energy"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="精力 82"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:gravity="center_vertical"
-            android:fontFamily="sans-serif"
-            android:layout_marginBottom="2dp" />
+            android:layout_height="16dp"
+            android:scaleType="fitStart"
+            android:layout_marginBottom="20dp"
+            android:contentDescription="精力" />
 
-        <!-- 宠物名称 -->
-        <TextView
-            android:id="@+id/pet_name"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="笨蛋小猫"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:gravity="center_vertical"
-            android:fontFamily="sans-serif"
-            android:layout_marginBottom="2dp"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <!-- 饱食度 -->
-        <TextView
+        <!-- 饱食度（使用ImageView显示自定义字体位图） -->
+        <ImageView
             android:id="@+id/pet_satiety"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="饱食 73"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp"
-            android:gravity="center_vertical"
-            android:fontFamily="sans-serif" />
+            android:layout_height="16dp"
+            android:scaleType="fitStart"
+            android:contentDescription="饱食度" />
 
     </LinearLayout>
 
     <!-- 右侧：功能按钮区域 -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="80dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="center">
+        android:gravity="top"
+        android:layout_marginTop="18dp">
 
         <!-- 坐下按钮 -->
-        <Button
+        <ImageButton
             android:id="@+id/btn_sit"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="坐下"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:background="@drawable/widget_button_background"
-            android:layout_marginBottom="3dp"
+            android:layout_width="80dp"
+            android:layout_height="32dp"
+            android:background="@drawable/widget_button_background_highlighted"
+            android:scaleType="center"
+            android:layout_marginBottom="12dp"
             android:minHeight="0dp"
             android:minWidth="0dp"
-            android:padding="4dp" />
+            android:contentDescription="坐下" />
 
-        <!-- 去看看按钮 -->
-        <Button
+        <!-- 左右看按钮 -->
+        <ImageButton
             android:id="@+id/btn_visit"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="去看看"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
+            android:layout_width="80dp"
+            android:layout_height="32dp"
             android:background="@drawable/widget_button_background"
-            android:layout_marginBottom="3dp"
+            android:scaleType="center"
+            android:layout_marginBottom="12dp"
             android:minHeight="0dp"
             android:minWidth="0dp"
-            android:padding="4dp" />
+            android:contentDescription="左右看" />
 
         <!-- 跑步按钮 -->
-        <Button
+        <ImageButton
             android:id="@+id/btn_run"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="跑步"
-            android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:background="@drawable/widget_button_background_highlighted"
+            android:layout_width="80dp"
+            android:layout_height="32dp"
+            android:background="@drawable/widget_button_background"
+            android:scaleType="center"
             android:minHeight="0dp"
             android:minWidth="0dp"
-            android:padding="4dp" />
+            android:contentDescription="跑步" />
+
+            </LinearLayout>
 
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

@@ -26,8 +26,9 @@
                 <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
                 <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
                 <!-- 自定义动画播放Action -->
-                <action android:name="com.zher.meow.widget.PLAY_ANIMATION" />
-                <action android:name="com.zher.meow.widget.REFRESH_WIDGET" />
+                        <action android:name="com.zher.meow.widget.PLAY_ANIMATION" />
+                        <action android:name="com.zher.meow.widget.REFRESH_WIDGET" />
+                        <action android:name="com.zher.meow.widget.REFRESH_DATA" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/digianimal_widget_info" />

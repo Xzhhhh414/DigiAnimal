@@ -36,6 +36,9 @@ public class GameStartManager : MonoBehaviour
     {
         InitializeUI();
         RefreshSaveInfo();
+        
+        // 初始化Android数据桥接
+        InitializeAndroidBridge();
     }
     
     /// <summary>
@@ -53,6 +56,27 @@ public class GameStartManager : MonoBehaviour
         {
             deleteSaveButton.onClick.AddListener(OnDeleteSaveClicked);
         }
+    }
+    
+    /// <summary>
+    /// 初始化Android数据桥接
+    /// </summary>
+    private void InitializeAndroidBridge()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        try
+        {
+            // 确保AndroidDataBridge实例存在
+            var androidBridge = AndroidDataBridge.Instance;
+            Debug.Log("[GameStartManager] Android数据桥接已初始化");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[GameStartManager] 初始化Android数据桥接失败: {e.Message}");
+        }
+#else
+        Debug.Log("[GameStartManager] 非Android平台，跳过Android数据桥接初始化");
+#endif
     }
     
     /// <summary>

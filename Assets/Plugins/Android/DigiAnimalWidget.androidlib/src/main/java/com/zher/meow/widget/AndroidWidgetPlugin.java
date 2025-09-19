@@ -45,6 +45,16 @@ public class AndroidWidgetPlugin {
             WidgetData widgetData = WidgetData.fromJson(jsonData);
             Log.d(TAG, "解析的数据: " + widgetData.toString());
             
+            if (widgetData.selectedPetData != null) {
+                PetData petData = widgetData.selectedPetData;
+                Log.d(TAG, "宠物数据 - 名字: " + petData.petName + 
+                          ", 精力: " + petData.energy + 
+                          ", 饱食: " + petData.satiety + 
+                          ", 年龄: " + petData.ageInDays + "天");
+            } else {
+                Log.w(TAG, "小组件数据中没有宠物数据");
+            }
+            
             // 保存数据到SharedPreferences
             saveWidgetData(jsonData);
             
