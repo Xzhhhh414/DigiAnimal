@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System;
+using TapSDK.Login;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -34,16 +35,40 @@ public class GameStartManager : MonoBehaviour
     [Header("文本设置")]
     [SerializeField] private string saveInfoFormat = "{0}";
     
+    [Header("TapTap登录")]
+    [SerializeField] private bool requireLogin = true;        // 是否需要登录才能开始游戏（仅Android）
+    [SerializeField] private GameObject loginPanel;           // 登录信息面板
+    [SerializeField] private Button retryLoginButton;         // 重试登录按钮
+    [SerializeField] private Text loginInfoText;              // 登录状态文本
+    
+    [Header("登录状态文本配置")]
+    [SerializeField] private string loginInProgressText = "正在连接TapTap...";
+    [SerializeField] private string loginFailedText = "登录失败，请重试";
+    
+    // 组件引用
+    private TapTapLoginManager tapTapLoginManager;
+    
+    // 登录状态管理
+    private bool isCheckingLogin = false;
+    private bool loginCheckCompleted = false;
+    
     // 过渡动画控制器
     // private TransitionController transitionController;
     
     private void Start()
     {
+        // Debug.Log("[GameStart] ===== GameStartManager.Start() 开始执行 =====");
+        
         InitializeUI();
         RefreshSaveInfo();
         
         // 初始化Android数据桥接
         InitializeAndroidBridge();
+        
+        // 初始化TapTap登录
+        InitializeTapTapLogin();
+        
+        // Debug.Log("[GameStart] ===== GameStartManager.Start() 执行完成 =====");
     }
     
     /// <summary>
@@ -73,6 +98,12 @@ public class GameStartManager : MonoBehaviour
             cancelDeleteButton.onClick.AddListener(OnCancelDeleteClicked);
         }
         
+        // 设置重试登录按钮事件
+        if (retryLoginButton != null)
+        {
+            retryLoginButton.onClick.AddListener(OnRetryLoginClicked);
+        }
+        
         // 确保删除确认面板初始状态为隐藏
         if (deleteConfirmPanel != null)
         {
@@ -99,6 +130,320 @@ public class GameStartManager : MonoBehaviour
 #else
         Debug.Log("[GameStartManager] 非Android平台，跳过Android数据桥接初始化");
 #endif
+    }
+    
+    /// <summary>
+    /// 初始化TapTap登录
+    /// </summary>
+    private void InitializeTapTapLogin()
+    {
+        // Debug.Log("[GameStart] ===== InitializeTapTapLogin 开始执行 =====");
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // 首先确保TapTapSDKConfig存在
+        TapTapSDKConfig sdkConfig = TapTapSDKConfig.Instance;
+        if (sdkConfig == null)
+        {
+            // 如果没有找到SDK配置，创建一个
+            GameObject sdkConfigGO = new GameObject("TapTapSDKConfig");
+            sdkConfig = sdkConfigGO.AddComponent<TapTapSDKConfig>();
+            // Debug.Log("[GameStart] 创建了新的TapTapSDKConfig实例");
+            // Debug.LogWarning("[GameStart] 请在TapTapSDKConfig组件中配置Client ID和Client Token");
+        }
+        
+        // 获取或创建TapTapLoginManager实例
+        tapTapLoginManager = TapTapLoginManager.Instance;
+        if (tapTapLoginManager == null)
+        {
+            // 如果没有找到实例，尝试在场景中查找或创建
+            GameObject loginManagerGO = new GameObject("TapTapLoginManager");
+            tapTapLoginManager = loginManagerGO.AddComponent<TapTapLoginManager>();
+            // Debug.Log("[GameStart] 创建了新的TapTapLoginManager实例");
+            
+            // 在组件创建后立即设置事件监听器，避免错过事件
+            SetupLoginEventListeners();
+        }
+        else
+        {
+            // Debug.Log("[GameStart] 找到现有的TapTapLoginManager实例");
+            // 设置事件监听器
+            SetupLoginEventListeners();
+        }
+        
+        // Debug.Log("[GameStart] TapTap登录系统初始化完成");
+        // Debug.Log($"[GameStart] tapTapLoginManager实例: {tapTapLoginManager != null}");
+        // Debug.Log($"[GameStart] requireLogin: {requireLogin}");
+        
+        // 开始登录检查，显示登录面板
+        StartLoginCheck();
+        
+        // 主动检查当前登录状态（防止错过事件）
+        CheckCurrentLoginStatus();
+#else
+        // Debug.Log("[GameStart] 非Android平台，跳过TapTap登录初始化");
+        // 非Android平台不需要登录检查，显示正常界面
+        HideLoginPanel();
+        SetButtonsVisibility(true);
+        
+        // 标记登录检查已完成
+        loginCheckCompleted = true;
+#endif
+    }
+    
+    /// <summary>
+    /// 设置登录事件监听器
+    /// </summary>
+    private void SetupLoginEventListeners()
+    {
+        if (tapTapLoginManager != null)
+        {
+            // Debug.Log("[GameStart] 设置TapTap登录事件监听器");
+            // Debug.Log($"[GameStart] OnLoginSuccess是否为空: {tapTapLoginManager.OnLoginSuccess == null}");
+            // Debug.Log($"[GameStart] OnSDKReady是否为空: {tapTapLoginManager.OnSDKReady == null}");
+            
+            // 设置登录成功监听器
+            if (tapTapLoginManager.OnLoginSuccess != null)
+            {
+                tapTapLoginManager.OnLoginSuccess.AddListener(OnTapTapLoginSuccess);
+                // Debug.Log("[GameStart] 已添加OnLoginSuccess事件监听器");
+            }
+            else
+            {
+                Debug.LogError("[GameStart] tapTapLoginManager.OnLoginSuccess为空，无法添加监听器");
+            }
+            
+            // 设置SDK准备就绪监听器
+            if (tapTapLoginManager.OnSDKReady != null)
+            {
+                tapTapLoginManager.OnSDKReady.AddListener(OnTapTapSDKReady);
+                // Debug.Log("[GameStart] 已添加OnSDKReady事件监听器");
+            }
+            else
+            {
+                Debug.LogError("[GameStart] tapTapLoginManager.OnSDKReady为空，无法添加监听器");
+            }
+            
+            // 设置登录失败和取消监听器
+            if (tapTapLoginManager.OnLoginFailed != null)
+            {
+                tapTapLoginManager.OnLoginFailed.AddListener(OnTapTapLoginFailed);
+            }
+            
+            if (tapTapLoginManager.OnLoginCancelled != null)
+            {
+                tapTapLoginManager.OnLoginCancelled.AddListener(OnTapTapLoginCancelled);
+            }
+        }
+        else
+        {
+            Debug.LogError("[GameStart] TapTapLoginManager为空，无法设置事件监听器");
+        }
+    }
+    
+    /// <summary>
+    /// 主动检查当前登录状态（防止错过事件）
+    /// </summary>
+    private void CheckCurrentLoginStatus()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // Debug.Log("[GameStart] 主动检查当前登录状态");
+        
+        if (tapTapLoginManager != null)
+        {
+            bool isLoggedIn = tapTapLoginManager.IsLoggedIn;
+            // Debug.Log($"[GameStart] 当前登录状态: {isLoggedIn}");
+            
+            if (isLoggedIn)
+            {
+                // Debug.Log("[GameStart] 检测到用户已登录，立即完成登录检查");
+                var account = tapTapLoginManager.CurrentAccount;
+                if (account != null)
+                {
+                    // Debug.Log($"[GameStart] 当前用户: {account.name}");
+                    // 直接调用登录成功处理
+                    OnTapTapLoginSuccess(account);
+                }
+                else
+                {
+                    Debug.LogWarning("[GameStart] 用户已登录但账户信息为空");
+                }
+            }
+            else
+            {
+                // Debug.Log("[GameStart] 用户未登录，等待SDK事件或应急检查");
+            }
+        }
+        else
+        {
+            Debug.LogError("[GameStart] TapTapLoginManager为空，无法检查登录状态");
+        }
+#endif
+    }
+    
+    /// <summary>
+    /// 开始登录检查
+    /// </summary>
+    private void StartLoginCheck()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (requireLogin)
+        {
+            isCheckingLogin = true;
+            // Debug.Log("[GameStart] 开始登录检查，显示登录面板，隐藏游戏按钮");
+            
+            // 显示登录面板，隐藏游戏按钮
+            ShowLoginPanel();
+            SetButtonsVisibility(false);
+        }
+        else
+        {
+            // 不需要登录，直接显示正常界面
+            HideLoginPanel();
+            SetButtonsVisibility(true);
+        }
+#endif
+    }
+    
+    /// <summary>
+    /// 完成登录检查
+    /// </summary>
+    private void FinishLoginCheck()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (isCheckingLogin && !loginCheckCompleted)
+        {
+            isCheckingLogin = false;
+            loginCheckCompleted = true;
+            // Debug.Log("[GameStart] 登录检查完成，隐藏登录面板，显示游戏按钮");
+            
+            // 不再需要取消备用检查
+            
+            // 隐藏登录面板，显示游戏按钮
+            HideLoginPanel();
+            SetButtonsVisibility(true);
+        }
+        else
+        {
+            // Debug.Log($"[GameStart] FinishLoginCheck跳过: isCheckingLogin={isCheckingLogin}, loginCheckCompleted={loginCheckCompleted}");
+        }
+#endif
+    }
+    
+    /// <summary>
+    /// 强制完成登录检查（不检查状态条件）
+    /// </summary>
+    private void ForceFinishLoginCheck()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // Debug.Log("[GameStart] 强制完成登录检查，隐藏登录面板，显示游戏按钮");
+        // Debug.Log($"[GameStart] 强制完成前状态: isCheckingLogin={isCheckingLogin}, loginCheckCompleted={loginCheckCompleted}");
+        
+        // 更新状态
+        isCheckingLogin = false;
+        loginCheckCompleted = true;
+        
+        // 不再需要取消备用检查
+        
+        // 强制隐藏登录面板，显示游戏按钮
+        // Debug.Log("[GameStart] 执行强制UI更新");
+        HideLoginPanel();
+        SetButtonsVisibility(true);
+        
+        // Debug.Log($"[GameStart] 强制完成后状态: isCheckingLogin={isCheckingLogin}, loginCheckCompleted={loginCheckCompleted}");
+#else
+        // Debug.Log("[GameStart] 非Android平台，ForceFinishLoginCheck无操作");
+        // 在非Android平台也要确保UI正确
+        HideLoginPanel();
+        SetButtonsVisibility(true);
+#endif
+    }
+    
+    /// <summary>
+    /// 设置按钮可见性
+    /// </summary>
+    private void SetButtonsVisibility(bool visible)
+    {
+        // 开始游戏按钮
+        if (startGameButton != null)
+        {
+            startGameButton.gameObject.SetActive(visible);
+        }
+        
+        // 删除存档按钮（如果存在）
+        if (deleteSaveButton != null)
+        {
+            deleteSaveButton.gameObject.SetActive(visible);
+        }
+        
+        // Debug.Log($"[GameStart] 按钮可见性设置为: {visible}");
+    }
+    
+    /// <summary>
+    /// 显示登录面板（登录中状态）
+    /// </summary>
+    private void ShowLoginPanel()
+    {
+        if (loginPanel != null)
+        {
+            loginPanel.SetActive(true);
+            // Debug.Log("[GameStart] 显示登录面板");
+            
+            // 设置为登录中状态
+            SetLoginPanelState(true);
+        }
+        else
+        {
+            Debug.LogWarning("[GameStart] LoginPanel未配置，无法显示登录信息");
+        }
+    }
+    
+    /// <summary>
+    /// 隐藏登录面板
+    /// </summary>
+    private void HideLoginPanel()
+    {
+        if (loginPanel != null)
+        {
+            loginPanel.SetActive(false);
+            // Debug.Log("[GameStart] 隐藏登录面板");
+        }
+    }
+    
+    /// <summary>
+    /// 设置登录面板状态
+    /// </summary>
+    /// <param name="isLoginInProgress">true=登录中，false=登录失败</param>
+    private void SetLoginPanelState(bool isLoginInProgress)
+    {
+        if (isLoginInProgress)
+        {
+            // 登录中状态
+            if (loginInfoText != null)
+            {
+                loginInfoText.text = loginInProgressText;
+            }
+            
+            if (retryLoginButton != null)
+            {
+                retryLoginButton.gameObject.SetActive(false);
+            }
+            
+            // Debug.Log("[GameStart] 设置登录面板为登录中状态");
+        }
+        else
+        {
+            // 登录失败状态
+            if (loginInfoText != null)
+            {
+                loginInfoText.text = loginFailedText;
+            }
+            
+            if (retryLoginButton != null)
+            {
+                retryLoginButton.gameObject.SetActive(true);
+            }
+            
+            // Debug.Log("[GameStart] 设置登录面板为登录失败状态");
+        }
     }
     
     /// <summary>
@@ -177,6 +522,46 @@ public class GameStartManager : MonoBehaviour
             startGameButton.interactable = false;
         }
         
+        // 检查是否需要登录（仅Android平台）
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (requireLogin && (tapTapLoginManager == null || !tapTapLoginManager.IsLoggedIn))
+        {
+            Debug.Log("[GameStart] 需要登录才能开始游戏");
+            
+            // 重新启用按钮
+            if (startGameButton != null)
+            {
+                startGameButton.interactable = true;
+            }
+            
+            // 直接调用TapTap SDK登录（SDK会显示自带UI，不需要额外的Toast提示）
+            if (tapTapLoginManager != null)
+            {
+                tapTapLoginManager.StartLoginAsync();
+            }
+            return;
+        }
+        
+        // 如果已登录，显示登录状态信息
+        if (tapTapLoginManager != null && tapTapLoginManager.IsLoggedIn)
+        {
+            var account = tapTapLoginManager.CurrentAccount;
+            if (account != null)
+            {
+                Debug.Log($"[GameStart] 已登录用户开始游戏 - {account.name}");
+            }
+        }
+#endif
+        
+        // 登录检查通过，继续游戏流程
+        ProceedWithGameStart();
+    }
+    
+    /// <summary>
+    /// 继续游戏开始流程
+    /// </summary>
+    private void ProceedWithGameStart()
+    {
         // 检查是否需要显示宠物选择界面
         CheckForFirstTimeSelection();
     }
@@ -239,6 +624,28 @@ public class GameStartManager : MonoBehaviour
     {
         // 显示删除确认界面
         ShowDeleteConfirmation();
+    }
+    
+    /// <summary>
+    /// 重试登录按钮点击事件
+    /// </summary>
+    private void OnRetryLoginClicked()
+    {
+        // Debug.Log("[GameStart] 用户点击重试登录");
+        
+        // 设置为登录中状态
+        SetLoginPanelState(true);
+        
+        // 重新尝试登录
+        if (tapTapLoginManager != null)
+        {
+            tapTapLoginManager.StartLoginAsync();
+        }
+        else
+        {
+            Debug.LogError("[GameStart] TapTapLoginManager为空，无法重试登录");
+            SetLoginPanelState(false);
+        }
     }
     
     /// <summary>
@@ -543,6 +950,136 @@ public class GameStartManager : MonoBehaviour
         
         // 注意：不要在这里直接Destroy(gameObject)，因为还需要完成场景切换
         // Unity的SceneManager.LoadScene会自动清理当前场景的对象
+    }
+    
+    
+    /// <summary>
+    /// TapTap SDK准备就绪回调
+    /// </summary>
+    private void OnTapTapSDKReady()
+    {
+        // Debug.Log("[GameStart] ===== TapTap SDK准备就绪回调被调用 =====");
+        // Debug.Log("[GameStart] TapTap SDK准备就绪，立即检查登录状态");
+        // Debug.Log($"[GameStart] SDK Ready时状态: isCheckingLogin={isCheckingLogin}, loginCheckCompleted={loginCheckCompleted}");
+        
+        // SDK准备就绪，立即检查登录状态
+        CheckLoginStatusNow();
+    }
+    
+    /// <summary>
+    /// 立即检查登录状态
+    /// </summary>
+    private void CheckLoginStatusNow()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // Debug.Log($"[GameStart] CheckLoginStatusNow开始 - 状态: isCheckingLogin={isCheckingLogin}, loginCheckCompleted={loginCheckCompleted}");
+        
+        if (loginCheckCompleted)
+        {
+            // Debug.Log("[GameStart] 登录检查已完成，跳过检查");
+            return;
+        }
+        
+        if (requireLogin && tapTapLoginManager != null)
+        {
+            // 检查是否已经登录
+            bool isLoggedIn = tapTapLoginManager.IsLoggedIn;
+            // Debug.Log($"[GameStart] TapTap登录状态检查: {isLoggedIn}");
+            
+            if (isLoggedIn)
+            {
+                // Debug.Log("[GameStart] 用户已登录，立即完成登录检查");
+                var account = tapTapLoginManager.CurrentAccount;
+                if (account != null)
+                {
+                    // Debug.Log($"[GameStart] 当前登录用户: {account.name}");
+                }
+                
+                // 用户已登录，完成登录检查
+                FinishLoginCheck();
+            }
+            else
+            {
+                // Debug.Log("[GameStart] 检测到未登录用户，立即弹出登录界面");
+                
+                // 设置为登录中状态
+                if (loginPanel != null && loginPanel.activeInHierarchy)
+                {
+                    SetLoginPanelState(true);
+                }
+                
+                // 弹出登录界面
+                tapTapLoginManager.StartLoginAsync();
+            }
+        }
+        else
+        {
+            // Debug.Log($"[GameStart] 跳过登录检查 - requireLogin={requireLogin}, tapTapLoginManager={tapTapLoginManager != null}");
+            // 不需要登录，完成检查
+            FinishLoginCheck();
+        }
+#endif
+    }
+    
+    /// <summary>
+    /// TapTap登录成功回调
+    /// </summary>
+    private void OnTapTapLoginSuccess(TapTapAccount account)
+    {
+        // Debug.Log("[GameStart] ===== OnTapTapLoginSuccess 回调被调用 =====");
+        // Debug.Log($"[GameStart] TapTap登录成功 - 用户: {account.name}");
+        // Debug.Log($"[GameStart] 当前状态: isCheckingLogin={isCheckingLogin}, loginCheckCompleted={loginCheckCompleted}");
+        
+        // 强制完成登录检查，隐藏登录面板，显示正常界面
+        ForceFinishLoginCheck();
+        
+        // 确保开始游戏按钮可交互
+        if (startGameButton != null)
+        {
+            startGameButton.interactable = true;
+        }
+        
+        // Debug.Log("[GameStart] ===== OnTapTapLoginSuccess 处理完成 =====");
+    }
+    
+    /// <summary>
+    /// TapTap登录失败回调
+    /// </summary>
+    private void OnTapTapLoginFailed(string error)
+    {
+        // Debug.LogWarning($"[GameStart] TapTap登录失败 - 错误: {error}");
+        
+        // 显示登录失败状态，显示重试按钮
+        if (loginPanel != null && loginPanel.activeInHierarchy)
+        {
+            SetLoginPanelState(false);
+        }
+    }
+    
+    /// <summary>
+    /// TapTap登录取消回调
+    /// </summary>
+    private void OnTapTapLoginCancelled()
+    {
+        // Debug.Log("[GameStart] 用户取消了TapTap登录");
+        
+        // 显示登录失败状态，显示重试按钮
+        if (loginPanel != null && loginPanel.activeInHierarchy)
+        {
+            SetLoginPanelState(false);
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // 清理事件监听器
+        if (tapTapLoginManager != null)
+        {
+            tapTapLoginManager.OnLoginSuccess.RemoveListener(OnTapTapLoginSuccess);
+            tapTapLoginManager.OnSDKReady.RemoveListener(OnTapTapSDKReady);
+            tapTapLoginManager.OnLoginFailed.RemoveListener(OnTapTapLoginFailed);
+            tapTapLoginManager.OnLoginCancelled.RemoveListener(OnTapTapLoginCancelled);
+        }
     }
     
     /// <summary>
