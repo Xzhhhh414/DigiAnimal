@@ -20,6 +20,11 @@ public class GameStartManager : MonoBehaviour
     [SerializeField] private Button deleteSaveButton;         // 删除存档按钮（在存档信息面板内）
     [SerializeField] private Text saveInfoText;               // 存档信息显示文本（在存档信息面板内）
     
+    [Header("删除确认界面")]
+    [SerializeField] private GameObject deleteConfirmPanel;   // 删除确认面板
+    [SerializeField] private Button confirmDeleteButton;      // 确认删除按钮
+    [SerializeField] private Button cancelDeleteButton;       // 取消删除按钮
+    
     [Header("场景设置")]
     [SerializeField] private string gameplaySceneName = "Gameplay";        // Gameplay场景名称
     
@@ -55,6 +60,23 @@ public class GameStartManager : MonoBehaviour
         if (deleteSaveButton != null)
         {
             deleteSaveButton.onClick.AddListener(OnDeleteSaveClicked);
+        }
+        
+        // 设置删除确认界面按钮事件
+        if (confirmDeleteButton != null)
+        {
+            confirmDeleteButton.onClick.AddListener(OnConfirmDeleteClicked);
+        }
+        
+        if (cancelDeleteButton != null)
+        {
+            cancelDeleteButton.onClick.AddListener(OnCancelDeleteClicked);
+        }
+        
+        // 确保删除确认面板初始状态为隐藏
+        if (deleteConfirmPanel != null)
+        {
+            deleteConfirmPanel.SetActive(false);
         }
     }
     
@@ -215,23 +237,111 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void OnDeleteSaveClicked()
     {
-        // 删除存档按钮被点击
-        
-        // 可以添加确认对话框
-        if (ShowDeleteConfirmation())
+        // 显示删除确认界面
+        ShowDeleteConfirmation();
+    }
+    
+    /// <summary>
+    /// 显示删除确认界面
+    /// </summary>
+    private void ShowDeleteConfirmation()
+    {
+        if (deleteConfirmPanel != null)
         {
-            DeleteSave();
+            // 显示删除确认面板
+            deleteConfirmPanel.SetActive(true);
+            
+            // 隐藏其他UI元素
+            HideMainUIElements();
+        }
+        else
+        {
+            Debug.LogError("DeleteConfirmPanel引用为空！请在Inspector中设置deleteConfirmPanel字段");
         }
     }
     
     /// <summary>
-    /// 显示删除确认对话框
+    /// 确认删除按钮点击事件
     /// </summary>
-    private bool ShowDeleteConfirmation()
+    private void OnConfirmDeleteClicked()
     {
-        // 这里可以实现一个确认对话框
-        // 暂时直接返回true，实际项目中应该显示UI对话框
-        return true;
+        // 隐藏删除确认界面
+        HideDeleteConfirmation();
+        
+        // 执行删除存档
+        DeleteSave();
+    }
+    
+    /// <summary>
+    /// 取消删除按钮点击事件
+    /// </summary>
+    private void OnCancelDeleteClicked()
+    {
+        // 隐藏删除确认界面
+        HideDeleteConfirmation();
+    }
+    
+    /// <summary>
+    /// 隐藏删除确认界面
+    /// </summary>
+    private void HideDeleteConfirmation()
+    {
+        if (deleteConfirmPanel != null)
+        {
+            // 隐藏删除确认面板
+            deleteConfirmPanel.SetActive(false);
+            
+            // 显示主要UI元素
+            ShowMainUIElements();
+        }
+    }
+    
+    /// <summary>
+    /// 隐藏主要UI元素（显示删除确认界面时）
+    /// </summary>
+    private void HideMainUIElements()
+    {
+        // 隐藏开始游戏按钮
+        if (startGameButton != null)
+        {
+            startGameButton.gameObject.SetActive(false);
+        }
+        
+        // 隐藏删除存档按钮
+        if (deleteSaveButton != null)
+        {
+            deleteSaveButton.gameObject.SetActive(false);
+        }
+        
+        // 隐藏存档信息文本
+        if (saveInfoText != null)
+        {
+            saveInfoText.gameObject.SetActive(false);
+        }
+    }
+    
+    /// <summary>
+    /// 显示主要UI元素（隐藏删除确认界面时）
+    /// </summary>
+    private void ShowMainUIElements()
+    {
+        // 显示开始游戏按钮
+        if (startGameButton != null)
+        {
+            startGameButton.gameObject.SetActive(true);
+        }
+        
+        // 显示删除存档按钮
+        if (deleteSaveButton != null)
+        {
+            deleteSaveButton.gameObject.SetActive(true);
+        }
+        
+        // 显示存档信息文本
+        if (saveInfoText != null)
+        {
+            saveInfoText.gameObject.SetActive(true);
+        }
     }
     
     /// <summary>
