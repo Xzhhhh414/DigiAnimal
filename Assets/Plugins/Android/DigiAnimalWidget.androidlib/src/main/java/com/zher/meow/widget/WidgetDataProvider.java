@@ -41,20 +41,20 @@ public class WidgetDataProvider {
         try {
             // 获取游戏数据
             PetData gameData = getGameData();
-            Log.d(TAG, "游戏数据: " + (gameData != null ? gameData.petName + " (时间戳:" + gameData.lastUpdateTime + ")" : "null"));
+            // Log.d(TAG, "游戏数据: " + (gameData != null ? gameData.petName + " (时间戳:" + gameData.lastUpdateTime + ")" : "null"));
             
             // 获取离线基准数据
             OfflineDataManager.OfflineBaseData offlineBaseData = offlineDataManager.loadOfflineBaseData();
-            Log.d(TAG, "离线基准数据: " + (offlineBaseData != null ? 
-                  "存在 (基准时间:" + offlineBaseData.baseTimestamp + ", 精力:" + offlineBaseData.baseEnergy + ", 饱食:" + offlineBaseData.baseSatiety + ")" : 
-                  "不存在"));
+            // Log.d(TAG, "离线基准数据: " + (offlineBaseData != null ? 
+            //       "存在 (基准时间:" + offlineBaseData.baseTimestamp + ", 精力:" + offlineBaseData.baseEnergy + ", 饱食:" + offlineBaseData.baseSatiety + ")" : 
+            //       "不存在"));
             
             // 判断使用哪个数据源
             boolean shouldUseGame = DataFreshnessChecker.shouldUseGameData(gameData, offlineBaseData);
-            Log.d(TAG, "数据源判断结果: " + (shouldUseGame ? "使用游戏数据" : "使用离线数据"));
+            // Log.d(TAG, "数据源判断结果: " + (shouldUseGame ? "使用游戏数据" : "使用离线数据"));
             
             if (shouldUseGame) {
-                Log.d(TAG, "使用游戏数据");
+                // Log.d(TAG, "使用游戏数据");
                 
                 // 如果游戏数据更新鲜，更新离线基准
                 if (gameData != null) {
@@ -63,28 +63,28 @@ public class WidgetDataProvider {
                 
                 return gameData;
             } else if (offlineBaseData != null && DataFreshnessChecker.isOfflineDataValid(offlineBaseData)) {
-                Log.d(TAG, "使用离线计算数据 - 立即执行计算");
+                // Log.d(TAG, "使用离线计算数据 - 立即执行计算");
                 
                 // 使用离线计算数据
                 long currentTime = System.currentTimeMillis();
                 long elapsedSeconds = (currentTime - offlineBaseData.baseTimestamp) / 1000;
-                Log.d(TAG, "离线计算: 基准时间=" + offlineBaseData.baseTimestamp + 
-                          ", 当前时间=" + currentTime + ", 经过=" + elapsedSeconds + "秒");
+                // Log.d(TAG, "离线计算: 基准时间=" + offlineBaseData.baseTimestamp + 
+                //           ", 当前时间=" + currentTime + ", 经过=" + elapsedSeconds + "秒");
                 
                 PetData calculatedData = OfflineCalculator.calculateCurrentStats(offlineBaseData, currentTime);
                 
-                if (calculatedData != null) {
-                    Log.d(TAG, "离线计算结果: 精力=" + calculatedData.energy + 
-                              ", 饱食=" + calculatedData.satiety + 
-                              ", 无聊=" + calculatedData.isBored);
-                }
+                // if (calculatedData != null) {
+                //     Log.d(TAG, "离线计算结果: 精力=" + calculatedData.energy + 
+                //               ", 饱食=" + calculatedData.satiety + 
+                //               ", 无聊=" + calculatedData.isBored);
+                // }
                 
                 // 更新离线计算时间
                 offlineDataManager.updateOfflineTimestamp(currentTime);
                 
                 return calculatedData;
             } else {
-                Log.d(TAG, "使用默认数据");
+                // Log.d(TAG, "使用默认数据");
                 return createDefaultPetData();
             }
             
@@ -110,7 +110,7 @@ public class WidgetDataProvider {
             // 更新离线基准数据
             updateOfflineBaseline(gameData);
             
-            Log.d(TAG, "游戏数据更新完成: " + gameData.petName);
+            // Log.d(TAG, "游戏数据更新完成: " + gameData.petName);
             
         } catch (Exception e) {
             Log.e(TAG, "处理游戏数据更新失败: " + e.getMessage());
@@ -121,7 +121,7 @@ public class WidgetDataProvider {
      * 刷新离线计算（手动刷新按钮调用）
      */
     public PetData refreshOfflineCalculation() {
-        Log.d(TAG, "手动刷新离线计算");
+        // Log.d(TAG, "手动刷新离线计算");
         
         try {
             // 立即执行离线计算
@@ -134,7 +134,7 @@ public class WidgetDataProvider {
                 // 更新离线计算时间
                 offlineDataManager.updateOfflineTimestamp(currentTime);
                 
-                Log.d(TAG, "离线计算刷新完成");
+                // Log.d(TAG, "离线计算刷新完成");
                 return calculatedData;
             } else {
                 Log.w(TAG, "离线基准数据无效，返回默认数据");
@@ -151,7 +151,7 @@ public class WidgetDataProvider {
      * 定期离线更新（每分钟调用）
      */
     public PetData periodicOfflineUpdate() {
-        Log.d(TAG, "定期离线更新");
+        // Log.d(TAG, "定期离线更新");
         
         try {
             // 检查是否有游戏数据更新
@@ -186,14 +186,14 @@ public class WidgetDataProvider {
         
         try {
             long currentTime = System.currentTimeMillis();
-            Log.d(TAG, "更新离线基准数据: 宠物=" + gameData.petName + 
-                      ", 精力=" + gameData.energy + 
-                      ", 饱食=" + gameData.satiety + 
-                      ", 无聊=" + gameData.isBored + 
-                      ", 基准时间=" + currentTime);
+            // Log.d(TAG, "更新离线基准数据: 宠物=" + gameData.petName + 
+            //           ", 精力=" + gameData.energy + 
+            //           ", 饱食=" + gameData.satiety + 
+            //           ", 无聊=" + gameData.isBored + 
+            //           ", 基准时间=" + currentTime);
             
             offlineDataManager.saveOfflineBaseData(gameData, currentTime);
-            Log.d(TAG, "离线基准数据保存成功");
+            // Log.d(TAG, "离线基准数据保存成功");
         } catch (Exception e) {
             Log.e(TAG, "更新离线基准数据失败: " + e.getMessage());
         }
@@ -228,7 +228,7 @@ public class WidgetDataProvider {
         try {
             String jsonData = gameDataPrefs.getString(KEY_GAME_DATA_JSON, null);
             if (jsonData == null || jsonData.isEmpty()) {
-                Log.d(TAG, "SharedPreferences中没有游戏数据");
+                // Log.d(TAG, "SharedPreferences中没有游戏数据");
                 return null;
             }
             
@@ -240,7 +240,7 @@ public class WidgetDataProvider {
                 return null;
             }
             
-            Log.d(TAG, "获取到游戏数据: " + gameData.petName + ", 时间戳: " + gameData.lastUpdateTime);
+            // Log.d(TAG, "获取到游戏数据: " + gameData.petName + ", 时间戳: " + gameData.lastUpdateTime);
             return gameData;
             
         } catch (Exception e) {
@@ -372,7 +372,7 @@ public class WidgetDataProvider {
         try {
             offlineDataManager.clearOfflineData();
             gameDataPrefs.edit().clear().apply();
-            Log.d(TAG, "所有数据已清除");
+            // Log.d(TAG, "所有数据已清除");
         } catch (Exception e) {
             Log.e(TAG, "清除数据失败: " + e.getMessage());
         }

@@ -9,11 +9,11 @@
     <!-- 刷新按钮 - 左上角 -->
     <ImageButton
         android:id="@+id/btn_refresh"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_margin="2dp"
+        android:layout_margin="5dp"
         android:background="@drawable/widget_button_background"
         android:src="@drawable/ic_refresh"
         android:scaleType="centerInside"

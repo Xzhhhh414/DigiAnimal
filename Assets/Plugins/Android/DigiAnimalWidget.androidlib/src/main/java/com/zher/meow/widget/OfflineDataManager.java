@@ -44,9 +44,9 @@ public class OfflineDataManager {
             editor.putLong(KEY_LAST_CALCULATION_TIME, timestamp);
             editor.apply();
             
-            Log.d(TAG, "离线基准数据已保存: " + petData.petName + 
-                  ", 精力=" + petData.energy + ", 饱食=" + petData.satiety + 
-                  ", 无聊=" + petData.isBored + ", 时间戳=" + timestamp);
+            // Log.d(TAG, "离线基准数据已保存: " + petData.petName + 
+            //       ", 精力=" + petData.energy + ", 饱食=" + petData.satiety + 
+            //       ", 无聊=" + petData.isBored + ", 时间戳=" + timestamp);
         } catch (Exception e) {
             Log.e(TAG, "保存离线基准数据失败: " + e.getMessage());
         }
@@ -88,7 +88,7 @@ public class OfflineDataManager {
             editor.putLong(KEY_LAST_CALCULATION_TIME, timestamp);
             editor.apply();
             
-            Log.d(TAG, "离线计算时间已更新: " + oldTimestamp + " -> " + timestamp);
+            // Log.d(TAG, "离线计算时间已更新: " + oldTimestamp + " -> " + timestamp);
         } catch (Exception e) {
             Log.e(TAG, "更新离线计算时间失败: " + e.getMessage());
         }
@@ -118,7 +118,7 @@ public class OfflineDataManager {
             SharedPreferences.Editor editor = prefs.edit();
             editor.clear();
             editor.apply();
-            Log.d(TAG, "离线数据已清除");
+            // Log.d(TAG, "离线数据已清除");
         } catch (Exception e) {
             Log.e(TAG, "清除离线数据失败: " + e.getMessage());
         }

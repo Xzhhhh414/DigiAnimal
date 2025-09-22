@@ -10,9 +10,9 @@ public class OfflineCalculator {
     private static final String TAG = "OfflineCalculator";
     
     // 游戏规则常量 (测试配置 - 加速衰减)
-    private static final long ENERGY_DECAY_INTERVAL = 5; // 精力每5秒降低1点 (测试用)
-    private static final long SATIETY_DECAY_INTERVAL = 5; // 饱食每5秒降低1点 (测试用)
-    private static final long BORED_RESET_INTERVAL = 30; // isBored在30秒后重置为false (测试用)
+    private static final long ENERGY_DECAY_INTERVAL = 648; // 精力每5秒降低1点 (测试用)
+    private static final long SATIETY_DECAY_INTERVAL = 432; // 饱食每5秒降低1点 (测试用)
+    private static final long BORED_RESET_INTERVAL = 600; // isBored在30秒后重置为false (测试用)
     
     /**
      * 根据基准数据计算当前宠物状态
@@ -50,11 +50,11 @@ public class OfflineCalculator {
         result.introduction = "可爱的宠物";
         result.lastUpdateTime = String.valueOf(currentTime);
         
-        Log.d(TAG, "离线计算结果: " + result.petName + 
-              ", 精力=" + currentEnergy + " (基准=" + baseData.baseEnergy + ")" +
-              ", 饱食=" + currentSatiety + " (基准=" + baseData.baseSatiety + ")" +
-              ", 无聊=" + currentIsBored + " (基准=" + baseData.baseIsBored + ")" +
-              ", 经过时间=" + elapsedSeconds + "秒");
+        // Log.d(TAG, "离线计算结果: " + result.petName + 
+        //       ", 精力=" + currentEnergy + " (基准=" + baseData.baseEnergy + ")" +
+        //       ", 饱食=" + currentSatiety + " (基准=" + baseData.baseSatiety + ")" +
+        //       ", 无聊=" + currentIsBored + " (基准=" + baseData.baseIsBored + ")" +
+        //       ", 经过时间=" + elapsedSeconds + "秒");
         
         return result;
     }
@@ -116,7 +116,7 @@ public class OfflineCalculator {
         defaultData.introduction = "可爱的宠物";
         defaultData.lastUpdateTime = String.valueOf(System.currentTimeMillis());
         
-        Log.d(TAG, "使用默认宠物数据");
+        // Log.d(TAG, "使用默认宠物数据");
         return defaultData;
     }
     

@@ -1,6 +1,9 @@
 package com.zher.meow.widget;
 
 import android.util.Log;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * 数据新鲜度检查器
@@ -15,12 +18,12 @@ public class DataFreshnessChecker {
      */
     public static boolean isGameDataFresher(PetData gameData, OfflineDataManager.OfflineBaseData offlineData) {
         if (gameData == null) {
-            Log.d(TAG, "游戏数据为空，不新鲜");
+            // Log.d(TAG, "游戏数据为空，不新鲜");
             return false;
         }
         
         if (offlineData == null) {
-            Log.d(TAG, "离线数据为空，游戏数据更新鲜");
+            // Log.d(TAG, "离线数据为空，游戏数据更新鲜");
             return true;
         }
         
@@ -30,10 +33,10 @@ public class DataFreshnessChecker {
         
         boolean isGameFresher = gameTimestamp > offlineTimestamp;
         
-        Log.d(TAG, "数据新鲜度比较: " +
-              "游戏时间戳=" + gameTimestamp + " (" + gameData.lastUpdateTime + "), " +
-              "离线时间戳=" + offlineTimestamp + ", " +
-              "游戏数据更新鲜=" + isGameFresher);
+        // Log.d(TAG, "数据新鲜度比较: " +
+        //       "游戏时间戳=" + gameTimestamp + " (" + gameData.lastUpdateTime + "), " +
+        //       "离线时间戳=" + offlineTimestamp + ", " +
+        //       "游戏数据更新鲜=" + isGameFresher);
         
         return isGameFresher;
     }
@@ -57,20 +60,20 @@ public class DataFreshnessChecker {
     public static boolean shouldUseGameData(PetData gameData, OfflineDataManager.OfflineBaseData offlineData) {
         // 如果没有游戏数据，使用离线数据
         if (gameData == null) {
-            Log.d(TAG, "没有游戏数据，使用离线数据");
+            // Log.d(TAG, "没有游戏数据，使用离线数据");
             return false;
         }
         
         // 如果没有离线数据，使用游戏数据
         if (offlineData == null) {
-            Log.d(TAG, "没有离线数据，使用游戏数据");
+            // Log.d(TAG, "没有离线数据，使用游戏数据");
             return true;
         }
         
         // 比较新鲜度
         boolean useGameData = isGameDataFresher(gameData, offlineData);
         
-        Log.d(TAG, "数据源选择: " + (useGameData ? "游戏数据" : "离线数据"));
+        // Log.d(TAG, "数据源选择: " + (useGameData ? "游戏数据" : "离线数据"));
         return useGameData;
     }
     
@@ -163,14 +166,21 @@ public class DataFreshnessChecker {
         } catch (NumberFormatException e) {
             // 如果不是纯数字，尝试解析日期时间格式
             try {
-                // 这里可以添加更多的日期格式解析
-                // 暂时返回当前时间作为fallback
-                Log.w(TAG, "无法解析时间戳字符串: " + timestampStr + "，使用当前时间");
-                return System.currentTimeMillis();
+                // 解析 "2025-09-22 11:02:16" 格式
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                Date date = sdf.parse(timestampStr);
+                if (date != null) {
+                    long timestamp = date.getTime();
+                    // Log.d(TAG, "成功解析时间戳: " + timestampStr + " -> " + timestamp);
+                    return timestamp;
+                }
             } catch (Exception ex) {
-                Log.e(TAG, "解析时间戳失败: " + timestampStr + ", " + ex.getMessage());
-                return 0;
+                Log.w(TAG, "日期格式解析失败: " + timestampStr + ", " + ex.getMessage());
             }
+            
+            // 如果所有解析都失败，返回当前时间
+            Log.w(TAG, "无法解析时间戳字符串: " + timestampStr + "，使用当前时间");
+            return System.currentTimeMillis();
         }
     }
     
