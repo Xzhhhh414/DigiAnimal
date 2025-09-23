@@ -38,14 +38,94 @@ public class TapTapSDKConfig : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             
-            // 在Awake中初始化SDK，确保其他组件使用前SDK已准备好
-            InitializeSDK();
+            // 不在Awake中立即初始化SDK，而是等待隐私协议同意后再初始化
+            CheckPrivacyAndInitialize();
         }
         else
         {
             Destroy(gameObject);
             return;
         }
+    }
+    
+    /// <summary>
+    /// 检查隐私协议同意状态，决定是否初始化SDK
+    /// </summary>
+    private void CheckPrivacyAndInitialize()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // 检查用户是否已经同意隐私协议
+        if (HasPrivacyConsent())
+        {
+            Debug.Log("[TapTapSDK] 检测到用户已同意隐私协议，开始初始化SDK");
+            InitializeSDK();
+        }
+        else
+        {
+            Debug.Log("[TapTapSDK] 用户尚未同意隐私协议，延迟初始化SDK");
+            // 启动协程定期检查隐私协议同意状态
+            StartCoroutine(WaitForPrivacyConsent());
+        }
+#else
+        // 非Android平台直接初始化（开发环境）
+        Debug.Log("[TapTapSDK] 非Android平台，直接初始化SDK");
+        InitializeSDK();
+#endif
+    }
+    
+    /// <summary>
+    /// 等待用户同意隐私协议
+    /// </summary>
+    private System.Collections.IEnumerator WaitForPrivacyConsent()
+    {
+        Debug.Log("[TapTapSDK] 开始等待用户同意隐私协议...");
+        
+        while (!HasPrivacyConsent())
+        {
+            yield return new WaitForSeconds(0.5f); // 每0.5秒检查一次
+        }
+        
+        Debug.Log("[TapTapSDK] 检测到用户已同意隐私协议，现在初始化SDK");
+        InitializeSDK();
+    }
+    
+    /// <summary>
+    /// 公共方法：强制检查隐私协议状态并初始化SDK（如果需要）
+    /// </summary>
+    public void CheckAndInitializeIfNeeded()
+    {
+        if (!isInitialized && HasPrivacyConsent())
+        {
+            Debug.Log("[TapTapSDK] 外部触发：检测到隐私协议已同意，开始初始化SDK");
+            InitializeSDK();
+        }
+    }
+    
+    /// <summary>
+    /// 检查用户是否已同意隐私协议
+    /// </summary>
+    private bool HasPrivacyConsent()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        // 使用与PrivacyActivity相同的SharedPreferences检查方式
+        try
+        {
+            using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+            using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
+            using (var sharedPrefs = currentActivity.Call<AndroidJavaObject>("getSharedPreferences", "PlayerPrefs", 0))
+            {
+                return sharedPrefs.Call<bool>("getBoolean", "PrivacyAcceptedKey", false);
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[TapTapSDK] 检查隐私协议状态失败: {e.Message}");
+            return false;
+        }
+#else
+        // 非Android平台假设已同意（开发环境）
+        return true;
+#endif
     }
     
     /// <summary>
