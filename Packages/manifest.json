@@ -48,7 +48,8 @@
     "com.unity.modules.xr": "1.0.0",
     "com.unity.nuget.newtonsoft-json":"3.2.1",
     "com.taptap.sdk.core":"https://github.com/taptap/tapsdk-unity-dist.git?path=/Core#4.8.2",
-    "com.taptap.sdk.login":"https://github.com/taptap/tapsdk-unity-dist.git?path=/Login#4.8.2"
+    "com.taptap.sdk.login":"https://github.com/taptap/tapsdk-unity-dist.git?path=/Login#4.8.2",
+    "com.taptap.sdk.compliance":"https://github.com/taptap/tapsdk-unity-dist.git?path=/Compliance#4.8.2"
   },
   "scopedRegistries": [
     {

@@ -21,6 +21,9 @@ public class TapTapLoginManager : MonoBehaviour
     public UnityEvent OnLogout;
     public UnityEvent OnSDKReady;  // SDK初始化完成事件
     
+    [Header("合规认证配置")]
+    [SerializeField] private bool enableCompliance = true;  // 是否启用合规认证
+    
     // 单例实例
     public static TapTapLoginManager Instance { get; private set; }
     
@@ -32,6 +35,9 @@ public class TapTapLoginManager : MonoBehaviour
     
     // SDK初始化状态
     private bool sdkInitialized = false;
+    
+    // 合规认证管理器引用
+    private TapTapComplianceManager complianceManager;
     
     private void Awake()
     {
@@ -70,9 +76,76 @@ public class TapTapLoginManager : MonoBehaviour
         // Debug.Log($"[TapTapLogin] OnSDKReady是否为空: {OnSDKReady == null}");
     }
     
+    /// <summary>
+    /// 初始化合规认证管理器
+    /// </summary>
+    private void InitializeComplianceManager()
+    {
+        if (!enableCompliance)
+        {
+            Debug.Log("[TapTapLogin] 合规认证已禁用");
+            return;
+        }
+        
+        // 查找或创建合规认证管理器
+        complianceManager = TapTapComplianceManager.Instance;
+        if (complianceManager == null)
+        {
+            Debug.Log("[TapTapLogin] 创建TapTapComplianceManager实例");
+            GameObject complianceObj = new GameObject("TapTapComplianceManager");
+            complianceManager = complianceObj.AddComponent<TapTapComplianceManager>();
+            
+            // 设置合规认证回调
+            SetupComplianceCallbacks();
+        }
+        else
+        {
+            Debug.Log("[TapTapLogin] 使用现有的TapTapComplianceManager实例");
+            SetupComplianceCallbacks();
+        }
+    }
+    
+    /// <summary>
+    /// 设置合规认证回调
+    /// </summary>
+    private void SetupComplianceCallbacks()
+    {
+        if (complianceManager != null)
+        {
+            // 合规认证成功 - 用户可以正常进入游戏
+            complianceManager.OnLoginSuccess.AddListener(OnComplianceLoginSuccess);
+            
+            // 退出合规认证
+            complianceManager.OnExited.AddListener(OnComplianceExited);
+            
+            // 切换账号
+            complianceManager.OnSwitchAccount.AddListener(OnComplianceSwitchAccount);
+            
+            // 时间限制
+            complianceManager.OnPeriodRestrict.AddListener(OnCompliancePeriodRestrict);
+            
+            // 时长限制
+            complianceManager.OnDurationLimit.AddListener(OnComplianceDurationLimit);
+            
+            // 年龄限制
+            complianceManager.OnAgeLimit.AddListener(OnComplianceAgeLimit);
+            
+            // 网络错误
+            complianceManager.OnInvalidClientOrNetworkError.AddListener(OnComplianceNetworkError);
+            
+            // 实名认证关闭
+            complianceManager.OnRealNameStop.AddListener(OnComplianceRealNameStop);
+            
+            Debug.Log("[TapTapLogin] 合规认证回调设置完成");
+        }
+    }
+    
     private void Start()
     {
         // Debug.Log("[TapTapLogin] ===== TapTapLoginManager.Start() 开始执行 =====");
+        
+        // 初始化合规认证管理器
+        InitializeComplianceManager();
         
         // 等待SDK初始化完成后再检查登录状态
         StartCoroutine(WaitForSDKAndCheckLogin());
@@ -141,8 +214,8 @@ public class TapTapLoginManager : MonoBehaviour
                 // Debug.Log($"[TapTapLogin] 用户已登录 - OpenID: {account.openId}");
                 // Debug.Log($"[TapTapLogin] 用户昵称: {account.name}");
                 
-                // 触发登录成功事件
-                OnLoginSuccess?.Invoke(account);
+                // 启动合规认证
+                StartComplianceIfEnabled(account);
             }
             else
             {
@@ -207,10 +280,8 @@ public class TapTapLoginManager : MonoBehaviour
                 // Debug.Log($"[TapTapLogin] OpenID: {userInfo.openId}");
                 // Debug.Log($"[TapTapLogin] 用户昵称: {userInfo.name}");
                 
-                // 触发登录成功事件
-                // Debug.Log($"[TapTapLogin] 准备触发OnLoginSuccess事件，监听器数量: {OnLoginSuccess?.GetPersistentEventCount() ?? 0}");
-                OnLoginSuccess?.Invoke(userInfo);
-                // Debug.Log("[TapTapLogin] OnLoginSuccess事件已触发");
+                // 启动合规认证
+                StartComplianceIfEnabled(userInfo);
             }
             else
             {
@@ -261,6 +332,144 @@ public class TapTapLoginManager : MonoBehaviour
     }
     
     /// <summary>
+    /// 启动合规认证（如果启用）
+    /// </summary>
+    private void StartComplianceIfEnabled(TapTapAccount account)
+    {
+        if (!enableCompliance || complianceManager == null)
+        {
+            // 如果未启用合规认证，直接触发登录成功事件
+            Debug.Log("[TapTapLogin] 合规认证未启用，直接触发登录成功");
+            OnLoginSuccess?.Invoke(account);
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(account.unionId))
+        {
+            Debug.LogError("[TapTapLogin] 用户UnionID为空，无法进行合规认证");
+            OnLoginFailed?.Invoke("用户UnionID为空，无法进行合规认证");
+            return;
+        }
+        
+        Debug.Log($"[TapTapLogin] 开始合规认证，用户UnionID: {account.unionId}");
+        complianceManager.StartupCompliance(account.unionId);
+    }
+    
+    /// <summary>
+    /// 合规认证成功回调
+    /// </summary>
+    private void OnComplianceLoginSuccess(int code, string extra)
+    {
+        Debug.Log($"[TapTapLogin] 合规认证通过，用户可以正常进入游戏 (Code: {code})");
+        
+        // 现在才触发真正的登录成功事件
+        if (CurrentAccount != null)
+        {
+            OnLoginSuccess?.Invoke(CurrentAccount);
+        }
+    }
+    
+    /// <summary>
+    /// 合规认证退出回调
+    /// </summary>
+    private void OnComplianceExited()
+    {
+        Debug.Log("[TapTapLogin] 用户退出合规认证，返回登录页");
+        // 清理当前账号并触发登出
+        CurrentAccount = null;
+        OnLogout?.Invoke();
+    }
+    
+    /// <summary>
+    /// 合规认证切换账号回调
+    /// </summary>
+    private void OnComplianceSwitchAccount()
+    {
+        // Debug.Log("[TapTapLogin] 用户请求切换账号，返回登录页");
+        
+#if UNITY_ANDROID && !UNITY_EDITOR
+        try
+        {
+            // 先清理TapTap登录状态，但不退出合规认证（避免状态冲突）
+            TapTapLogin.Instance.Logout();
+            // Debug.Log("[TapTapLogin] TapTap登录状态已清理");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[TapTapLogin] 清理TapTap登录状态失败: {e.Message}");
+        }
+#endif
+        
+        // 清理当前账号并触发登出事件，让GameStartManager显示登录界面
+        CurrentAccount = null;
+        OnLogout?.Invoke();
+    }
+    
+    /// <summary>
+    /// 合规认证时间限制回调
+    /// </summary>
+    private void OnCompliancePeriodRestrict(int code, string extra)
+    {
+        Debug.LogWarning($"[TapTapLogin] 用户当前时间无法进行游戏 (Code: {code}, Extra: {extra})");
+        // Debug.Log("[TapTapLogin] 时间限制，返回登录页面让用户重新尝试");
+        
+        // 清理当前账号并触发登出，返回登录页面
+        CurrentAccount = null;
+        OnLogout?.Invoke();
+    }
+    
+    /// <summary>
+    /// 合规认证时长限制回调
+    /// </summary>
+    private void OnComplianceDurationLimit(int code, string extra)
+    {
+        Debug.LogWarning($"[TapTapLogin] 用户无可玩时长 (Code: {code}, Extra: {extra})");
+        // Debug.Log("[TapTapLogin] 时长限制，返回登录页面让用户重新尝试");
+        
+        // 清理当前账号并触发登出，返回登录页面
+        CurrentAccount = null;
+        OnLogout?.Invoke();
+    }
+    
+    /// <summary>
+    /// 合规认证年龄限制回调
+    /// </summary>
+    private void OnComplianceAgeLimit(int code, string extra)
+    {
+        Debug.LogWarning($"[TapTapLogin] 用户因年龄限制无法进入游戏 (Code: {code}, Extra: {extra})");
+        // Debug.Log("[TapTapLogin] 年龄限制，返回登录页面让用户重新尝试");
+        
+        // 清理当前账号并触发登出，返回登录页面
+        CurrentAccount = null;
+        OnLogout?.Invoke();
+    }
+    
+    /// <summary>
+    /// 合规认证网络错误回调
+    /// </summary>
+    private void OnComplianceNetworkError(int code, string extra)
+    {
+        Debug.LogError($"[TapTapLogin] 合规认证数据请求失败 (Code: {code}, Extra: {extra})");
+        // Debug.Log("[TapTapLogin] 网络错误，返回登录页面让用户重试");
+        
+        // 清理当前账号并触发登出，返回登录页面
+        CurrentAccount = null;
+        OnLogout?.Invoke();
+    }
+    
+    /// <summary>
+    /// 合规认证实名认证关闭回调
+    /// </summary>
+    private void OnComplianceRealNameStop()
+    {
+        // Debug.Log("[TapTapLogin] 用户关闭了实名认证窗口，返回登录页面");
+        
+        // 清理当前账号并触发登出，返回登录页面让用户重试
+        CurrentAccount = null;
+        OnLogout?.Invoke();
+    }
+    
+    /// <summary>
     /// 登出
     /// </summary>
     public void Logout()
@@ -269,6 +478,12 @@ public class TapTapLoginManager : MonoBehaviour
         try
         {
             // Debug.Log("[TapTapLogin] 用户登出");
+            
+            // 退出合规认证
+            if (enableCompliance && complianceManager != null)
+            {
+                complianceManager.ExitCompliance();
+            }
             
             TapTapLogin.Instance.Logout();
             CurrentAccount = null;

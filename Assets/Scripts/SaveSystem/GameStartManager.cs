@@ -232,6 +232,12 @@ public class GameStartManager : MonoBehaviour
             {
                 tapTapLoginManager.OnLoginCancelled.AddListener(OnTapTapLoginCancelled);
             }
+            
+            // 设置登出监听器（用于合规认证退出和切换账号）
+            if (tapTapLoginManager.OnLogout != null)
+            {
+                tapTapLoginManager.OnLogout.AddListener(OnTapTapLogout);
+            }
         }
         else
         {
@@ -245,7 +251,7 @@ public class GameStartManager : MonoBehaviour
     private void CheckCurrentLoginStatus()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        // Debug.Log("[GameStart] 主动检查当前登录状态");
+        // Debug.Log("[GameStart] ===== CheckCurrentLoginStatus被调用 =====");
         
         if (tapTapLoginManager != null)
         {
@@ -269,7 +275,7 @@ public class GameStartManager : MonoBehaviour
             }
             else
             {
-                // Debug.Log("[GameStart] 用户未登录，等待SDK事件或应急检查");
+                // Debug.Log("[GameStart] 用户未登录，保持登录界面显示");
             }
         }
         else
@@ -285,6 +291,9 @@ public class GameStartManager : MonoBehaviour
     private void StartLoginCheck()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
+        // Debug.Log($"[GameStart] ===== StartLoginCheck被调用 =====");
+        // Debug.Log($"[GameStart] requireLogin: {requireLogin}");
+        
         if (requireLogin)
         {
             isCheckingLogin = true;
@@ -293,9 +302,12 @@ public class GameStartManager : MonoBehaviour
             // 显示登录面板，隐藏游戏按钮
             ShowLoginPanel();
             SetButtonsVisibility(false);
+            
+            // Debug.Log("[GameStart] 登录检查UI更新完成");
         }
         else
         {
+            // Debug.Log("[GameStart] 不需要登录，直接显示正常界面");
             // 不需要登录，直接显示正常界面
             HideLoginPanel();
             SetButtonsVisibility(true);
@@ -358,7 +370,7 @@ public class GameStartManager : MonoBehaviour
     }
     
     /// <summary>
-    /// 设置按钮可见性
+    /// 设置基本游戏UI可见性
     /// </summary>
     private void SetButtonsVisibility(bool visible)
     {
@@ -368,13 +380,26 @@ public class GameStartManager : MonoBehaviour
             startGameButton.gameObject.SetActive(visible);
         }
         
-        // 删除存档按钮（如果存在）
-        if (deleteSaveButton != null)
+        if (visible)
         {
-            deleteSaveButton.gameObject.SetActive(visible);
+            // 显示时，刷新存档信息以正确显示存档相关UI
+            RefreshSaveInfo();
+        }
+        else
+        {
+            // 隐藏时，隐藏所有存档相关UI
+            if (deleteSaveButton != null)
+            {
+                deleteSaveButton.gameObject.SetActive(false);
+            }
+            
+            if (saveInfoPanel != null)
+            {
+                saveInfoPanel.SetActive(false);
+            }
         }
         
-        // Debug.Log($"[GameStart] 按钮可见性设置为: {visible}");
+        // Debug.Log($"[GameStart] 游戏UI可见性设置为: {visible}");
     }
     
     /// <summary>
@@ -382,13 +407,15 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void ShowLoginPanel()
     {
+        // Debug.Log("[GameStart] ===== ShowLoginPanel被调用 =====");
         if (loginPanel != null)
         {
             loginPanel.SetActive(true);
-            // Debug.Log("[GameStart] 显示登录面板");
+            // Debug.Log("[GameStart] LoginPanel已设置为显示");
             
             // 设置为登录中状态
             SetLoginPanelState(true);
+            // Debug.Log("[GameStart] LoginPanel状态已设置为登录中");
         }
         else
         {
@@ -486,9 +513,10 @@ public class GameStartManager : MonoBehaviour
             saveInfoText.text = formattedText;
         }
         
-        // 启用删除存档按钮
+        // 显示并启用删除存档按钮
         if (deleteSaveButton != null)
         {
+            deleteSaveButton.gameObject.SetActive(true);
             deleteSaveButton.interactable = true;
         }
         
@@ -506,7 +534,11 @@ public class GameStartManager : MonoBehaviour
             saveInfoPanel.SetActive(false);
         }
         
-        // 隐藏存档信息面板
+        // 隐藏删除存档按钮
+        if (deleteSaveButton != null)
+        {
+            deleteSaveButton.gameObject.SetActive(false);
+        }
     }
     
     /// <summary>
@@ -1070,6 +1102,35 @@ public class GameStartManager : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// TapTap登出回调（包括合规认证退出和切换账号）
+    /// </summary>
+    private void OnTapTapLogout()
+    {
+        // Debug.Log("[GameStart] ===== TapTap用户登出回调被调用 =====");
+        // Debug.Log("[GameStart] TapTap用户登出，重新显示登录面板");
+        // Debug.Log($"[GameStart] 登出前状态: isCheckingLogin={isCheckingLogin}, loginCheckCompleted={loginCheckCompleted}");
+        
+        // 重置登录检查状态
+        isCheckingLogin = false;
+        loginCheckCompleted = false;
+        
+        // 重新开始登录检查
+        StartLoginCheck();
+        
+        // 主动检查当前登录状态
+        CheckCurrentLoginStatus();
+        
+        // 设置登录面板为失败状态，显示重试按钮
+        if (loginPanel != null && loginPanel.activeInHierarchy)
+        {
+            SetLoginPanelState(false);
+            // Debug.Log("[GameStart] 登录面板已设置为失败状态，显示重试按钮");
+        }
+        
+        // Debug.Log("[GameStart] ===== TapTap登出回调处理完成 =====");
+    }
+    
     private void OnDestroy()
     {
         // 清理事件监听器
@@ -1079,6 +1140,7 @@ public class GameStartManager : MonoBehaviour
             tapTapLoginManager.OnSDKReady.RemoveListener(OnTapTapSDKReady);
             tapTapLoginManager.OnLoginFailed.RemoveListener(OnTapTapLoginFailed);
             tapTapLoginManager.OnLoginCancelled.RemoveListener(OnTapTapLoginCancelled);
+            tapTapLoginManager.OnLogout.RemoveListener(OnTapTapLogout);
         }
     }
     

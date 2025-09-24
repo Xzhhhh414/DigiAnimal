@@ -14,6 +14,16 @@
       "dependencies": {},
       "hash": "3fdf1984803c4518eafea98fcb416c8a3aa09f26"
     },
+    "com.taptap.sdk.compliance": {
+      "version": "https://github.com/taptap/tapsdk-unity-dist.git?path=/Compliance#4.8.2",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.taptap.sdk.core": "4.8.2",
+        "com.taptap.sdk.login": "4.8.2"
+      },
+      "hash": "935644b8e9ab550cb56e0aea437b81364b3344da"
+    },
     "com.taptap.sdk.core": {
       "version": "https://github.com/taptap/tapsdk-unity-dist.git?path=/Core#4.8.2",
       "depth": 0,

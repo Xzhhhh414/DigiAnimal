@@ -1,5 +1,6 @@
 <dependencies>
   <packages>
+    <package>com.taptap.sdk:tap-compliance:4.8.2</package>
     <package>com.taptap.sdk:tap-core-unity:4.8.2</package>
     <package>com.taptap.sdk:tap-login-unity:4.8.2</package>
   </packages>

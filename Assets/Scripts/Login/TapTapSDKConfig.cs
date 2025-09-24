@@ -1,5 +1,6 @@
 using UnityEngine;
 using TapSDK.Core;
+using TapSDK.Compliance;
 using System;
 
 /// <summary>
@@ -16,6 +17,10 @@ public class TapTapSDKConfig : MonoBehaviour
     [Header("调试设置")]
     [SerializeField] private bool enableLog = false;          // 是否开启日志（发布版本建议false）
     
+    [Header("合规认证配置")]
+    [SerializeField] private bool showSwitchAccount = true;   // 是否显示切换账号按钮
+    [SerializeField] private bool useAgeRange = false;        // 是否需要获取真实年龄段信息
+    
     [Header("状态")]
     [SerializeField] private bool isInitialized = false;     // SDK是否已初始化
     
@@ -29,6 +34,8 @@ public class TapTapSDKConfig : MonoBehaviour
     public bool IsInitialized => isInitialized;
     public string ClientId => clientId;
     public string ClientToken => clientToken;
+    public bool ShowSwitchAccount => showSwitchAccount;
+    public bool UseAgeRange => useAgeRange;
     
     private void Awake()
     {
@@ -166,8 +173,21 @@ public class TapTapSDKConfig : MonoBehaviour
                 enableLog = this.enableLog
             };
             
-            // 初始化SDK
-            TapTapSDK.Init(coreOptions);
+            // 合规认证配置
+            TapTapComplianceOption complianceOption = new TapTapComplianceOption
+            {
+                showSwitchAccount = this.showSwitchAccount,
+                useAgeRange = this.useAgeRange
+            };
+            
+            // 其他模块配置项
+            TapTapSdkBaseOptions[] otherOptions = new TapTapSdkBaseOptions[]
+            {
+                complianceOption
+            };
+            
+            // 初始化SDK（包含合规认证模块）
+            TapTapSDK.Init(coreOptions, otherOptions);
             
             isInitialized = true;
             Debug.Log("[TapTapSDK] SDK初始化成功！");
