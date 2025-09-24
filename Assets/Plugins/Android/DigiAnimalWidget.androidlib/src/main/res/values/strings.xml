@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DigiAnimal</string>
-    <string name="widget_name">DigiAnimal Pet Widget</string>
+    <string name="app_name">Miao屋</string>
+    <string name="widget_name">Miao屋虚拟宠物</string>
     <string name="widget_description">显示你的虚拟宠物状态</string>
     
     <!-- 小组件文本 -->
