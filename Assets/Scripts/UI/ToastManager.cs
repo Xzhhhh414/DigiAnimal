@@ -126,6 +126,16 @@ public class ToastManager : MonoBehaviour
     /// <param name="message">消息内容</param>
     public void ShowToast(string message)
     {
+        ShowToast(message, toastDuration);
+    }
+    
+    /// <summary>
+    /// 显示Toast消息（自定义显示时长）
+    /// </summary>
+    /// <param name="message">消息内容</param>
+    /// <param name="customDuration">自定义显示时长（秒）</param>
+    public void ShowToast(string message, float customDuration)
+    {
         if (string.IsNullOrEmpty(message)) return;
         
         if (toastMessagePrefab == null || targetCanvas == null)
@@ -164,14 +174,23 @@ public class ToastManager : MonoBehaviour
         // 根据文本长度调整Toast大小
         AdjustToastSize(message);
         
-        // 开始显示动画
-        ShowToastAnimation();
+        // 开始显示动画（使用自定义时长）
+        ShowToastAnimation(customDuration);
     }
     
     /// <summary>
     /// 显示Toast动画
     /// </summary>
     private void ShowToastAnimation()
+    {
+        ShowToastAnimation(toastDuration);
+    }
+    
+    /// <summary>
+    /// 显示Toast动画（自定义显示时长）
+    /// </summary>
+    /// <param name="customDuration">自定义显示时长（秒）</param>
+    private void ShowToastAnimation(float customDuration)
     {
         isShowing = true;
         
@@ -181,8 +200,8 @@ public class ToastManager : MonoBehaviour
         // 淡入动画
         canvasGroup.DOFade(1, fadeInDuration)
             .OnComplete(() => {
-                // 显示完成后，等待一段时间再淡出（重置计时器）
-                hideDelayTweener = DOVirtual.DelayedCall(toastDuration, () => {
+                // 显示完成后，等待指定时间再淡出
+                hideDelayTweener = DOVirtual.DelayedCall(customDuration, () => {
                     HideToastAnimation();
                 });
             });
