@@ -18,7 +18,7 @@
         <!-- 小组件Provider -->
         <receiver android:name="com.zher.meow.widget.DigiAnimalWidgetProvider"
             android:exported="true"
-            android:label="DigiAnimal Pet Widget">
+            android:label="Miao屋桌面宠物">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
@@ -29,6 +29,7 @@
                         <action android:name="com.zher.meow.widget.PLAY_ANIMATION" />
                         <action android:name="com.zher.meow.widget.REFRESH_WIDGET" />
                         <action android:name="com.zher.meow.widget.REFRESH_DATA" />
+                        <action android:name="com.zher.meow.widget.WIDGET_PINNED" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/digianimal_widget_info" />

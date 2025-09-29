@@ -142,6 +142,25 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
             onUpdate(context, appWidgetManager, widgetIds);
             
             // Log.d(TAG, "定期更新完成");
+        } else if ("com.zher.meow.widget.WIDGET_PINNED".equals(action)) {
+            // 小组件固定成功回调
+            // Log.i(TAG, "小组件固定成功回调");
+            int appWidgetId = intent.getIntExtra("android.appwidget.extra.APPWIDGET_ID", -1);
+            // Log.i(TAG, "收到的appWidgetId: " + appWidgetId);
+            if (appWidgetId != -1) {
+                // Log.i(TAG, "新固定的小组件ID: " + appWidgetId);
+                // 立即更新新添加的小组件
+                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+                onUpdate(context, appWidgetManager, new int[]{appWidgetId});
+                
+                // 通知Unity小组件添加成功
+                // Log.i(TAG, "准备调用notifyUnityWidgetAdded");
+                notifyUnityWidgetAdded(context);
+            } else {
+                Log.w(TAG, "appWidgetId为-1，无法获取小组件ID，但仍然通知Unity");
+                // 即使没有ID，也通知Unity添加成功
+                notifyUnityWidgetAdded(context);
+            }
         }
     }
     
@@ -982,6 +1001,34 @@ public class DigiAnimalWidgetProvider extends AppWidgetProvider {
             
         } catch (Exception e) {
             Log.e(TAG, "取消定期更新失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 通知Unity小组件添加成功
+     */
+    private void notifyUnityWidgetAdded(Context context) {
+        try {
+            // Log.i(TAG, "准备通知Unity小组件添加成功");
+            
+            // 使用固定的GameObject名称发送Unity消息
+            Class<?> unityPlayerClass = Class.forName("com.unity3d.player.UnityPlayer");
+            java.lang.reflect.Method unitySendMessageMethod = unityPlayerClass.getMethod(
+                "UnitySendMessage", String.class, String.class, String.class
+            );
+            
+            // 发送到固定的GameObject：WidgetCallbackReceiver
+            unitySendMessageMethod.invoke(null, 
+                "WidgetCallbackReceiver", 
+                "OnWidgetAddedSuccess", 
+                "Widget added successfully"
+            );
+            
+            // Log.i(TAG, "Unity消息发送成功到: WidgetCallbackReceiver");
+            
+        } catch (Exception e) {
+            Log.e(TAG, "通知Unity失败: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

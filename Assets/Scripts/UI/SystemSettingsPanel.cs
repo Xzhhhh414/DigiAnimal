@@ -20,9 +20,9 @@ public class SystemSettingsPanel : MonoBehaviour
     
     [Header("功能开关")]
     [SerializeField] private ToggleSwitchController dynamicIslandToggle;  // 灵动岛开关
-    [SerializeField] private GameObject dynamicIslandSettingsGroup;       // 灵动岛设置组
+    [SerializeField] private GameObject dynamicIslandSettingsGroup;       // 宠物选择设置组（原名保留，但现在用于宠物选择）
     
-    [Header("灵动岛设置")]
+    [Header("宠物选择设置")]
     [SerializeField] private Dropdown petSelectionDropdown;     // 宠物选择下拉菜单
     [SerializeField] private Text selectedPetNameText;          // 选中宠物名称显示
     
@@ -32,10 +32,10 @@ public class SystemSettingsPanel : MonoBehaviour
     [SerializeField] private float dropdownPadding = 15f;       // 上下内边距
     [SerializeField] private int maxVisibleItems = 4;           // 最大可见选项数量
     
-    [Header("面板高度设置")]
-    [SerializeField] private float panelHeightWhenOff = 300f;   // 灵动岛关闭时的面板高度
-    [SerializeField] private float panelHeightWhenOn = 500f;    // 灵动岛开启时的面板高度
-    [SerializeField] private float panelResizeAnimationDuration = 0.4f; // 面板大小调整动画时长
+    // [Header("面板高度设置")] // 暂时注释掉，目前用不上
+    // [SerializeField] private float panelHeightWhenOff = 300f;   // 灵动岛关闭时的面板高度
+    // [SerializeField] private float panelHeightWhenOn = 500f;    // 灵动岛开启时的面板高度
+    // [SerializeField] private float panelResizeAnimationDuration = 0.4f; // 面板大小调整动画时长
     
     [Header("动画设置")]
     [SerializeField] private float settingsGroupAnimationDuration = 0.3f;
@@ -209,11 +209,11 @@ public class SystemSettingsPanel : MonoBehaviour
                 dynamicIslandToggle.SetValue(settingsData.dynamicIslandEnabled, false);
             }
             
-            // 更新面板高度（不需要动画，因为是初始化）
-            AdjustPanelHeight(settingsData.dynamicIslandEnabled, false);
+        // 更新面板高度（不需要动画，因为是初始化）
+        // AdjustPanelHeight(settingsData.dynamicIslandEnabled, false); // 暂时注释掉
             
-            // 更新设置组显示状态
-            UpdateSettingsGroupVisibility(settingsData.dynamicIslandEnabled, false);
+            // 更新设置组显示状态 - 宠物选择设置永远显示
+            UpdateSettingsGroupVisibility(true, false);
             
             // 更新宠物选择
             UpdateSelectedPetDisplay();
@@ -425,7 +425,8 @@ public class SystemSettingsPanel : MonoBehaviour
     }
     
     /// <summary>
-    /// 更新设置组显示状态
+    /// 更新宠物选择设置组显示状态
+    /// 注意：现在宠物选择设置永远显示，不受灵动岛开关影响
     /// </summary>
     /// <param name="show">是否显示</param>
     /// <param name="animate">是否播放动画</param>
@@ -440,7 +441,7 @@ public class SystemSettingsPanel : MonoBehaviour
         // Debug.Log($"[SystemSettingsPanel] UpdateSettingsGroupVisibility: show={show}, animate={animate}");
         
         // 先调整面板高度
-        AdjustPanelHeight(show, animate);
+        // AdjustPanelHeight(show, animate); // 暂时注释掉
         
         if (show)
         {
@@ -488,8 +489,9 @@ public class SystemSettingsPanel : MonoBehaviour
         }
     }
     
+    /*
     /// <summary>
-    /// 调整面板高度
+    /// 调整面板高度 - 暂时注释掉，目前用不上
     /// </summary>
     /// <param name="isExpanded">是否展开（灵动岛开启）</param>
     /// <param name="animate">是否播放动画</param>
@@ -514,6 +516,7 @@ public class SystemSettingsPanel : MonoBehaviour
         
         // Debug.Log($"[SystemSettingsPanel] 面板高度调整: {(isExpanded ? "展开" : "收缩")} -> {targetHeight}px");
     }
+    */
     
     /// <summary>
     /// 显示面板（从BottomPanelController调用）
@@ -615,11 +618,11 @@ public class SystemSettingsPanel : MonoBehaviour
                         dynamicIslandToggle.SetValue(settingsData.dynamicIslandEnabled, false);
                     }
                     
-                    // 确保设置组可见性正确
-                    UpdateSettingsGroupVisibility(settingsData.dynamicIslandEnabled, false);
+                    // 确保设置组可见性正确 - 宠物选择设置永远显示
+                    UpdateSettingsGroupVisibility(true, false);
                     
                     // 确保面板高度正确
-                    AdjustPanelHeight(settingsData.dynamicIslandEnabled, false);
+                    // AdjustPanelHeight(settingsData.dynamicIslandEnabled, false); // 暂时注释掉
                 }
                 finally
                 {
@@ -990,9 +993,9 @@ public class SystemSettingsPanel : MonoBehaviour
         
         settingsData.dynamicIslandEnabled = isOn;
         
-        // 更新设置组可见性和面板高度
-        UpdateSettingsGroupVisibility(isOn, true);
-        AdjustPanelHeight(isOn, true);
+        // 宠物选择设置永远显示，不受灵动岛开关影响
+        // UpdateSettingsGroupVisibility(isOn, true); // 注释掉，宠物选择设置永远显示
+        // AdjustPanelHeight(isOn, true); // 暂时注释掉
         
         // 立即保存设置
         SaveSettings();
