@@ -30,21 +30,54 @@ public class WidgetHelper {
         }
         
         try {
-            // Log.i(TAG, "开始尝试请求固定小组件到桌面");
-            // Log.i(TAG, "设备信息: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
+            Log.i(TAG, "开始尝试请求固定小组件到桌面");
+            Log.i(TAG, "设备信息: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
+            Log.i(TAG, "系统版本: Android " + android.os.Build.VERSION.RELEASE + " (API " + android.os.Build.VERSION.SDK_INT + ")");
+            
+            // 检测特殊系统
+            Log.d(TAG, "开始检测系统类型...");
+            String miuiVersion = getMIUIVersion();
+            Log.d(TAG, "MIUI检测结果: " + (miuiVersion != null ? miuiVersion : "null"));
+            
+            String vivoVersion = getFuntouchOSVersion();
+            Log.d(TAG, "vivo检测结果: " + (vivoVersion != null ? vivoVersion : "null"));
+            
+            boolean isMIUI = miuiVersion != null;
+            boolean isVivo = vivoVersion != null;
+            
+            Log.i(TAG, "系统检测完成 - MIUI: " + isMIUI + ", vivo: " + isVivo);
+            
+            if (isMIUI) {
+                Log.i(TAG, "检测到MIUI系统，版本: " + miuiVersion);
+                Log.w(TAG, "MIUI系统可能会静默处理requestPinAppWidget请求");
+            } else if (isVivo) {
+                Log.i(TAG, "检测到vivo FuntouchOS系统，版本: " + (vivoVersion.isEmpty() ? "未知" : vivoVersion));
+                Log.w(TAG, "vivo系统可能会静默处理requestPinAppWidget请求");
+            } else {
+                Log.d(TAG, "标准Android系统，将使用标准小组件API");
+            }
             
             // 首先检查是否已有小组件
             int widgetCount = getInstalledWidgetCount(context);
-            // Log.i(TAG, "当前已安装的小组件数量: " + widgetCount);
+            Log.i(TAG, "当前已安装的小组件数量: " + widgetCount);
             
             if (widgetCount > 0) {
-                // Log.i(TAG, "桌面已存在小组件，返回已存在状态");
+                Log.i(TAG, "桌面已存在小组件，返回已存在状态");
                 return 1; // 已存在小组件
             }
             
-            // 使用官方推荐的 requestPinAppWidget 方法
+            // 对于特殊系统，直接使用降级方案，因为requestPinAppWidget会被静默处理
+            if (isMIUI) {
+                Log.i(TAG, "MIUI系统检测到，使用专门的MIUI处理方案");
+                return handleMIUISystem(context);
+            } else if (isVivo) {
+                Log.i(TAG, "vivo系统检测到，使用专门的vivo处理方案");
+                return handleVivoSystem(context);
+            }
+            
+            // 非MIUI系统：使用官方推荐的 requestPinAppWidget 方法
             if (requestPinWidget(context)) {
-                // Log.i(TAG, "成功请求固定小组件");
+                Log.i(TAG, "成功请求固定小组件");
                 return 0; // 成功发起请求
             }
             
@@ -71,16 +104,29 @@ public class WidgetHelper {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             
             // 检查是否支持固定小组件
-            if (!appWidgetManager.isRequestPinAppWidgetSupported()) {
+            boolean isSupported = appWidgetManager.isRequestPinAppWidgetSupported();
+            Log.i(TAG, "requestPinAppWidget 支持状态: " + isSupported);
+            
+            if (!isSupported) {
                 Log.w(TAG, "当前启动器不支持 requestPinAppWidget");
+                
+                // 获取启动器信息
+                Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                homeIntent.addCategory(Intent.CATEGORY_HOME);
+                android.content.pm.ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(homeIntent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY);
+                if (resolveInfo != null) {
+                    String launcherPackage = resolveInfo.activityInfo.packageName;
+                    Log.w(TAG, "当前启动器包名: " + launcherPackage);
+                }
+                
                 return false;
             }
             
-        // Log.i(TAG, "启动器支持 requestPinAppWidget，开始请求");
+        Log.i(TAG, "启动器支持 requestPinAppWidget，开始请求");
         
         // 创建小组件提供者组件名
         ComponentName provider = new ComponentName(context, DigiAnimalWidgetProvider.class);
-        // Log.d(TAG, "小组件提供者: " + provider.toString());
+        Log.d(TAG, "小组件提供者: " + provider.toString());
             
             // 可选：为小组件设置初始配置
             Bundle extras = new Bundle();
@@ -101,11 +147,11 @@ public class WidgetHelper {
             // 发起请求固定小组件
             boolean result = appWidgetManager.requestPinAppWidget(provider, extras, successCallback);
             
-        // if (result) {
-        //     Log.i(TAG, "requestPinAppWidget 调用成功，等待用户确认");
-        // } else {
-        //     Log.w(TAG, "requestPinAppWidget 调用返回 false");
-        // }
+        if (result) {
+            Log.i(TAG, "requestPinAppWidget 调用成功，等待用户确认");
+        } else {
+            Log.w(TAG, "requestPinAppWidget 调用返回 false");
+        }
             
             return result;
             
@@ -288,20 +334,28 @@ public class WidgetHelper {
      */
     private static boolean tryOpenLauncher(Context context) {
         try {
+            Log.i(TAG, "尝试回到桌面");
+            
             // 回到桌面，用户可以手动长按添加小组件
             Intent intent = new Intent(Intent.ACTION_MAIN);
             intent.addCategory(Intent.CATEGORY_HOME);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             
+            Log.d(TAG, "桌面Intent: " + intent.toString());
+            
             if (intent.resolveActivity(context.getPackageManager()) != null) {
+                Log.i(TAG, "找到桌面启动器，正在启动");
                 context.startActivity(intent);
+                Log.i(TAG, "桌面启动成功");
                 return true;
+            } else {
+                Log.w(TAG, "找不到桌面启动器");
+                return false;
             }
             
-            return false;
-            
         } catch (Exception e) {
-            Log.w(TAG, "打开桌面失败: " + e.getMessage());
+            Log.e(TAG, "打开桌面失败: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -338,16 +392,161 @@ public class WidgetHelper {
             int[] widgetIds = appWidgetManager.getAppWidgetIds(provider);
             
             if (widgetIds != null) {
-            // Log.d(TAG, "找到小组件IDs: " + java.util.Arrays.toString(widgetIds));
+            Log.d(TAG, "找到小组件IDs: " + java.util.Arrays.toString(widgetIds));
             return widgetIds.length;
         } else {
-            // Log.d(TAG, "widgetIds为null");
+            Log.d(TAG, "widgetIds为null");
             return 0;
         }
         } catch (Exception e) {
             Log.e(TAG, "获取小组件数量时发生错误: " + e.getMessage());
             e.printStackTrace();
             return 0;
+        }
+    }
+    
+    /**
+     * 专门处理MIUI系统的小组件添加
+     */
+    private static int handleMIUISystem(Context context) {
+        Log.i(TAG, "开始MIUI专用处理流程");
+        Log.w(TAG, "MIUI系统会静默处理所有小组件添加请求，直接显示游戏内弹窗指引");
+        
+        try {
+            // 不再尝试任何系统API调用，直接返回弹窗指引状态码
+            Log.i(TAG, "MIUI：跳过所有系统API，直接显示游戏内弹窗指引");
+            return -2; // 特殊状态码：显示MIUI游戏内弹窗指引
+            
+        } catch (Exception e) {
+            Log.e(TAG, "MIUI处理过程中发生错误: " + e.getMessage());
+            e.printStackTrace();
+            return -2; // 即使出错也显示弹窗指引
+        }
+    }
+    
+    /**
+     * 专门处理vivo系统的小组件添加
+     */
+    private static int handleVivoSystem(Context context) {
+        Log.i(TAG, "开始vivo专用处理流程");
+        Log.w(TAG, "vivo系统会静默处理所有小组件添加请求，直接显示游戏内弹窗指引");
+        
+        try {
+            // 不再尝试任何系统API调用，直接返回弹窗指引状态码
+            Log.i(TAG, "vivo：跳过所有系统API，直接显示游戏内弹窗指引");
+            return -3; // 特殊状态码：显示vivo游戏内弹窗指引
+            
+        } catch (Exception e) {
+            Log.e(TAG, "vivo处理过程中发生错误: " + e.getMessage());
+            e.printStackTrace();
+            return -3; // 即使出错也显示弹窗指引
+        }
+    }
+    
+    /**
+     * 检测MIUI版本
+     */
+    private static String getMIUIVersion() {
+        try {
+            Log.d(TAG, "开始MIUI检测...");
+            
+            // 首先检查制造商是否为小米
+            String manufacturer = android.os.Build.MANUFACTURER;
+            Log.d(TAG, "设备制造商: " + manufacturer);
+            
+            if (!"Xiaomi".equalsIgnoreCase(manufacturer)) {
+                Log.d(TAG, "制造商不是小米，跳过MIUI检测");
+                return null;
+            }
+            
+            Log.d(TAG, "制造商是小米，开始检测MIUI版本...");
+            
+            Class<?> c = Class.forName("android.os.SystemProperties");
+            java.lang.reflect.Method get = c.getMethod("get", String.class);
+            String version = (String) get.invoke(c, "ro.miui.ui.version.name");
+            
+            Log.d(TAG, "SystemProperties返回的MIUI版本: '" + version + "'");
+            
+            // 检查版本是否为空或null
+            if (version == null || version.trim().isEmpty()) {
+                Log.d(TAG, "MIUI版本为空，返回null");
+                return null;
+            }
+            
+            Log.i(TAG, "成功检测到MIUI版本: " + version);
+            return version;
+        } catch (Exception e) {
+            Log.w(TAG, "MIUI检测异常: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * 检测华为EMUI版本（预留，暂未使用）
+     */
+    private static String getEMUIVersion() {
+        try {
+            String manufacturer = android.os.Build.MANUFACTURER;
+            if (!"HUAWEI".equalsIgnoreCase(manufacturer) && !"HONOR".equalsIgnoreCase(manufacturer)) {
+                return null;
+            }
+            
+            Class<?> c = Class.forName("android.os.SystemProperties");
+            java.lang.reflect.Method get = c.getMethod("get", String.class);
+            String version = (String) get.invoke(c, "ro.build.version.emui");
+            
+            if (version == null || version.trim().isEmpty()) {
+                return null;
+            }
+            
+            return version;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /**
+     * 检测vivo FuntouchOS版本
+     */
+    private static String getFuntouchOSVersion() {
+        try {
+            Log.d(TAG, "开始vivo检测...");
+            
+            String manufacturer = android.os.Build.MANUFACTURER;
+            Log.d(TAG, "设备制造商: " + manufacturer);
+            
+            if (!"vivo".equalsIgnoreCase(manufacturer)) {
+                Log.d(TAG, "制造商不是vivo，跳过vivo检测");
+                return null;
+            }
+            
+            Log.d(TAG, "制造商是vivo，开始检测FuntouchOS版本...");
+            
+            Class<?> c = Class.forName("android.os.SystemProperties");
+            java.lang.reflect.Method get = c.getMethod("get", String.class);
+            String version = (String) get.invoke(c, "ro.vivo.os.version");
+            
+            Log.d(TAG, "SystemProperties返回的vivo版本: '" + version + "'");
+            
+            if (version == null || version.trim().isEmpty()) {
+                Log.d(TAG, "vivo版本为空，但制造商是vivo，返回空字符串表示检测到vivo");
+                return ""; // 返回空字符串表示检测到vivo但版本未知
+            }
+            
+            Log.i(TAG, "成功检测到vivo FuntouchOS版本: " + version);
+            return version;
+        } catch (Exception e) {
+            Log.w(TAG, "vivo检测异常，但制造商是vivo: " + e.getMessage());
+            
+            // 即使检测版本失败，如果制造商是vivo，也应该返回空字符串
+            String manufacturer = android.os.Build.MANUFACTURER;
+            if ("vivo".equalsIgnoreCase(manufacturer)) {
+                Log.i(TAG, "vivo检测异常但制造商确认为vivo，返回空字符串");
+                return "";
+            }
+            
+            return null;
         }
     }
 }

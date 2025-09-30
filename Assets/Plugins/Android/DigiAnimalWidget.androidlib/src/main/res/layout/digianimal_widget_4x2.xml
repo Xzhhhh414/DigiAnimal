@@ -24,17 +24,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:layout_marginTop="0dp">
+        android:layout_marginTop="0dp"
+        android:gravity="center_vertical">
 
-    <!-- 左侧：宠物图像和名称区域 -->
+    <!-- 左侧：宠物图像和名称区域 - 横向左对齐，纵向居中 -->
     <LinearLayout
-        android:layout_width="100dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="top"
-        android:layout_marginTop="4dp"
+        android:gravity="start|center_vertical"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="0dp">
+        android:layout_marginEnd="5dp">
         
         <!-- 宠物图像（按位图原尺寸显示，避免系统再次缩放导致模糊） -->
         <ImageView
@@ -69,30 +70,29 @@
             
     </LinearLayout>
 
-    <!-- 中间：宠物信息区域 -->
+    <!-- 中间：宠物信息区域 - 横向居中，纵向居中 -->
     <LinearLayout
-        android:layout_width="80dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="top"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="26dp"
-        android:layout_marginEnd="0dp">
-        
+        android:gravity="center_horizontal|center_vertical"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp">
 
         <!-- 年龄（使用ImageView显示自定义字体位图） -->
         <ImageView
             android:id="@+id/pet_age"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="16dp"
             android:scaleType="fitStart"
             android:layout_marginBottom="20dp"
             android:contentDescription="年龄" />
 
-        <!-- 精力（使用ImageView显示自定义字体位图） -->yij
+        <!-- 精力（使用ImageView显示自定义字体位图） -->
         <ImageView
             android:id="@+id/pet_energy"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="16dp"
             android:scaleType="fitStart"
             android:layout_marginBottom="20dp"
@@ -101,20 +101,22 @@
         <!-- 饱食度（使用ImageView显示自定义字体位图） -->
         <ImageView
             android:id="@+id/pet_satiety"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="16dp"
             android:scaleType="fitStart"
             android:contentDescription="饱食度" />
 
     </LinearLayout>
 
-    <!-- 右侧：功能按钮区域 -->
+    <!-- 右侧：功能按钮区域 - 横向右对齐，纵向居中 -->
     <LinearLayout
-        android:layout_width="80dp"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="top"
-        android:layout_marginTop="18dp">
+        android:gravity="end|center_vertical"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="10dp">
 
         <!-- 坐下按钮 -->
         <ImageButton
@@ -151,7 +153,7 @@
             android:minWidth="0dp"
             android:contentDescription="跑步" />
 
-            </LinearLayout>
+    </LinearLayout>
 
     </LinearLayout>
 

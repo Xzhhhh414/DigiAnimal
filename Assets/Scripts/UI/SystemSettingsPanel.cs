@@ -696,6 +696,9 @@ public class SystemSettingsPanel : MonoBehaviour
     /// </summary>
     public void HidePanel(bool animated = true)
     {
+        // 关闭所有小组件弹窗
+        CloseAllWidgetPopups();
+        
         // 停止当前动画
         if (currentAnimation != null && currentAnimation.IsActive())
         {
@@ -939,6 +942,19 @@ public class SystemSettingsPanel : MonoBehaviour
     private string GetStartSceneName()
     {
         return startSceneName;
+    }
+    
+    /// <summary>
+    /// 关闭所有小组件弹窗
+    /// </summary>
+    private void CloseAllWidgetPopups()
+    {
+        // 查找AndroidWidgetLauncher并关闭所有弹窗
+        PlatformIntegration.AndroidWidgetLauncher androidWidgetLauncher = FindObjectOfType<PlatformIntegration.AndroidWidgetLauncher>();
+        if (androidWidgetLauncher != null)
+        {
+            androidWidgetLauncher.CloseAllPopups();
+        }
     }
     
     /// <summary>

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace PlatformIntegration
 {
@@ -13,6 +14,11 @@ namespace PlatformIntegration
     [Header("设置")]
     [SerializeField] private bool showDebugInfo = false;
     
+    [Header("系统特定弹窗界面")]
+    [SerializeField] private GameObject miuiWidgetGuidePanel; // MIUI系统的小组件添加指引弹窗
+    [SerializeField] private GameObject vivoWidgetGuidePanel; // vivo FuntouchOS系统的小组件添加指引弹窗
+    [SerializeField] private GameObject generalWidgetGuidePanel; // 通用Android系统的小组件添加指引弹窗
+    
     private Button widgetButton;
     
     // 静态实例，用于接收Android回调
@@ -23,6 +29,9 @@ namespace PlatformIntegration
         // 设置单例实例
         instance = this;
         InitializeButton();
+        
+        // 初始化时隐藏所有弹窗
+        InitializePopupPanels();
     }
     
     private void OnDestroy()
@@ -78,38 +87,51 @@ namespace PlatformIntegration
         {
             #if UNITY_ANDROID && !UNITY_EDITOR
             
-        // if (showDebugInfo)
-        //     Debug.Log("[AndroidWidgetLauncher] 用户点击启动小组件选择器");
+        Debug.Log("[AndroidWidgetLauncher] 用户点击启动小组件选择器");
             
             try
             {
+                Debug.Log("[AndroidWidgetLauncher] 准备调用Android原生方法...");
+                
                 // 调用Android原生方法
                 using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
                 using (AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
                 using (AndroidJavaClass widgetHelperClass = new AndroidJavaClass("com.zher.meow.widget.WidgetHelper"))
                 {
+                    Debug.Log("[AndroidWidgetLauncher] Android对象已创建，开始调用openWidgetPicker...");
+                    
                     int result = widgetHelperClass.CallStatic<int>("openWidgetPicker", currentActivity);
+                    
+                    Debug.Log($"[AndroidWidgetLauncher] openWidgetPicker返回结果: {result}");
                     
                     switch (result)
                     {
                         case 0: // 成功发起请求
-                            // if (showDebugInfo)
-                            //     Debug.Log("[AndroidWidgetLauncher] 已成功发起小组件固定请求");
+                            Debug.Log("[AndroidWidgetLauncher] 已成功发起小组件固定请求");
                             
                             // 不显示游戏内提示，只等待系统弹窗和后续的成功回调
                             // ShowMessage("添加小组件", "已向系统发起添加请求！...");
                             break;
                             
                         case 1: // 已存在小组件
-                            // if (showDebugInfo)
-                            //     Debug.Log("[AndroidWidgetLauncher] 桌面已存在小组件");
+                            Debug.Log("[AndroidWidgetLauncher] 桌面已存在小组件");
                             ShowExistingWidgetMessage();
+                            break;
+                            
+                        case -2: // MIUI特殊处理：显示游戏内弹窗指引
+                            Debug.Log("[AndroidWidgetLauncher] MIUI系统：显示游戏内弹窗指引");
+                            ShowMIUIWidgetGuidePanel();
+                            break;
+                            
+                        case -3: // vivo特殊处理：显示游戏内弹窗指引
+                            Debug.Log("[AndroidWidgetLauncher] vivo系统：显示游戏内弹窗指引");
+                            ShowVivoWidgetGuidePanel();
                             break;
                             
                         case -1: // 失败
                         default:
                             Debug.LogWarning("[AndroidWidgetLauncher] 小组件固定请求失败");
-                            ShowMessage("添加桌面小组件", "当前启动器不支持自动添加小组件\n\n请手动添加：\n\n📱 操作步骤：\n1. 长按桌面空白区域\n2. 点击'小组件'或'添加工具'\n3. 找到'Miao屋桌面宠物'\n4. 拖拽到桌面\n\n✨ 添加后即可在桌面查看宠物状态！");
+                            ShowGeneralWidgetGuidePanel();
                             break;
                     }
                 }
@@ -260,6 +282,322 @@ namespace PlatformIntegration
             #else
             return false;
             #endif
+        }
+        
+        /// <summary>
+        /// 显示MIUI系统的小组件添加指引弹窗
+        /// </summary>
+        private void ShowMIUIWidgetGuidePanel()
+        {
+            Debug.Log("[AndroidWidgetLauncher] 开始显示MIUI弹窗...");
+            
+            try
+            {
+                if (miuiWidgetGuidePanel != null)
+                {
+                    Debug.Log($"[AndroidWidgetLauncher] MIUI弹窗GameObject存在: {miuiWidgetGuidePanel.name}");
+                    Debug.Log($"[AndroidWidgetLauncher] 弹窗当前状态: {miuiWidgetGuidePanel.activeInHierarchy}");
+                    
+                    // 显示MIUI弹窗
+                    miuiWidgetGuidePanel.SetActive(true);
+                    Debug.Log($"[AndroidWidgetLauncher] MIUI弹窗显示完成，当前状态: {miuiWidgetGuidePanel.activeInHierarchy}");
+                }
+                else
+                {
+                    Debug.LogWarning("[AndroidWidgetLauncher] MIUI弹窗界面未设置，使用备用Toast提示");
+                    ShowMessage("添加桌面小组件", "📱 小米MIUI系统添加步骤：\n\n1. 长按桌面空白区域\n2. 点击底部'添加工具'或'+'号\n3. 滑动找到'Miao屋桌面宠物'\n4. 点击添加到桌面\n\n💡 提示：添加后可直接在桌面查看宠物状态！");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[AndroidWidgetLauncher] 显示MIUI弹窗时发生错误: {e.Message}");
+                // 备用方案：使用Toast
+                ShowMessage("添加桌面小组件", "📱 小米MIUI系统添加步骤：\n\n1. 长按桌面空白区域\n2. 点击底部'添加工具'或'+'号\n3. 滑动找到'Miao屋桌面宠物'\n4. 点击添加到桌面\n\n💡 提示：添加后可直接在桌面查看宠物状态！");
+            }
+        }
+        
+        /// <summary>
+        /// 显示vivo系统的小组件添加指引弹窗
+        /// </summary>
+        private void ShowVivoWidgetGuidePanel()
+        {
+            Debug.Log("[AndroidWidgetLauncher] 开始显示vivo弹窗...");
+            
+            try
+            {
+                if (vivoWidgetGuidePanel != null)
+                {
+                    Debug.Log($"[AndroidWidgetLauncher] vivo弹窗GameObject存在: {vivoWidgetGuidePanel.name}");
+                    Debug.Log($"[AndroidWidgetLauncher] 弹窗当前状态: {vivoWidgetGuidePanel.activeInHierarchy}");
+                    
+                    // 显示vivo弹窗
+                    vivoWidgetGuidePanel.SetActive(true);
+                    Debug.Log($"[AndroidWidgetLauncher] vivo弹窗显示完成，当前状态: {vivoWidgetGuidePanel.activeInHierarchy}");
+                }
+                else
+                {
+                    Debug.LogWarning("[AndroidWidgetLauncher] vivo FuntouchOS弹窗界面未设置，使用备用Toast提示");
+                    ShowMessage("添加桌面小组件", "📱 vivo FuntouchOS系统添加步骤：\n\n1. 长按桌面空白区域\n2. 点击底部'+'号或'添加'\n3. 选择'小组件'或'工具'\n4. 滑动找到'Miao屋桌面宠物'\n5. 点击添加到桌面\n\n💡 提示：添加后可直接在桌面查看宠物状态！");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[AndroidWidgetLauncher] 显示vivo FuntouchOS弹窗时发生错误: {e.Message}");
+                // 备用方案：使用Toast
+                ShowMessage("添加桌面小组件", "📱 vivo FuntouchOS系统添加步骤：\n\n1. 长按桌面空白区域\n2. 点击底部'+'号或'添加'\n3. 选择'小组件'或'工具'\n4. 滑动找到'Miao屋桌面宠物'\n5. 点击添加到桌面\n\n💡 提示：添加后可直接在桌面查看宠物状态！");
+            }
+        }
+        
+        /// <summary>
+        /// 显示通用Android系统的小组件添加指引弹窗
+        /// </summary>
+        private void ShowGeneralWidgetGuidePanel()
+        {
+            try
+            {
+                if (generalWidgetGuidePanel != null)
+                {
+                    generalWidgetGuidePanel.SetActive(true);
+                    Debug.Log("[AndroidWidgetLauncher] 通用Android弹窗界面已显示");
+                }
+                else
+                {
+                    Debug.LogWarning("[AndroidWidgetLauncher] 通用Android弹窗界面未设置，使用备用Toast提示");
+                    ShowMessage("添加桌面小组件", "当前启动器不支持自动添加小组件\n\n请手动添加：\n\n📱 操作步骤：\n1. 长按桌面空白区域\n2. 点击'小组件'或'添加工具'\n3. 找到'Miao屋桌面宠物'\n4. 拖拽到桌面\n\n✨ 添加后即可在桌面查看宠物状态！");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[AndroidWidgetLauncher] 显示通用Android弹窗时发生错误: {e.Message}");
+                // 备用方案：使用Toast
+                ShowMessage("添加桌面小组件", "当前启动器不支持自动添加小组件\n\n请手动添加：\n\n📱 操作步骤：\n1. 长按桌面空白区域\n2. 点击'小组件'或'添加工具'\n3. 找到'Miao屋桌面宠物'\n4. 拖拽到桌面\n\n✨ 添加后即可在桌面查看宠物状态！");
+            }
+        }
+        
+        /// <summary>
+        /// 关闭MIUI系统的小组件添加指引弹窗
+        /// </summary>
+        public void CloseMIUIWidgetGuidePanel()
+        {
+            try
+            {
+                if (miuiWidgetGuidePanel != null)
+                {
+                    miuiWidgetGuidePanel.SetActive(false);
+                    Debug.Log("[AndroidWidgetLauncher] MIUI弹窗界面已关闭");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[AndroidWidgetLauncher] 关闭MIUI弹窗时发生错误: {e.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 关闭通用Android系统的小组件添加指引弹窗
+        /// </summary>
+        public void CloseGeneralWidgetGuidePanel()
+        {
+            try
+            {
+                if (generalWidgetGuidePanel != null)
+                {
+                    generalWidgetGuidePanel.SetActive(false);
+                    Debug.Log("[AndroidWidgetLauncher] 通用Android弹窗界面已关闭");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[AndroidWidgetLauncher] 关闭通用Android弹窗时发生错误: {e.Message}");
+            }
+        }
+        
+        
+        /// <summary>
+        /// 关闭vivo FuntouchOS系统的小组件添加指引弹窗
+        /// </summary>
+        public void CloseVivoWidgetGuidePanel()
+        {
+            try
+            {
+                if (vivoWidgetGuidePanel != null)
+                {
+                    vivoWidgetGuidePanel.SetActive(false);
+                    Debug.Log("[AndroidWidgetLauncher] vivo FuntouchOS弹窗界面已关闭");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[AndroidWidgetLauncher] 关闭vivo FuntouchOS弹窗时发生错误: {e.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// 延迟显示MIUI弹窗（协程）
+        /// </summary>
+        private IEnumerator ShowMIUIWidgetPanelDelayed()
+        {
+            // 等待一帧，确保当前帧的所有UI操作完成
+            yield return null;
+            
+            if (miuiWidgetGuidePanel != null)
+            {
+                Debug.Log("[AndroidWidgetLauncher] 协程开始检查MIUI弹窗状态");
+                Debug.Log($"[AndroidWidgetLauncher] 弹窗父级对象: {(miuiWidgetGuidePanel.transform.parent != null ? miuiWidgetGuidePanel.transform.parent.name : "null")}");
+                Debug.Log($"[AndroidWidgetLauncher] 弹窗层级路径: {GetGameObjectPath(miuiWidgetGuidePanel)}");
+                
+                // 检查父级对象是否都是激活状态
+                Transform current = miuiWidgetGuidePanel.transform;
+                bool hierarchyActive = true;
+                while (current != null)
+                {
+                    bool isActive = current.gameObject.activeInHierarchy;
+                    Debug.Log($"[AndroidWidgetLauncher] 层级检查 - {current.name}: {isActive}");
+                    if (!isActive && current != miuiWidgetGuidePanel.transform)
+                    {
+                        hierarchyActive = false;
+                    }
+                    current = current.parent;
+                }
+                
+                if (!hierarchyActive)
+                {
+                    Debug.LogError("[AndroidWidgetLauncher] 发现父级对象未激活，这可能是弹窗不显示的原因！");
+                }
+                
+                // 如果弹窗还没有激活，强制激活
+                if (!miuiWidgetGuidePanel.activeInHierarchy)
+                {
+                    Debug.Log("[AndroidWidgetLauncher] 弹窗仍未激活，强制激活");
+                    miuiWidgetGuidePanel.SetActive(true);
+                }
+                
+                // 强制刷新Canvas
+                Canvas canvas = miuiWidgetGuidePanel.GetComponentInParent<Canvas>();
+                if (canvas != null)
+                {
+                    Debug.Log($"[AndroidWidgetLauncher] 找到Canvas: {canvas.name}, enabled: {canvas.enabled}");
+                    Debug.Log($"[AndroidWidgetLauncher] Canvas sortingOrder: {canvas.sortingOrder}");
+                    canvas.enabled = false;
+                    canvas.enabled = true;
+                    Debug.Log("[AndroidWidgetLauncher] Canvas已强制刷新");
+                }
+                else
+                {
+                    Debug.LogError("[AndroidWidgetLauncher] 未找到Canvas组件！这是弹窗不显示的重要原因！");
+                }
+                
+                Debug.Log($"[AndroidWidgetLauncher] MIUI弹窗最终状态: {miuiWidgetGuidePanel.activeInHierarchy}");
+                
+                RectTransform rectTransform = miuiWidgetGuidePanel.GetComponent<RectTransform>();
+                if (rectTransform != null)
+                {
+                    Debug.Log($"[AndroidWidgetLauncher] 弹窗RectTransform: {rectTransform.rect}");
+                    Debug.Log($"[AndroidWidgetLauncher] 弹窗位置: {rectTransform.anchoredPosition}");
+                    Debug.Log($"[AndroidWidgetLauncher] 弹窗缩放: {rectTransform.localScale}");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 延迟显示vivo弹窗（协程）
+        /// </summary>
+        private IEnumerator ShowVivoWidgetPanelDelayed()
+        {
+            // 等待一帧，确保当前帧的所有UI操作完成
+            yield return null;
+            
+            // 再等待一小段时间，确保UI系统完全准备就绪
+            yield return new WaitForSeconds(0.1f);
+            
+            if (vivoWidgetGuidePanel != null)
+            {
+                Debug.Log("[AndroidWidgetLauncher] 协程开始显示vivo弹窗");
+                vivoWidgetGuidePanel.SetActive(true);
+                
+                // 强制刷新Canvas
+                Canvas canvas = vivoWidgetGuidePanel.GetComponentInParent<Canvas>();
+                if (canvas != null)
+                {
+                    canvas.enabled = false;
+                    canvas.enabled = true;
+                    Debug.Log("[AndroidWidgetLauncher] Canvas已强制刷新");
+                }
+                
+                Debug.Log($"[AndroidWidgetLauncher] vivo弹窗最终状态: {vivoWidgetGuidePanel.activeInHierarchy}");
+            }
+        }
+        
+        /// <summary>
+        /// 初始化弹窗面板
+        /// </summary>
+        private void InitializePopupPanels()
+        {
+            Debug.Log("[AndroidWidgetLauncher] 初始化弹窗面板...");
+            
+            // 隐藏所有弹窗面板
+            if (miuiWidgetGuidePanel != null)
+            {
+                miuiWidgetGuidePanel.SetActive(false);
+                Debug.Log("[AndroidWidgetLauncher] MIUI弹窗已初始化为隐藏状态");
+            }
+            
+            if (vivoWidgetGuidePanel != null)
+            {
+                vivoWidgetGuidePanel.SetActive(false);
+                Debug.Log("[AndroidWidgetLauncher] vivo弹窗已初始化为隐藏状态");
+            }
+            
+            if (generalWidgetGuidePanel != null)
+            {
+                generalWidgetGuidePanel.SetActive(false);
+                Debug.Log("[AndroidWidgetLauncher] 通用弹窗已初始化为隐藏状态");
+            }
+            
+            Debug.Log("[AndroidWidgetLauncher] 所有弹窗面板初始化完成");
+        }
+        
+        /// <summary>
+        /// 获取GameObject的完整路径
+        /// </summary>
+        private string GetGameObjectPath(GameObject obj)
+        {
+            string path = obj.name;
+            Transform parent = obj.transform.parent;
+            while (parent != null)
+            {
+                path = parent.name + "/" + path;
+                parent = parent.parent;
+            }
+            return path;
+        }
+        
+        /// <summary>
+        /// 关闭所有弹窗
+        /// </summary>
+        public void CloseAllPopups()
+        {
+            Debug.Log("[AndroidWidgetLauncher] 开始关闭所有弹窗...");
+            
+            if (miuiWidgetGuidePanel != null && miuiWidgetGuidePanel.activeInHierarchy)
+            {
+                miuiWidgetGuidePanel.SetActive(false);
+                Debug.Log("[AndroidWidgetLauncher] MIUI弹窗已关闭");
+            }
+            
+            if (vivoWidgetGuidePanel != null && vivoWidgetGuidePanel.activeInHierarchy)
+            {
+                vivoWidgetGuidePanel.SetActive(false);
+                Debug.Log("[AndroidWidgetLauncher] vivo弹窗已关闭");
+            }
+            
+            if (generalWidgetGuidePanel != null && generalWidgetGuidePanel.activeInHierarchy)
+            {
+                generalWidgetGuidePanel.SetActive(false);
+                Debug.Log("[AndroidWidgetLauncher] 通用弹窗已关闭");
+            }
+            
+            Debug.Log("[AndroidWidgetLauncher] 所有弹窗已关闭");
         }
         
         /// <summary>
