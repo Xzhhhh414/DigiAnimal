@@ -7,8 +7,17 @@
 // App Group标识符，用于与Widget共享数据
 static NSString *appGroupIdentifier = @"group.com.zher.meow";
 
+// 记录上次的dynamicIslandEnabled状态和petId，避免重复调用
+static BOOL lastDynamicIslandEnabled = NO;
+static BOOL hasInitializedDynamicIsland = NO;
+static NSString *lastPetId = nil;
+
 // C函数接口，供Unity调用
 extern "C" {
+    // 前向声明
+    void _IOSStartLiveActivity();
+    void _IOSStopLiveActivity();
+    void _IOSUpdateLiveActivity();
     
     /// 设置App Group标识符
     void _IOSSetAppGroupIdentifier(const char* identifier) {
@@ -42,7 +51,66 @@ extern "C" {
             [sharedDefaults setObject:nsValue forKey:nsKey];
             [sharedDefaults synchronize];
             
-            NSLog(@"[UnityIOSBridge] 数据已保存到SharedDefaults: %@ = %@", nsKey, nsValue);
+            // NSLog(@"[UnityIOSBridge] 数据已保存: %@ = %@", nsKey, nsValue);
+            
+            // 如果是WidgetData，检查是否需要启动或停止Live Activity
+            if ([nsKey isEqualToString:@"WidgetData"]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSData *jsonData = [nsValue dataUsingEncoding:NSUTF8StringEncoding];
+                    if (jsonData) {
+                        NSError *error = nil;
+                        NSDictionary *widgetData = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+                        if (widgetData && !error) {
+                            BOOL dynamicIslandEnabled = [widgetData[@"dynamicIslandEnabled"] boolValue];
+                            NSString *currentPetId = widgetData[@"selectedPetId"];
+                            
+                            // 检查是否需要更新
+                            BOOL enabledStateChanged = !hasInitializedDynamicIsland || lastDynamicIslandEnabled != dynamicIslandEnabled;
+                            BOOL petIdChanged = lastPetId == nil || ![lastPetId isEqualToString:currentPetId];
+                            
+                            if (enabledStateChanged) {
+                                // 灵动岛开关状态变化
+                                // NSLog(@"🔍 [UnityIOSBridge] dynamicIslandEnabled: %@", dynamicIslandEnabled ? @"true" : @"false");
+                                
+                                if (dynamicIslandEnabled) {
+                                    _IOSStartLiveActivity();
+                                } else {
+                                    _IOSStopLiveActivity();
+                                }
+                                
+                                lastDynamicIslandEnabled = dynamicIslandEnabled;
+                                lastPetId = currentPetId;
+                                hasInitializedDynamicIsland = YES;
+                            } else if (dynamicIslandEnabled && petIdChanged) {
+                                // 宠物切换了，需要重启Live Activity
+                                // NSLog(@"🔄 [UnityIOSBridge] 宠物切换: %@ → %@", lastPetId, currentPetId);
+                                _IOSStopLiveActivity();
+                                // 延迟一点启动，确保旧的已经完全停止
+                                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                                    _IOSStartLiveActivity();
+                                });
+                                lastPetId = currentPetId;
+                            } else if (dynamicIslandEnabled) {
+                                // 状态未变化，只更新现有Live Activity的数据
+                                _IOSUpdateLiveActivity();
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // 通知Widget刷新
+            #if __has_include(<WidgetKit/WidgetKit.h>)
+            if (@available(iOS 14.0, *)) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    Class widgetCenterClass = NSClassFromString(@"WidgetCenter");
+                    if (widgetCenterClass) {
+                        id widgetCenter = [widgetCenterClass performSelector:@selector(sharedCenter)];
+                        [widgetCenter performSelector:@selector(reloadAllTimelines)];
+                    }
+                });
+            }
+            #endif
         } else {
             NSLog(@"[UnityIOSBridge] 错误: 无法获取SharedDefaults");
         }
@@ -82,45 +150,64 @@ extern "C" {
     
     /// 启动Live Activity
     void _IOSStartLiveActivity() {
+        // NSLog(@"🔵 [UnityIOSBridge] _IOSStartLiveActivity 被调用");
+        
         if (@available(iOS 16.1, *)) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                // 通过反射调用主Target中的LiveActivityManager
-                Class managerClass = NSClassFromString(@"Meow.LiveActivityManager");
+                // 直接查找LiveActivityManager类
+                Class managerClass = NSClassFromString(@"LiveActivityManager");
+                
                 if (managerClass) {
                     id sharedManager = [managerClass performSelector:@selector(shared)];
                     if (sharedManager) {
-                        BOOL result = [(NSNumber*)[sharedManager performSelector:@selector(startLiveActivity)] boolValue];
-                        if (result) {
-                            NSLog(@"[UnityIOSBridge] Live Activity启动成功");
-                        } else {
-                            NSLog(@"[UnityIOSBridge] Live Activity启动失败");
+                        // 使用NSInvocation安全地调用并获取返回值
+                        SEL selector = @selector(startLiveActivity);
+                        NSMethodSignature *signature = [sharedManager methodSignatureForSelector:selector];
+                        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+                        [invocation setSelector:selector];
+                        [invocation setTarget:sharedManager];
+                        [invocation invoke];
+                        
+                        BOOL result = NO;
+                        [invocation getReturnValue:&result];
+                        
+                        if (!result) {
+                            NSLog(@"⚠️ [UnityIOSBridge] Live Activity启动失败");
                         }
+                    } else {
+                        NSLog(@"❌ [UnityIOSBridge] 无法获取LiveActivityManager shared实例");
                     }
                 } else {
-                    NSLog(@"[UnityIOSBridge] 错误: 无法找到LiveActivityManager类");
+                    NSLog(@"❌ [UnityIOSBridge] 未找到LiveActivityManager类");
                 }
             });
         } else {
-            NSLog(@"[UnityIOSBridge] 警告: iOS版本低于16.1，不支持Live Activity");
+            NSLog(@"⚠️ [UnityIOSBridge] iOS版本低于16.1，不支持Live Activity");
         }
     }
     
     /// 停止Live Activity
     void _IOSStopLiveActivity() {
+        // NSLog(@"🔵 [UnityIOSBridge] _IOSStopLiveActivity 被调用");
         if (@available(iOS 16.1, *)) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                // 通过反射调用主Target中的LiveActivityManager
-                Class managerClass = NSClassFromString(@"Meow.LiveActivityManager");
+                // 直接查找LiveActivityManager类
+                Class managerClass = NSClassFromString(@"LiveActivityManager");
+                
                 if (managerClass) {
                     id sharedManager = [managerClass performSelector:@selector(shared)];
                     if (sharedManager) {
                         [sharedManager performSelector:@selector(stopLiveActivity)];
-                        NSLog(@"[UnityIOSBridge] Live Activity停止请求已发送");
+                        // NSLog(@"✅ [UnityIOSBridge] Live Activity停止请求已发送");
+                    } else {
+                        NSLog(@"❌ [UnityIOSBridge] 无法获取LiveActivityManager shared实例");
                     }
+                } else {
+                    NSLog(@"❌ [UnityIOSBridge] 未找到LiveActivityManager类");
                 }
             });
         } else {
-            NSLog(@"[UnityIOSBridge] 警告: iOS版本低于16.1，不支持Live Activity");
+            NSLog(@"⚠️ [UnityIOSBridge] iOS版本低于16.1，不支持Live Activity");
         }
     }
     
@@ -264,4 +351,11 @@ extern "C" {
     return [sharedDefaults dictionaryRepresentation];
 }
 
-@end 
+@end
+
+// 插件初始化
+__attribute__((constructor))
+static void InitializeUnityIOSBridge() {
+    NSLog(@"🟢 [UnityIOSBridge] 插件已加载");
+    NSLog(@"🟢 [UnityIOSBridge] App Group: %@", appGroupIdentifier);
+} 
