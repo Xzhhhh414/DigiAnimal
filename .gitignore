@@ -9,4 +9,5 @@ Temp/
 .vs
 obj/Debug
 .vsconfig
+.vscode/
 
