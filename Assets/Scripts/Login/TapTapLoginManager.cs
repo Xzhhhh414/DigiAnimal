@@ -1,13 +1,17 @@
 using UnityEngine;
 using UnityEngine.Events;
-using TapSDK.Login;
-using System.Threading.Tasks;
 using System;
-using System.Collections.Generic;
 using System.Collections;
+using System.Threading.Tasks;
+
+#if UNITY_ANDROID
+using TapSDK.Login;
+using System.Collections.Generic;
+#endif
 
 /// <summary>
 /// TapTap登录管理器 - 处理TapTap登录相关功能
+/// 仅在Android平台启用
 /// </summary>
 public class TapTapLoginManager : MonoBehaviour
 {
@@ -15,7 +19,9 @@ public class TapTapLoginManager : MonoBehaviour
     [SerializeField] private bool useBasicInfoScope = true; // 使用basic_info实现无感登录
     
     [Header("事件")]
+#if UNITY_ANDROID
     public UnityEvent<TapTapAccount> OnLoginSuccess;
+#endif
     public UnityEvent<string> OnLoginFailed;
     public UnityEvent OnLoginCancelled;
     public UnityEvent OnLogout;
@@ -28,7 +34,11 @@ public class TapTapLoginManager : MonoBehaviour
     public static TapTapLoginManager Instance { get; private set; }
     
     // 当前用户信息
+#if UNITY_ANDROID
     public TapTapAccount CurrentAccount { get; private set; }
+#else
+    public object CurrentAccount { get; private set; }
+#endif
     
     // 登录状态
     public bool IsLoggedIn => CurrentAccount != null;
@@ -66,6 +76,7 @@ public class TapTapLoginManager : MonoBehaviour
     /// </summary>
     private void InitializeEvents()
     {
+#if UNITY_ANDROID
         if (OnLoginSuccess == null) OnLoginSuccess = new UnityEvent<TapTapAccount>();
         if (OnLoginFailed == null) OnLoginFailed = new UnityEvent<string>();
         if (OnLoginCancelled == null) OnLoginCancelled = new UnityEvent();
@@ -74,6 +85,13 @@ public class TapTapLoginManager : MonoBehaviour
         
         // Debug.Log("[TapTapLogin] UnityEvent事件已初始化");
         // Debug.Log($"[TapTapLogin] OnSDKReady是否为空: {OnSDKReady == null}");
+#else
+        // 非Android平台，只初始化通用事件
+        if (OnLoginFailed == null) OnLoginFailed = new UnityEvent<string>();
+        if (OnLoginCancelled == null) OnLoginCancelled = new UnityEvent();
+        if (OnLogout == null) OnLogout = new UnityEvent();
+        if (OnSDKReady == null) OnSDKReady = new UnityEvent();
+#endif
     }
     
     /// <summary>
@@ -310,7 +328,11 @@ public class TapTapLoginManager : MonoBehaviour
     /// 获取当前用户详细信息
     /// </summary>
 #pragma warning disable CS1998 // 异步方法缺少 await 操作符，将以同步方式运行
+#if UNITY_ANDROID
     public async Task<TapTapAccount> GetCurrentUserInfoAsync()
+#else
+    public async Task<object> GetCurrentUserInfoAsync()
+#endif
 #pragma warning restore CS1998
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -334,16 +356,22 @@ public class TapTapLoginManager : MonoBehaviour
     /// <summary>
     /// 启动合规认证（如果启用）
     /// </summary>
+#if UNITY_ANDROID
     private void StartComplianceIfEnabled(TapTapAccount account)
+#else
+    private void StartComplianceIfEnabled(object account)
+#endif
     {
         if (!enableCompliance || complianceManager == null)
         {
             // 如果未启用合规认证，直接触发登录成功事件
             Debug.Log("[TapTapLogin] 合规认证未启用，直接触发登录成功");
+#if UNITY_ANDROID
             OnLoginSuccess?.Invoke(account);
+#endif
             return;
         }
-        
+#if UNITY_ANDROID        
         if (string.IsNullOrEmpty(account.unionId))
         {
             Debug.LogError("[TapTapLogin] 用户UnionID为空，无法进行合规认证");
@@ -353,6 +381,10 @@ public class TapTapLoginManager : MonoBehaviour
         
         Debug.Log($"[TapTapLogin] 开始合规认证，用户UnionID: {account.unionId}");
         complianceManager.StartupCompliance(account.unionId);
+#else
+        // 非Android平台不执行合规认证
+        Debug.Log("[TapTapLogin] 非Android平台，跳过合规认证");
+#endif
     }
     
     /// <summary>
@@ -363,10 +395,12 @@ public class TapTapLoginManager : MonoBehaviour
         Debug.Log($"[TapTapLogin] 合规认证通过，用户可以正常进入游戏 (Code: {code})");
         
         // 现在才触发真正的登录成功事件
+#if UNITY_ANDROID
         if (CurrentAccount != null)
         {
             OnLoginSuccess?.Invoke(CurrentAccount);
         }
+#endif
     }
     
     /// <summary>
@@ -507,11 +541,15 @@ public class TapTapLoginManager : MonoBehaviour
     /// </summary>
     public string GetUserDisplayName()
     {
+#if UNITY_ANDROID
         if (CurrentAccount != null && !string.IsNullOrEmpty(CurrentAccount.name))
         {
             return CurrentAccount.name;
         }
         return "TapTap用户";
+#else
+        return "用户";
+#endif
     }
     
     /// <summary>
@@ -519,10 +557,12 @@ public class TapTapLoginManager : MonoBehaviour
     /// </summary>
     public string GetUserAvatarUrl()
     {
+#if UNITY_ANDROID
         if (CurrentAccount != null && !string.IsNullOrEmpty(CurrentAccount.avatar))
         {
             return CurrentAccount.avatar;
         }
+#endif
         return null;
     }
     
@@ -531,7 +571,11 @@ public class TapTapLoginManager : MonoBehaviour
     /// </summary>
     public string GetUserOpenId()
     {
+#if UNITY_ANDROID
         return CurrentAccount?.openId;
+#else
+        return null;
+#endif
     }
     
     /// <summary>
@@ -539,7 +583,11 @@ public class TapTapLoginManager : MonoBehaviour
     /// </summary>
     public string GetUserUnionId()
     {
+#if UNITY_ANDROID
         return CurrentAccount?.unionId;
+#else
+        return null;
+#endif
     }
     
     private void OnDestroy()

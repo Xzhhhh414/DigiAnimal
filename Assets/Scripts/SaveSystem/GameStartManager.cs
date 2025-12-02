@@ -2,7 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System;
+
+#if UNITY_ANDROID
 using TapSDK.Login;
+#endif
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -46,7 +49,9 @@ public class GameStartManager : MonoBehaviour
     [SerializeField] private string loginFailedText = "登录失败，请重试";
     
     // 组件引用
+#if UNITY_ANDROID
     private TapTapLoginManager tapTapLoginManager;
+#endif
     
     // 登录状态管理
     private bool isCheckingLogin = false;
@@ -194,6 +199,7 @@ public class GameStartManager : MonoBehaviour
     /// </summary>
     private void SetupLoginEventListeners()
     {
+#if UNITY_ANDROID
         if (tapTapLoginManager != null)
         {
             // Debug.Log("[GameStart] 设置TapTap登录事件监听器");
@@ -243,6 +249,7 @@ public class GameStartManager : MonoBehaviour
         {
             Debug.LogError("[GameStart] TapTapLoginManager为空，无法设置事件监听器");
         }
+#endif
     }
     
     /// <summary>
@@ -668,6 +675,7 @@ public class GameStartManager : MonoBehaviour
         // 设置为登录中状态
         SetLoginPanelState(true);
         
+#if UNITY_ANDROID
         // 重新尝试登录
         if (tapTapLoginManager != null)
         {
@@ -678,6 +686,12 @@ public class GameStartManager : MonoBehaviour
             Debug.LogError("[GameStart] TapTapLoginManager为空，无法重试登录");
             SetLoginPanelState(false);
         }
+#else
+        // 非Android平台不需要登录
+        SetLoginPanelState(false);
+        HideLoginPanel();
+        SetButtonsVisibility(true);
+#endif
     }
     
     /// <summary>
@@ -1055,8 +1069,13 @@ public class GameStartManager : MonoBehaviour
     
     /// <summary>
     /// TapTap登录成功回调
+    /// 仅Android平台有效
     /// </summary>
+#if UNITY_ANDROID
     private void OnTapTapLoginSuccess(TapTapAccount account)
+#else
+    private void OnTapTapLoginSuccess(object account)
+#endif
     {
         // Debug.Log("[GameStart] ===== OnTapTapLoginSuccess 回调被调用 =====");
         // Debug.Log($"[GameStart] TapTap登录成功 - 用户: {account.name}");
@@ -1134,6 +1153,7 @@ public class GameStartManager : MonoBehaviour
     private void OnDestroy()
     {
         // 清理事件监听器
+#if UNITY_ANDROID
         if (tapTapLoginManager != null)
         {
             tapTapLoginManager.OnLoginSuccess.RemoveListener(OnTapTapLoginSuccess);
@@ -1142,6 +1162,7 @@ public class GameStartManager : MonoBehaviour
             tapTapLoginManager.OnLoginCancelled.RemoveListener(OnTapTapLoginCancelled);
             tapTapLoginManager.OnLogout.RemoveListener(OnTapTapLogout);
         }
+#endif
     }
     
     /// <summary>

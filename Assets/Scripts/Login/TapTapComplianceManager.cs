@@ -1,12 +1,17 @@
 using UnityEngine;
 using UnityEngine.Events;
-using TapSDK.Compliance;
-using TapSDK.Login;
 using System;
 using System.Collections;
 
+#if UNITY_ANDROID
+using TapSDK.Compliance;
+using TapSDK.Login;
+using System.Threading.Tasks;
+#endif
+
 /// <summary>
 /// TapTap合规认证管理器 - 处理实名认证和防沉迷
+/// 仅在Android平台启用
 /// </summary>
 public class TapTapComplianceManager : MonoBehaviour
 {

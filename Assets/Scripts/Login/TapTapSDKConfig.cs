@@ -1,18 +1,24 @@
 using UnityEngine;
+using System;
+
+#if UNITY_ANDROID
 using TapSDK.Core;
 using TapSDK.Compliance;
-using System;
+#endif
 
 /// <summary>
 /// TapTap SDK配置和初始化管理器
+/// 仅在Android平台启用
 /// </summary>
 public class TapTapSDKConfig : MonoBehaviour
 {
     [Header("TapTap SDK配置")]
     [SerializeField] private string clientId = "x1ve5pzlulxx1amjqe";           // TapTap Client ID
     [SerializeField] private string clientToken = "Iu9kCcMygCpPfk879vuOXk1zIEl8wKhMX2fZqD4h";        // TapTap Client Token
+#if UNITY_ANDROID
     [SerializeField] private TapTapRegionType region = TapTapRegionType.CN;  // 地区：CN国内，Overseas海外
     [SerializeField] private TapTapLanguageType language = TapTapLanguageType.zh_Hans; // 语言
+#endif
     
     [Header("调试设置")]
     [SerializeField] private bool enableLog = false;          // 是否开启日志（发布版本建议false）
@@ -45,8 +51,15 @@ public class TapTapSDKConfig : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             
+#if UNITY_ANDROID
             // 不在Awake中立即初始化SDK，而是等待隐私协议同意后再初始化
             CheckPrivacyAndInitialize();
+#else
+            // 非Android平台，标记为已初始化但实际不执行任何操作
+            isInitialized = true;
+            Debug.Log("[TapTapSDK] iOS平台，跳过TapSDK初始化");
+            OnSDKInitialized?.Invoke();
+#endif
         }
         else
         {
@@ -57,10 +70,11 @@ public class TapTapSDKConfig : MonoBehaviour
     
     /// <summary>
     /// 检查隐私协议同意状态，决定是否初始化SDK
+    /// 仅Android平台有效
     /// </summary>
     private void CheckPrivacyAndInitialize()
     {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID
         // 检查用户是否已经同意隐私协议
         if (HasPrivacyConsent())
         {
@@ -137,10 +151,11 @@ public class TapTapSDKConfig : MonoBehaviour
     
     /// <summary>
     /// 初始化TapTap SDK
+    /// 仅Android平台有效
     /// </summary>
     private void InitializeSDK()
     {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID
         // 检查是否已经初始化过
         if (isInitialized)
         {
@@ -160,16 +175,16 @@ public class TapTapSDKConfig : MonoBehaviour
             
             Debug.Log("[TapTapSDK] 开始初始化SDK...");
             Debug.Log($"[TapTapSDK] Client ID: {clientId}");
-            Debug.Log($"[TapTapSDK] Region: {region}");
-            Debug.Log($"[TapTapSDK] Language: {language}");
+            Debug.Log($"[TapTapSDK] Region: CN");
+            Debug.Log($"[TapTapSDK] Language: zh_Hans");
             
             // 创建SDK配置
             TapTapSdkOptions coreOptions = new TapTapSdkOptions
             {
                 clientId = this.clientId,
                 clientToken = this.clientToken,
-                region = this.region,
-                preferredLanguage = this.language,
+                region = TapTapRegionType.CN,
+                preferredLanguage = TapTapLanguageType.zh_Hans,
                 enableLog = this.enableLog
             };
             
@@ -246,8 +261,13 @@ public class TapTapSDKConfig : MonoBehaviour
         Debug.Log("=== TapTap SDK 配置信息 ===");
         Debug.Log($"Client ID: {clientId}");
         Debug.Log($"Client Token: {(string.IsNullOrEmpty(clientToken) ? "未配置" : "已配置")}");
+#if UNITY_ANDROID
         Debug.Log($"Region: {region}");
         Debug.Log($"Language: {language}");
+#else
+        Debug.Log($"Region: CN (固定值)");
+        Debug.Log($"Language: zh_Hans (固定值)");
+#endif
         Debug.Log($"Enable Log: {enableLog}");
         Debug.Log($"Is Initialized: {isInitialized}");
         Debug.Log("========================");
